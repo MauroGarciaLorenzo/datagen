@@ -25,9 +25,14 @@ def exec(n_samples, Dims, f, error, ax):
         result[cell] = compss_wait_on(result[cell])
     
     result = flatten_list(result) 
-    for r in result:   
+    for r in result:
         print(len(r[1]))
-        print(r)
+        for i in r[1]:
+            for j in i.subsample: print(j)
+            print(i.stability)
+        print("entropy:", r[2])
+        print("delta entropy:", r[3])
+        print("depth:", r[4])
         print("")
         print("")
     return grid
@@ -102,16 +107,16 @@ def explore_cell(f, n_samples, entropy, error, depth, cell, ax, dimensions, subs
     # eval each subsample
     for i in subsamples:
         i.stability = eval_subsamples(i.subsample,f)
-    
+
     entropy, delta_entropy = eval_entropy(subsamples, entropy) # eval entropy. Save entropy and delta_entropy as an attribute of the class Cell
     
     if delta_entropy < 0 or not check_dims(dimensions, error): 
         return dimensions, subsamples, entropy, delta_entropy, depth
     else:
-        new_divs = sensitivity(subsamples)
+        #new_divs = sensitivity(subsamples)
         
-        for i in range(len(new_divs)):
-            dimensions[i].divs = new_divs[i]
+        #for i in range(len(new_divs)):
+        #    dimensions[i].divs = new_divs[i]
             
         children = gen_children(n_samples, dimensions, entropy, subsamples)
         
@@ -263,10 +268,10 @@ def eval_entropy(subsamples, entropy):
     freqs = []
     cont = 0
     for i in subsamples:
-        # i.stability = compss_wait_on(i.stability)
+        i.stability = compss_wait_on(i.stability)
         if i.stability == 1: cont += 1
-    freqs.append(cont/len(subsamples))
-    freqs.append((len(subsamples) - cont)/len(subsamples))
+    freqs.append(cont/len(subsamples) + 0.0001)
+    freqs.append((len(subsamples) - cont)/len(subsamples) + 0.0001)
     E = calculate_entropy(freqs)
     if entropy == None: delta_entropy = 1
     else: delta_entropy = E - entropy
