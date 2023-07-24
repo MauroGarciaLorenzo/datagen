@@ -26,13 +26,16 @@ def exec(n_samples, Dims, f, error, ax):
     
     result = flatten_list(result) 
     for r in result:
-        print(len(r[1]))
+        print("number of samples in cell:", len(r[1]))
+        print("samples-stability:")
         for i in r[1]:
             for j in i.subsample: print(j)
             print(i.stability)
+            print("-----------------------------------------------------------------")
         print("entropy:", r[2])
         print("delta entropy:", r[3])
         print("depth:", r[4])
+        print("")
         print("")
         print("")
     return grid
@@ -119,7 +122,6 @@ def explore_cell(f, n_samples, entropy, error, depth, cell, ax, dimensions, subs
         #    dimensions[i].divs = new_divs[i]
             
         children = gen_children(n_samples, dimensions, entropy, subsamples)
-        
         div = tuple(dim.divs for dim in dimensions)
         total_div = np.prod(div)
         children_total = [None] * len(children)
@@ -258,7 +260,7 @@ def gen_grid(dims):
 def calculate_entropy(freqs):
     E = 0
     for ii in range(len(freqs)):
-        E = E - freqs[ii] * np.log(freqs[ii])
+        if (freqs[ii] != 0): E = E - freqs[ii] * np.log(freqs[ii])
     return E
 
 
@@ -270,8 +272,8 @@ def eval_entropy(subsamples, entropy):
     for i in subsamples:
         i.stability = compss_wait_on(i.stability)
         if i.stability == 1: cont += 1
-    freqs.append(cont/len(subsamples) + 0.0001)
-    freqs.append((len(subsamples) - cont)/len(subsamples) + 0.0001)
+    freqs.append(cont/len(subsamples))
+    freqs.append((len(subsamples) - cont)/len(subsamples))
     E = calculate_entropy(freqs)
     if entropy == None: delta_entropy = 1
     else: delta_entropy = E - entropy
@@ -299,8 +301,10 @@ def gen_children(n_samples, dims, entropy, subsamples): #subsamples = grid[cell]
         for s in subsamples:
             if all([s.subsample_dim [t] >=lower[t] for t in range(n_dims)]) and all([s.subsample_dim [t] <=upper[t] for t in range(n_dims)]):
                 subsamples_list.append(s)
-                
-        entropy, delta_entropy = eval_entropy(subsamples_list, None) # eval entropy. Save entropy and delta_entropy as an attribute of the class Cell
+
+        entropy = None
+        delta_entropy = None
+        if (len(subsamples_list) > 0): entropy, delta_entropy = eval_entropy(subsamples_list, None) # eval entropy. Save entropy and delta_entropy as an attribute of the class Cell
         
         grid_children.append((Dimensions, subsamples_list, entropy, delta_entropy))
 
