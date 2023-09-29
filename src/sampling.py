@@ -31,33 +31,20 @@ def explore_cell(
     # plot_sample(ax, samples[:,0], samples[:,1], samples[:,2])
 
     # generate cases (n_cases(attribute of the class Dimension) for each dim)
-    case_df = gen_cases(samples, n_samples, dimensions)
+    cases_df, dims_df = gen_cases(samples, n_samples, dimensions)
     # cases_df_total=pd.concat([cases_df_total,case_df],axis=0)
 
-    for s in range(len(case_df)):
-        cases.append(
-            Case(
-                list(
-                    case_df.drop(
-                        ["Dim" + str(d) for d in range(len(dimensions))], axis=1
-                    ).iloc[s]
-                ),
-                list(
-                    case_df[["Dim" + str(d) for d in range(len(dimensions))]].iloc[
-                        s
-                    ]
-                ),
-            )
-        )
-
     # eval each case
-    for i in cases:
-        i.stability = eval_cases(i.case, func)
+    stabilities = []
+    for row in range(len(cases_df)):
+        stabilities.append(eval_stability(cases_df.iloc[row, :], func))
+    cases_df["Stability"] = stabilities
 
-    entropy, delta_entropy = eval_entropy(
-        cases, entropy
-    )  # eval entropy. Save entropy and delta_entropy as an attribute of the class Cell
+    # eval entropy. Save entropy and delta_entropy as an attribute of the class
+    #  Cell
+    entropy, delta_entropy = eval_entropy(stabilities, entropy)  
 
+    ###############################################################################
     if delta_entropy < 0 or not check_dims(dimensions, tolerance):
         return dimensions, cases, entropy, delta_entropy, depth
     else:
@@ -136,7 +123,12 @@ def gen_cases(samples, n_samples, dimensions):
             total_samples_d = pd.concat([total_samples_d, cases_dim_df], axis=0)
         total_samples_d = total_samples_d.reset_index(drop=True)
         total_samples = pd.concat([total_samples, total_samples_d], axis=1)
-    return total_samples
+    
+    column_names_dims = ["Dim" + str(d) for d in range(len(dimensions))]
+    cases_df = total_samples.drop(column_names_dims, axis=1)
+    dims_df = total_samples[column_names_dims]
+    
+    return cases_df, dims_df
 
 
 def sensitivity(cases):
@@ -182,7 +174,7 @@ def sensitivity(cases):
 # task defined (every case is going to be evaluated in parallel)
 # funtion is received as a parameter
 @task(returns=1)
-def eval_cases(case, f):
+def eval_stability(case, f):
     return f(case)
 
 
@@ -228,15 +220,15 @@ def calculate_entropy(freqs):
 
 # Gets entropy and delta_entropy.
 # Saves entropy in entropy and delta_entropy in delta_entropy
-def eval_entropy(cases, entropy):
+def eval_entropy(stabilities, entropy):
     freqs = []
     cont = 0
-    for i in cases:
-        i.stability = compss_wait_on(i.stability)
-        if i.stability == 1:
+    for stability in stabilities:
+        stability = compss_wait_on(stability)
+        if stability == 1:
             cont += 1
-    freqs.append(cont / len(cases))
-    freqs.append((len(cases) - cont) / len(cases))
+    freqs.append(cont / len(stabilities))
+    freqs.append((len(stabilities) - cont) / len(stabilities))
     e = calculate_entropy(freqs)
     if entropy == None:
         delta_entropy = 1
