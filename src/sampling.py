@@ -23,8 +23,6 @@ import numpy as np
 import pandas as pd
 
 
-
-
 def getLastChildren(grid, last_children):
     for cell in grid:
         if not cell.children:
@@ -164,37 +162,28 @@ def sensitivity(cases):
     for s in cases:
         x.append(s.case_dim)
         y.append(s.stability)
-
     x = np.array(x)
     y = np.array(y)
 
     x_avg = np.mean(x, axis=0)
     x_min = np.min(x, axis=0)
     x_max = np.max(x, axis=0)
-
     model = LogisticRegression()
     model.fit(x, y)
-
     y_test = np.zeros([2, 1])
-
     std = np.zeros([len(x_avg), 1])
 
     for i in range(len(x_min)):
         x_test = np.copy(x_avg).reshape(1, -1)
         x_test[0, i] = x_min[i]
-
         y_test[0, 0] = model.predict(x_test)
-
         x_test[0, i] = x_max[i]
         y_test[1, 0] = model.predict(x_test)
-
         std[i] = np.std(y_test)
 
     dim_max_std = np.argmax(std)
-
     divs = [1, 1, 1]
     divs[dim_max_std] = 2
-
     return divs
 
 
@@ -257,14 +246,14 @@ def eval_entropy(stabilities, entropy):
     freqs.append(cont / len(stabilities))
     freqs.append((len(stabilities) - cont) / len(stabilities))
     e = calculate_entropy(freqs)
-    if None == entropy:
+    if entropy is None:
         delta_entropy = 1
     else:
         delta_entropy = e - entropy
     return e, delta_entropy
 
 
-def gen_grid_children(dims, entropy, dims_df, cases_df):
+def gen_grid_children(dims, entropy, dims_df, cases_heritage):
     n_dims = len(dims)
     ini = tuple(dim.borders[0] for dim in dims)
     fin = tuple(dim.borders[1] for dim in dims)
@@ -293,21 +282,21 @@ def gen_grid_children(dims, entropy, dims_df, cases_df):
                 )
             )
 
-        cases_heritage = pd.DataFrame()
-        for i in range(len(cases_heritage)):
-            row = cases_heritage.iloc[i, :]
+        cases_df = pd.DataFrame()
+        for k in range(len(cases_heritage)):
+            row = cases_heritage.iloc[k, :]
             if all([row[t] >= lower[t] for t in range(n_dims)]) and all(
                     [row[t] <= upper[t] for t in range(n_dims)]
             ):
-                cases_heritage = pd.concat([cases_heritage, row], ignore_index=True)
+                cases_df = pd.concat([cases_df, row], ignore_index=True)
 
         entropy = None
         delta_entropy = None
-        if len(cases_heritage) > 0:
+        if len(cases_df) > 0:
             entropy, delta_entropy = eval_entropy(
-                cases_heritage["Stability"], None
+                cases_df["Stability"], None
             )  # eval entropy. Save entropy and delta_entropy as an attribute of the class Cell
 
-        grid_children.append((dimensions, cases_heritage, entropy, delta_entropy))
+        grid_children.append((dimensions, cases_df, entropy, delta_entropy))
 
     return grid_children
