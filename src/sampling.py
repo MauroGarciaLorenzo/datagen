@@ -282,13 +282,13 @@ def gen_grid_children(dims, entropy, dims_df, cases_heritage):
                 )
             )
 
-        cases_df = pd.DataFrame()
-        for k in range(len(cases_heritage)):
-            row = cases_heritage.iloc[k, :]
+        cases_df = pd.DataFrame(columns=cases_heritage.columns)
+        for k in range(len(dims_df)):
+            row = dims_df.iloc[k, :]
             if all([row[t] >= lower[t] for t in range(n_dims)]) and all(
                     [row[t] <= upper[t] for t in range(n_dims)]
             ):
-                cases_df = pd.concat([cases_df, row], ignore_index=True)
+                cases_df = pd.concat([cases_df, cases_heritage.iloc[[k], :]], ignore_index=True)
 
         entropy = None
         delta_entropy = None
