@@ -1,18 +1,33 @@
+#  Copyright 2002-2023 Barcelona Supercomputing Center (www.bsc.es)
+
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+
+#       http://www.apache.org/licenses/LICENSE-2.0
+
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+
+
+from sklearn.linear_model import LogisticRegression
 from utils import check_dims, flatten_list
 from classes import Cell, Dimension
-import numpy as np
 from pycompss.api.api import compss_wait_on
 from pycompss.api.task import task
 from scipy.stats import qmc
+import numpy as np
 import pandas as pd
 
-from sklearn.linear_model import LogisticRegression
-import matplotlib.pyplot as plt
+
 
 
 def getLastChildren(grid, last_children):
     for cell in grid:
-        if cell.children == []:
+        if not cell.children:
             last_children.append(cell)
         else:
             last_children.extend(getLastChildren(cell.children, []))
@@ -21,7 +36,7 @@ def getLastChildren(grid, last_children):
 
 @task(returns=1)
 def explore_cell(
-    func, n_samples, entropy, tolerance, depth, cell, ax, dimensions, cases_heritage_df
+        func, n_samples, entropy, tolerance, depth, cell, ax, dimensions, cases_heritage_df
 ):
     # f = compss_wait_on(f)
     # cases_df_total = pd.DataFrame()
@@ -54,9 +69,7 @@ def explore_cell(
         # for i in range(len(new_divs)):
         #    dimensions[i].divs = new_divs[i]
 
-        children = gen_children(dimensions, entropy, dims_df, cases_df)
-        div = tuple(dim.divs for dim in dimensions)
-        total_div = np.prod(div)
+        children = gen_grid_children(dimensions, entropy, dims_df, cases_df)
         children_total = [None] * len(children)
         list_cases_children_df = []
         for cell_child in range(len(children_total)):
@@ -90,8 +103,6 @@ def explore_cell(
 
 # generate n_samples samples for each dim
 def gen_samples(n_samples, dimensions):
-    samples = []
-
     sampler = qmc.LatinHypercube(d=len(dimensions))
     samples = sampler.random(n=n_samples)
 
@@ -148,21 +159,21 @@ def gen_cases(samples, n_samples, dimensions):
 
 
 def sensitivity(cases):
-    X = []
+    x = []
     y = []
     for s in cases:
-        X.append(s.case_dim)
+        x.append(s.case_dim)
         y.append(s.stability)
 
-    X = np.array(X)
+    x = np.array(x)
     y = np.array(y)
 
-    x_avg = np.mean(X, axis=0)
-    x_min = np.min(X, axis=0)
-    x_max = np.max(X, axis=0)
+    x_avg = np.mean(x, axis=0)
+    x_min = np.min(x, axis=0)
+    x_max = np.max(x, axis=0)
 
     model = LogisticRegression()
-    model.fit(X, y)
+    model.fit(x, y)
 
     y_test = np.zeros([2, 1])
 
@@ -227,11 +238,11 @@ def gen_grid(dims):
 
 
 def calculate_entropy(freqs):
-    E = 0
+    e = 0
     for ii in range(len(freqs)):
         if freqs[ii] != 0:
-            E = E - freqs[ii] * np.log(freqs[ii])
-    return E
+            e = e - freqs[ii] * np.log(freqs[ii])
+    return e
 
 
 # Gets entropy and delta_entropy.
@@ -246,14 +257,14 @@ def eval_entropy(stabilities, entropy):
     freqs.append(cont / len(stabilities))
     freqs.append((len(stabilities) - cont) / len(stabilities))
     e = calculate_entropy(freqs)
-    if entropy == None:
+    if None == entropy:
         delta_entropy = 1
     else:
         delta_entropy = e - entropy
     return e, delta_entropy
 
 
-def gen_children(dims, entropy, dims_df, cases_df):
+def gen_grid_children(dims, entropy, dims_df, cases_df):
     n_dims = len(dims)
     ini = tuple(dim.borders[0] for dim in dims)
     fin = tuple(dim.borders[1] for dim in dims)
@@ -286,9 +297,8 @@ def gen_children(dims, entropy, dims_df, cases_df):
         for i in range(len(cases_heritage)):
             row = cases_heritage.iloc[i, :]
             if all([row[t] >= lower[t] for t in range(n_dims)]) and all(
-                [row[t] <= upper[t] for t in range(n_dims)]
+                    [row[t] <= upper[t] for t in range(n_dims)]
             ):
-
                 cases_heritage = pd.concat([cases_heritage, row], ignore_index=True)
 
         entropy = None
