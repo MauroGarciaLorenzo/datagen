@@ -27,8 +27,11 @@ def main():
     exec(n_samples, Dims, f, error, None)
     print("tiempo de execucion: ",time.time()-t1)
 
+    # implement reduce
     for cell in range(len(grid)):
         result[cell] = compss_wait_on(result[cell])
+        list_cases_df[cell] = compss_wait_on(list_cases_df[cell])
+    cases_df = pd.concat(list_cases_df, ignore_index=True)
 
     result = flatten_list(result)
     for r in result:

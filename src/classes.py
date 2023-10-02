@@ -43,10 +43,3 @@ class Dimension:
                 norm_samples[kk, jj] = new_samples[kk, jj] / alpha[kk]
 
         return norm_samples
-
-
-class Case:
-    def __init__(self, case, case_dim):
-        self.case = case
-        self.stability = None
-        self.case_dim = case_dim
