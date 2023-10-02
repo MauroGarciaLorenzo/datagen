@@ -1,5 +1,5 @@
 from utils import check_dims, flatten_list
-from classes import Cell, Dimension, Case
+from classes import Cell, Dimension
 import numpy as np
 from pycompss.api.api import compss_wait_on
 from pycompss.api.task import task
@@ -21,7 +21,7 @@ def getLastChildren(grid, last_children):
 
 @task(returns=1)
 def explore_cell(
-    func, n_samples, entropy, tolerance, depth, cell, ax, dimensions, cases
+    func, n_samples, entropy, tolerance, depth, cell, ax, dimensions, cases_heritage_df
 ):
     # f = compss_wait_on(f)
     # cases_df_total = pd.DataFrame()
@@ -39,38 +39,53 @@ def explore_cell(
     for row in range(len(cases_df)):
         stabilities.append(eval_stability(cases_df.iloc[row, :], func))
     cases_df["Stability"] = stabilities
+    cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
+    # eliminar if si funciona
 
     # eval entropy. Save entropy and delta_entropy as an attribute of the class
     #  Cell
-    entropy, delta_entropy = eval_entropy(stabilities, entropy)  
+    entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
-    ###############################################################################
     if delta_entropy < 0 or not check_dims(dimensions, tolerance):
-        return dimensions, cases, entropy, delta_entropy, depth
+        return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
         # new_divs = sensitivity(cases)
 
         # for i in range(len(new_divs)):
         #    dimensions[i].divs = new_divs[i]
 
-        children = gen_children(n_samples, dimensions, entropy, cases)
+        children = gen_children(dimensions, entropy, dims_df, cases_df)
         div = tuple(dim.divs for dim in dimensions)
         total_div = np.prod(div)
         children_total = [None] * len(children)
+        list_cases_children_df = []
         for cell_child in range(len(children_total)):
             dim = children[cell_child][0]
-            sub = children[cell_child][1]
+            cases_heritage_df = children[cell_child][1]
             ent = children[cell_child][2]
-
-            children_total[cell_child] = explore_cell(
-                func, n_samples, ent, tolerance, depth + 1, cell, ax, dim, sub
+            children_total[cell_child], cases_children_df = explore_cell(
+                func,
+                n_samples,
+                ent,
+                tolerance,
+                depth + 1,
+                cell,
+                ax,
+                dim,
+                cases_heritage_df,
             )
+            list_cases_children_df.append(cases_children_df)
 
+        # implement reduction
         for cell_child in range(len(children_total)):
             children_total[cell_child] = compss_wait_on(children_total[cell_child])
+            list_cases_children_df[cell_child] = compss_wait_on(
+                list_cases_children_df[cell_child]
+            )
+        cases_df = pd.concat(list_cases_children_df, ignore_index=True)
 
         children_total = flatten_list(children_total)
-        return children_total
+        return children_total, cases_df
 
 
 # generate n_samples samples for each dim
@@ -106,7 +121,8 @@ def gen_cases(samples, n_samples, dimensions):
     )  # gets a list with samples split by dimension (one list for each dim)
     total_samples = pd.DataFrame()
 
-    # for each dim, get cases and re join cases ([Dim1Vars, Dim2Vars, Dim3Vars, ... DimNVars])
+    # for each dim, get cases and re join cases
+    # ([Dim1Vars, Dim2Vars, Dim3Vars, ... DimNVars])
     for d in range(len(dimensions)):
         total_samples_d = pd.DataFrame()
 
@@ -123,11 +139,11 @@ def gen_cases(samples, n_samples, dimensions):
             total_samples_d = pd.concat([total_samples_d, cases_dim_df], axis=0)
         total_samples_d = total_samples_d.reset_index(drop=True)
         total_samples = pd.concat([total_samples, total_samples_d], axis=1)
-    
+
     column_names_dims = ["Dim" + str(d) for d in range(len(dimensions))]
     cases_df = total_samples.drop(column_names_dims, axis=1)
     dims_df = total_samples[column_names_dims]
-    
+
     return cases_df, dims_df
 
 
@@ -237,9 +253,7 @@ def eval_entropy(stabilities, entropy):
     return e, delta_entropy
 
 
-def gen_children(
-    n_samples, dims, entropy, cases
-):  # cases = grid[cell].cases
+def gen_children(dims, entropy, dims_df, cases_df):
     n_dims = len(dims)
     ini = tuple(dim.borders[0] for dim in dims)
     fin = tuple(dim.borders[1] for dim in dims)
@@ -268,21 +282,22 @@ def gen_children(
                 )
             )
 
-        cases_list = []
-
-        for s in cases:
-            if all([s.case_dim[t] >= lower[t] for t in range(n_dims)]) and all(
-                [s.case_dim[t] <= upper[t] for t in range(n_dims)]
+        cases_heritage = pd.DataFrame()
+        for i in range(len(cases_heritage)):
+            row = cases_heritage.iloc[i, :]
+            if all([row[t] >= lower[t] for t in range(n_dims)]) and all(
+                [row[t] <= upper[t] for t in range(n_dims)]
             ):
-                cases_list.append(s)
+
+                cases_heritage = pd.concat([cases_heritage, row], ignore_index=True)
 
         entropy = None
         delta_entropy = None
-        if len(cases_list) > 0:
+        if len(cases_heritage) > 0:
             entropy, delta_entropy = eval_entropy(
-                cases_list, None
+                cases_heritage["Stability"], None
             )  # eval entropy. Save entropy and delta_entropy as an attribute of the class Cell
 
-        grid_children.append((dimensions, cases_list, entropy, delta_entropy))
+        grid_children.append((dimensions, cases_heritage, entropy, delta_entropy))
 
     return grid_children

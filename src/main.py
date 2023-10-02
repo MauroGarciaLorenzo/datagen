@@ -4,6 +4,7 @@ from sampling import explore_cell, gen_grid
 from objective_function import dummy
 from pycompss.api.task import task
 from pycompss.api.api import compss_wait_on
+import pandas as pd
 
 
 @task(returns=1)
@@ -26,14 +27,20 @@ def main():
 
     grid = gen_grid(dimensions)
     result = [None] * len(grid)
+    cases = None
+    list_cases_df = []
     for cell in range(len(grid)):
         dims = grid[cell].dimensions
-        result[cell] = explore_cell(
-            dummy, n_samples, None, tolerance, 0, cell, None, dims, []
+        result[cell], cases_df = explore_cell(
+            dummy, n_samples, None, tolerance, 0, cell, None, dims, cases
         )  # for each cell in grid, explore_cell
+        list_cases_df.append(cases_df)
 
+    # implement reduce
     for cell in range(len(grid)):
         result[cell] = compss_wait_on(result[cell])
+        list_cases_df[cell] = compss_wait_on(list_cases_df[cell])
+    cases_df = pd.concat(list_cases_df, ignore_index=True)
 
     result = flatten_list(result)
     for r in result:
