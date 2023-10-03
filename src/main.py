@@ -4,9 +4,8 @@ from sampling import explore_cell, gen_grid
 from objective_function import dummy
 from pycompss.api.task import task
 from pycompss.api.api import compss_wait_on
-import pandas as pd
-
 from viz import print_results
+import pandas as pd
 
 
 @task(returns=1)

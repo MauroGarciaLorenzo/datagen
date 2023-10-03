@@ -39,14 +39,14 @@ def getLastChildren(grid, last_children):
 
 @task(returns=2)
 def explore_cell(
-        func, n_samples, entropy, tolerance, depth, cell, ax, dimensions, cases_heritage_df
-):
+        func, n_samples, entropy, tolerance, depth, cell, ax, dimensions,
+        cases_heritage_df):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
     If delta entropy is positive, the cell will subdivide itself according to
     the divisions assigned to each dimension.
-    Otherwise, it will return the cases and logs taken by its parents.
+    Otherwise, it will return the cases and logs taken until this point.
 
     :param func: Objective function
     :param n_samples: number of samples to produce
@@ -85,7 +85,7 @@ def explore_cell(
     if delta_entropy < 0 or not check_dims(dimensions, tolerance):
         return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
-        children = gen_grid_children(dimensions, entropy, dims_df, cases_df)
+        children = gen_grid_children(dimensions, dims_df, cases_df)
         children_total = [None] * len(children)
         list_cases_children_df = []
         for cell_child in range(len(children_total)):
@@ -166,7 +166,8 @@ def gen_cases(samples, n_samples, dimensions):
             cases_dim_df.columns = columns
             cases_dim_df["Dim" + str(d)] = samples_d[d][i]
 
-            total_samples_d = pd.concat([total_samples_d, cases_dim_df], axis=0)
+            total_samples_d = pd.concat([total_samples_d, cases_dim_df],
+                                        axis=0)
         total_samples_d = total_samples_d.reset_index(drop=True)
         total_samples = pd.concat([total_samples, total_samples_d], axis=1)
 
@@ -190,7 +191,6 @@ def sensitivity(cases):
         y.append(s.stability)
     x = np.array(x)
     y = np.array(y)
-
     x_avg = np.mean(x, axis=0)
     x_min = np.min(x, axis=0)
     x_max = np.max(x, axis=0)
@@ -240,8 +240,8 @@ def gen_grid(dims):
     for i in range(total_div):
         div_indices = np.unravel_index(i, div)
         lower = [
-            ini[j] + (fin[j] - ini[j]) / div[j] * div_indices[j] for j in range(n_dims)
-        ]
+            ini[j] + (fin[j] - ini[j]) / div[j] * div_indices[j]
+            for j in range(n_dims)]
         upper = [
             ini[j] + (fin[j] - ini[j]) / div[j] * (div_indices[j] + 1)
             for j in range(n_dims)
@@ -274,7 +274,6 @@ def calculate_entropy(freqs):
     return e
 
 
-
 def eval_entropy(stabilities, entropy):
     """Calculate entropy of the cell using its list of stabilities.
 
@@ -300,11 +299,10 @@ def eval_entropy(stabilities, entropy):
     return e, delta_entropy
 
 
-def gen_grid_children(dims, entropy, dims_df, cases_heritage_df):
+def gen_grid_children(dims, dims_df, cases_heritage_df):
     """Obtains dimensions, cases_df, entropy and delta_entropy of each child
 
     :param dims: Cell dimensions
-    :param entropy: Cell entropy
     :param dims_df: Samples dataframe(one for each case)
     :param cases_heritage_df: Inherited cases dataframe
     :return: List of children (with these attributes set)
@@ -319,7 +317,8 @@ def gen_grid_children(dims, entropy, dims_df, cases_heritage_df):
     for i in range(total_div):
         div_indices = np.unravel_index(i, div)
         lower = [
-            ini[j] + (fin[j] - ini[j]) / div[j] * div_indices[j] for j in range(n_dims)
+            ini[j] + (fin[j] - ini[j]) / div[j] * div_indices[j] for j in
+            range(n_dims)
         ]
         upper = [
             ini[j] + (fin[j] - ini[j]) / div[j] * (div_indices[j] + 1)
@@ -343,14 +342,16 @@ def gen_grid_children(dims, entropy, dims_df, cases_heritage_df):
             if all([row[t] >= lower[t] for t in range(n_dims)]) and all(
                     [row[t] <= upper[t] for t in range(n_dims)]
             ):
-                cases_df = pd.concat([cases_df, cases_heritage_df.iloc[[k], :]], ignore_index=True)
+                cases_df = pd.concat(
+                    [cases_df, cases_heritage_df.iloc[[k], :]],
+                    ignore_index=True)
 
         entropy = None
         delta_entropy = None
         if len(cases_df) > 0:
             entropy, delta_entropy = eval_entropy(
                 cases_df["Stability"], None
-            )  # eval entropy. Save entropy and delta_entropy as an attribute of the class Cell
+            )
 
         grid_children.append((dimensions, cases_df, entropy, delta_entropy))
 
