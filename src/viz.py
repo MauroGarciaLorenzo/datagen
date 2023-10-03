@@ -13,5 +13,18 @@ def print_grid(grid):
         print("")
 
 
+def print_results(execution_logs, cases_df):
+    print("samples-stability:")
+    print(cases_df)
+    print("number of cells: ", len(execution_logs))
+    for r in execution_logs:
+        print("dimensions: ", r[0])
+        print("entropy: ", r[1])
+        print("delta entropy: ", r[2])
+        print("depth: ", r[3])
+        print("")
+        print("")
+
+
 def plot_sample(ax, x, y, z):
     ax.scatter(x, y, z)
