@@ -22,6 +22,11 @@ from scipy.stats import qmc
 import numpy as np
 import pandas as pd
 
+"""Data generator based on the entropy of different regions of space
+
+Provides the functions needed in the algorithm
+"""
+
 
 def getLastChildren(grid, last_children):
     for cell in grid:
@@ -36,16 +41,36 @@ def getLastChildren(grid, last_children):
 def explore_cell(
         func, n_samples, entropy, tolerance, depth, cell, ax, dimensions, cases_heritage_df
 ):
-    # f = compss_wait_on(f)
-    # cases_df_total = pd.DataFrame()
+    """Explore every cell in the algorithm while its delta entropy is positive.
+    It receives a dataframe (cases_df) and an entropy from its parent, and
+    calculates own delta entropy.
+    If delta entropy is positive, the cell will subdivide itself according to
+    the divisions assigned to each dimension.
+    Otherwise, it will return the cases and logs taken by its parents.
+
+    :param func: Objective function
+    :param n_samples: number of samples to produce
+    :param entropy: Entropy of the father calculated from the cases that fits
+    into this cell's space
+    :param tolerance: Maximum length of a dimension (it won´t subdivide itself
+    if exceeded)
+    :param depth: Maximum recursivity depth (it won´t subdivide itself if
+    exceeded)
+    :param cell: Own cell object. Determines its dimensions
+    :param ax: Plottable object
+    :param dimensions: Cell dimensions
+    :param cases_heritage_df: Inherited cases dataframe
+    :return children_total: List of children dimensions, entropy,
+    delta_entropy and depth
+    :return cases_df: Concatenation of inherited cases and those produced by
+    the cell
+    """
     samples = gen_samples(
         n_samples, dimensions
     )  # generate first samples (n_samples for each dimension)
-    # plot_sample(ax, samples[:,0], samples[:,1], samples[:,2])
 
     # generate cases (n_cases(attribute of the class Dimension) for each dim)
     cases_df, dims_df = gen_cases(samples, n_samples, dimensions)
-    # cases_df_total=pd.concat([cases_df_total,case_df],axis=0)
 
     # eval each case
     stabilities = []
@@ -54,20 +79,12 @@ def explore_cell(
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
-    # eliminar if si funciona
 
-    # eval entropy. Save entropy and delta_entropy as an attribute of the class
-    #  Cell
     entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
     if delta_entropy < 0 or not check_dims(dimensions, tolerance):
         return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
-        # new_divs = sensitivity(cases)
-
-        # for i in range(len(new_divs)):
-        #    dimensions[i].divs = new_divs[i]
-
         children = gen_grid_children(dimensions, entropy, dims_df, cases_df)
         children_total = [None] * len(children)
         list_cases_children_df = []
@@ -99,30 +116,37 @@ def explore_cell(
 
 # generate n_samples samples for each dim
 def gen_samples(n_samples, dimensions):
+    """Generates n_samples samples, which represent total sum of the variables
+    within a dimension.
+
+    :param n_samples: Number of samples to produce
+    :param dimensions: Involved dimensions
+    :return: Numpy array containing these samples
+    """
     sampler = qmc.LatinHypercube(d=len(dimensions))
     samples = sampler.random(n=n_samples)
-
-    # for _ in range(n_samples):
-    # sample = []
     samples_scaled = np.zeros([n_samples, len(dimensions)])
     samples_scaled_s = np.zeros([1, len(dimensions)])
-
     for s in range(n_samples):
         samples_s = samples[s, :]
-
         for d in range(len(dimensions)):
             dimension = dimensions[d]
             lower, upper = dimension.borders
-
             sample = samples_s[d]
             samples_scaled_s[0, d] = lower + sample * (upper - lower)
-        # samples_scaled.append(samples_scaled_s)
         samples_scaled[s, :] = samples_scaled_s
     return samples_scaled
 
 
-# receives first samples
 def gen_cases(samples, n_samples, dimensions):
+    """Produces sum combinations of the samples given.
+
+    :param samples: Involved samples
+    :param n_samples: Number of samples taken
+    :param dimensions: Involved dimensions
+    :return cases_df: Samples-driven produced cases dataframe
+    :return dims_df: Samples dataframe(one for each case)
+    """
     samples_d = list(
         zip(*samples)
     )  # gets a list with samples split by dimension (one list for each dim)
@@ -132,7 +156,6 @@ def gen_cases(samples, n_samples, dimensions):
     # ([Dim1Vars, Dim2Vars, Dim3Vars, ... DimNVars])
     for d in range(len(dimensions)):
         total_samples_d = pd.DataFrame()
-
         for i in range(n_samples):
             cases_dim = dimensions[d].get_cases(samples_d[d][i])
             cases_dim_df = pd.DataFrame(cases_dim)
@@ -150,11 +173,16 @@ def gen_cases(samples, n_samples, dimensions):
     column_names_dims = ["Dim" + str(d) for d in range(len(dimensions))]
     cases_df = total_samples.drop(column_names_dims, axis=1)
     dims_df = total_samples[column_names_dims]
-
     return cases_df, dims_df
 
 
 def sensitivity(cases):
+    """Sensitivity analysis. Decides which dimensions are more important to the
+     decision.
+
+    :param cases: Involved cases
+    :return: Divisions for each dimension
+    """
     x = []
     y = []
     for s in cases:
@@ -170,7 +198,6 @@ def sensitivity(cases):
     model.fit(x, y)
     y_test = np.zeros([2, 1])
     std = np.zeros([len(x_avg), 1])
-
     for i in range(len(x_min)):
         x_test = np.copy(x_avg).reshape(1, -1)
         x_test[0, i] = x_min[i]
@@ -189,11 +216,21 @@ def sensitivity(cases):
 # funtion is received as a parameter
 @task(returns=1)
 def eval_stability(case, f):
+    """Call objective function and return its result.
+
+    :param case: Involved cases
+    :param f: Objective function
+    :return: Result of the evaluation
+    """
     return f(case)
 
 
-# Generates grid from Dimensions received
 def gen_grid(dims):
+    """Generate initial grid
+
+    :param dims: Involved dimensions
+    :return: Grid
+    """
     n_dims = len(dims)
     ini = tuple(dim.borders[0] for dim in dims)
     fin = tuple(dim.borders[1] for dim in dims)
@@ -225,6 +262,11 @@ def gen_grid(dims):
 
 
 def calculate_entropy(freqs):
+    """Obtain cell entropy from stability and non-stability frequencies
+
+    :param freqs: Stable and non-stable cases
+    :return: Entropy
+    """
     e = 0
     for ii in range(len(freqs)):
         if freqs[ii] != 0:
@@ -232,9 +274,16 @@ def calculate_entropy(freqs):
     return e
 
 
-# Gets entropy and delta_entropy.
-# Saves entropy in entropy and delta_entropy in delta_entropy
+
 def eval_entropy(stabilities, entropy):
+    """Calculate entropy of the cell using its list of stabilities.
+
+    :param stabilities: List of stabilities (result of the evaluation of every
+    case)
+    :param entropy: Parent entropy based on concrete cases (those which
+    correspond to the cell)
+    :return: Entropy and delta entropy
+    """
     freqs = []
     cont = 0
     for stability in stabilities:
@@ -251,7 +300,15 @@ def eval_entropy(stabilities, entropy):
     return e, delta_entropy
 
 
-def gen_grid_children(dims, entropy, dims_df, cases_heritage):
+def gen_grid_children(dims, entropy, dims_df, cases_heritage_df):
+    """Obtains dimensions, cases_df, entropy and delta_entropy of each child
+
+    :param dims: Cell dimensions
+    :param entropy: Cell entropy
+    :param dims_df: Samples dataframe(one for each case)
+    :param cases_heritage_df: Inherited cases dataframe
+    :return: List of children (with these attributes set)
+    """
     n_dims = len(dims)
     ini = tuple(dim.borders[0] for dim in dims)
     fin = tuple(dim.borders[1] for dim in dims)
@@ -280,13 +337,13 @@ def gen_grid_children(dims, entropy, dims_df, cases_heritage):
                 )
             )
 
-        cases_df = pd.DataFrame(columns=cases_heritage.columns)
+        cases_df = pd.DataFrame(columns=cases_heritage_df.columns)
         for k in range(len(dims_df)):
             row = dims_df.iloc[k, :]
             if all([row[t] >= lower[t] for t in range(n_dims)]) and all(
                     [row[t] <= upper[t] for t in range(n_dims)]
             ):
-                cases_df = pd.concat([cases_df, cases_heritage.iloc[[k], :]], ignore_index=True)
+                cases_df = pd.concat([cases_df, cases_heritage_df.iloc[[k], :]], ignore_index=True)
 
         entropy = None
         delta_entropy = None
