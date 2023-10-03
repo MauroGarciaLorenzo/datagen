@@ -32,7 +32,7 @@ def getLastChildren(grid, last_children):
     return last_children
 
 
-@task(returns=1)
+@task(returns=2)
 def explore_cell(
         func, n_samples, entropy, tolerance, depth, cell, ax, dimensions, cases_heritage_df
 ):
@@ -51,6 +51,7 @@ def explore_cell(
     stabilities = []
     for row in range(len(cases_df)):
         stabilities.append(eval_stability(cases_df.iloc[row, :], func))
+    stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
     # eliminar if si funciona
@@ -88,11 +89,8 @@ def explore_cell(
             list_cases_children_df.append(cases_children_df)
 
         # implement reduction
-        for cell_child in range(len(children_total)):
-            children_total[cell_child] = compss_wait_on(children_total[cell_child])
-            list_cases_children_df[cell_child] = compss_wait_on(
-                list_cases_children_df[cell_child]
-            )
+        children_total = compss_wait_on(children_total)
+        list_cases_children_df = compss_wait_on(list_cases_children_df)
         cases_df = pd.concat(list_cases_children_df, ignore_index=True)
 
         children_total = flatten_list(children_total)
