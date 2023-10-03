@@ -6,57 +6,48 @@ from pycompss.api.task import task
 from pycompss.api.api import compss_wait_on
 import pandas as pd
 
+from viz import print_results
+
 
 @task(returns=1)
 def main():
-    VariablesD1 = [(0, 2), (0, 1.5), (0, 1.5)]
-    VariablesD2 = [(0, 1), (0, 1.5), (0, 1.5), (1, 2)]
-    VariablesD3 = [(1, 3.5), (1, 3.5)]
+    variables_d1 = [(0, 2), (0, 1.5), (0, 1.5)]
+    variables_d2 = [(0, 1), (0, 1.5), (0, 1.5), (1, 2)]
+    variables_d3 = [(1, 3.5), (1, 3.5)]
     dim_min = [0, 1, 2]
     dim_max = [5, 6, 7]
-    n_samples = 5
-    n_cases = 3
+    n_samples = 3
+    n_cases = 2
     tolerance = 0.1
     max_depth = 5
     divs = [2, 1, 1]
     # ax = plt.figure().add_subplot(projection='3d')
-    dimensions = []
-    dimensions.append(Dimension(VariablesD1, n_cases, divs[0], dim_min[0], dim_max[0]))
-    dimensions.append(Dimension(VariablesD2, n_cases, divs[1], dim_min[1], dim_max[1]))
-    dimensions.append(Dimension(VariablesD3, n_cases, divs[2], dim_min[2], dim_max[2]))
+    ax = None
+    dimensions = [Dimension(variables_d1, n_cases, divs[0], dim_min[0], dim_max[0]),
+                  Dimension(variables_d2, n_cases, divs[1], dim_min[1], dim_max[1]),
+                  Dimension(variables_d3, n_cases, divs[2], dim_min[2], dim_max[2])]
 
     grid = gen_grid(dimensions)
-    result = [None] * len(grid)
+    execution_logs = [None] * len(grid)
+    depth = 0
     cases = None
+    entropy = None
     list_cases_df = []
     for cell in range(len(grid)):
         dims = grid[cell].dimensions
-        result[cell], cases_df = explore_cell(
-            dummy, n_samples, None, tolerance, 0, cell, None, dims, cases
+        execution_logs[cell], cases_df = explore_cell(
+            dummy, n_samples, entropy, tolerance, depth, cell, ax, dims, cases
         )  # for each cell in grid, explore_cell
         list_cases_df.append(cases_df)
 
     # implement reduce
     for cell in range(len(grid)):
-        result[cell] = compss_wait_on(result[cell])
+        execution_logs[cell] = compss_wait_on(execution_logs[cell])
         list_cases_df[cell] = compss_wait_on(list_cases_df[cell])
     cases_df = pd.concat(list_cases_df, ignore_index=True)
 
-    result = flatten_list(result)
-    for r in result:
-        print("number of samples in cell:", len(r[1]))
-        print("samples-stability:")
-        for i in r[1]:
-            for j in i.case:
-                print(j)
-            print(i.stability)
-            print("-----------------------------------------------------------------")
-        print("entropy:", r[2])
-        print("delta entropy:", r[3])
-        print("depth:", r[4])
-        print("")
-        print("")
-        print("")
+    execution_logs = flatten_list(execution_logs)
+    print_results(execution_logs, cases_df)
 
 
 if __name__ == "__main__":
