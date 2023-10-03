@@ -10,11 +10,12 @@ class Cell:
 
 
 class Dimension:
-    def __init__(self, variables, n_cases, divs, lower, upper):  # ,sample):
+    def __init__(self, variables, n_cases, divs, lower, upper, label="None"):
         self.variables = variables
         self.n_cases = n_cases
         self.divs = divs
         self.borders = (lower, upper)
+        self.label = label
 
     #        self.sample=sample
 
@@ -26,7 +27,6 @@ class Dimension:
         lb = []
         ub = []
         for v in range(len(self.variables)):
-
             lb.append(self.variables[v][0])
             ub.append(self.variables[v][1])
 
