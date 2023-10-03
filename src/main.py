@@ -1,10 +1,10 @@
-from classes import Dimension
-from utils import flatten_list
-from sampling import explore_cell, gen_grid
-from objective_function import dummy
+from src.sampling import explore_cell, gen_grid
+from src.objective_function import dummy
 from pycompss.api.task import task
 from pycompss.api.api import compss_wait_on
-from viz import print_results
+
+from src.utils import flatten_list
+from src.viz import print_results
 import pandas as pd
 
 
@@ -32,6 +32,3 @@ def main(dimensions, n_samples, tolerance, ax):
     execution_logs = flatten_list(execution_logs)
     print_results(execution_logs, cases_df)
 
-
-if __name__ == "__main__":
-    main()

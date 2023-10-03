@@ -14,13 +14,14 @@
 
 
 from sklearn.linear_model import LogisticRegression
-from utils import check_dims, flatten_list
-from classes import Cell, Dimension
+from src.utils import check_dims, flatten_list
+from src.classes import Cell, Dimension
 from pycompss.api.api import compss_wait_on
 from pycompss.api.task import task
 from scipy.stats import qmc
 import numpy as np
 import pandas as pd
+import random
 
 """Data generator based on the entropy of different regions of space
 
@@ -65,12 +66,12 @@ def explore_cell(
     :return cases_df: Concatenation of inherited cases and those produced by
     the cell
     """
-    samples = gen_samples(
+    samples_df = gen_samples(
         n_samples, dimensions
     )  # generate first samples (n_samples for each dimension)
 
     # generate cases (n_cases(attribute of the class Dimension) for each dim)
-    cases_df, dims_df = gen_cases(samples, n_samples, dimensions)
+    cases_df, dims_df = gen_cases(samples_df, n_samples, dimensions)
 
     # eval each case
     stabilities = []
@@ -121,24 +122,27 @@ def gen_samples(n_samples, dimensions):
 
     :param n_samples: Number of samples to produce
     :param dimensions: Involved dimensions
-    :return: Numpy array containing these samples
+    :return: DataFrame containing these samples with columns named after
+    dimension labels
     """
     sampler = qmc.LatinHypercube(d=len(dimensions))
     samples = sampler.random(n=n_samples)
     samples_scaled = np.zeros([n_samples, len(dimensions)])
-    samples_scaled_s = np.zeros([1, len(dimensions)])
+
     for s in range(n_samples):
         samples_s = samples[s, :]
         for d in range(len(dimensions)):
             dimension = dimensions[d]
             lower, upper = dimension.borders
             sample = samples_s[d]
-            samples_scaled_s[0, d] = lower + sample * (upper - lower)
-        samples_scaled[s, :] = samples_scaled_s
-    return samples_scaled
+            samples_scaled[s, d] = lower + sample * (upper - lower)
+
+    df_samples = pd.DataFrame(samples_scaled,
+                              columns=[dim.label for dim in dimensions])
+    return df_samples
 
 
-def gen_cases(samples, n_samples, dimensions):
+def gen_cases(samples_df, n_samples, dimensions):
     """Produces sum combinations of the samples given.
 
     :param samples: Involved samples
@@ -147,29 +151,45 @@ def gen_cases(samples, n_samples, dimensions):
     :return cases_df: Samples-driven produced cases dataframe
     :return dims_df: Samples dataframe(one for each case)
     """
-    samples_d = list(
-        zip(*samples)
-    )  # gets a list with samples split by dimension (one list for each dim)
     total_samples = pd.DataFrame()
 
     # for each dim, get cases and re join cases
     # ([Dim1Vars, Dim2Vars, Dim3Vars, ... DimNVars])
     for d in range(len(dimensions)):
         total_samples_d = pd.DataFrame()
-        for i in range(n_samples):
-            cases_dim = dimensions[d].get_cases(samples_d[d][i])
-            cases_dim_df = pd.DataFrame(cases_dim)
-            columns = []
-            for v in range(len(dimensions[d].variables)):
-                columns.append("Dim" + str(d) + "_Var" + str(v))
+        if dimensions[d].label == "g_for":
+            for i in range(n_samples):
+                coefficient = random.random()
+                p_cig_sample = samples_df.loc[i, "p_cig"] * coefficient
+                cases_dim = dimensions[d].get_subsamples(p_cig_sample)
+                cases_dim_df = pd.DataFrame(cases_dim)
+                columns = []
+                for v in range(len(dimensions[d].variables)):
+                    columns.append('Dim_' + dimensions[d].label +
+                                   '_Var' + str(v))
 
-            cases_dim_df.columns = columns
-            cases_dim_df["Dim" + str(d)] = samples_d[d][i]
+                cases_dim_df.columns = columns
+                cases_dim_df['Dim_' + dimensions[d].label] = p_cig_sample
+                total_samples_d = pd.concat(
+                    [total_samples_d, cases_dim_df], axis=0)
+        else:
+            for i in range(n_samples):
+                cases_dim = dimensions[d].get_cases(samples_df.loc[i, str(d)])
+                cases_dim_df = pd.DataFrame(cases_dim)
+                columns = []
+                for v in range(len(dimensions[d].variables)):
+                    columns.append("Dim_" + dimensions[d].label +
+                                   "_Var" + str(v))
 
-            total_samples_d = pd.concat([total_samples_d, cases_dim_df],
-                                        axis=0)
+                cases_dim_df.columns = columns
+                cases_dim_df["Dim_" + dimensions[d].label] = (
+                    samples_df.loc)[i, str(d)]
+                total_samples_d = pd.concat(
+                    [total_samples_d, cases_dim_df], axis=0)
+
         total_samples_d = total_samples_d.reset_index(drop=True)
-        total_samples = pd.concat([total_samples, total_samples_d], axis=1)
+        total_samples = pd.concat(
+            [total_samples, total_samples_d], axis=1)
 
     column_names_dims = ["Dim" + str(d) for d in range(len(dimensions))]
     cases_df = total_samples.drop(column_names_dims, axis=1)
