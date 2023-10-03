@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')
+
 from src.classes import Dimension
 from src.main import main
 

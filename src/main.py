@@ -1,7 +1,5 @@
-from classes import Dimension
-from utils import flatten_list
-from sampling import explore_cell, gen_grid
-from objective_function import dummy
+from src.sampling import explore_cell, gen_grid
+from src.objective_function import dummy
 from pycompss.api.task import task
 from utils import f
 import time
@@ -36,6 +34,3 @@ def main():
     execution_logs = flatten_list(execution_logs)
     print_results(execution_logs, cases_df)
 
-
-if __name__ == "__main__":
-    main()
