@@ -1,5 +1,5 @@
-from src.sampling import explore_cell, gen_grid
-from src.objective_function import dummy
+from sampling import explore_cell, gen_grid
+from objective_function import dummy
 from pycompss.api.task import task
 from utils import f
 import time

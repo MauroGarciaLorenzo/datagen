@@ -14,8 +14,8 @@
 
 
 from sklearn.linear_model import LogisticRegression
-from src.utils import check_dims, flatten_list
-from src.classes import Cell, Dimension
+from utils import check_dims, flatten_list
+from classes import Cell, Dimension
 from pycompss.api.api import compss_wait_on
 from pycompss.api.task import task
 from scipy.stats import qmc
@@ -53,9 +53,9 @@ def explore_cell(
     :param n_samples: number of samples to produce
     :param entropy: Entropy of the father calculated from the cases that fits
     into this cell's space
-    :param tolerance: Maximum length of a dimension (it won´t subdivide itself
+    :param tolerance: Maximum length of a dimension (it won't subdivide itself
     if exceeded)
-    :param depth: Maximum recursivity depth (it won´t subdivide itself if
+    :param depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
     :param cell: Own cell object. Determines its dimensions
     :param ax: Plottable object
@@ -145,7 +145,7 @@ def gen_samples(n_samples, dimensions):
 def gen_cases(samples_df, n_samples, dimensions):
     """Produces sum combinations of the samples given.
 
-    :param samples: Involved samples
+    :param samples_df: Involved samples (dataframe)
     :param n_samples: Number of samples taken
     :param dimensions: Involved dimensions
     :return cases_df: Samples-driven produced cases dataframe
@@ -158,32 +158,46 @@ def gen_cases(samples_df, n_samples, dimensions):
     for d in range(len(dimensions)):
         total_samples_d = pd.DataFrame()
         if dimensions[d].label == "g_for":
+
             for i in range(n_samples):
                 coefficient = random.random()
-                p_cig_sample = samples_df.loc[i, "p_cig"] * coefficient
-                cases_dim = dimensions[d].get_subsamples(p_cig_sample)
-                cases_dim_df = pd.DataFrame(cases_dim)
+                g_for_sample = samples_df.loc[i, "p_cig"] * coefficient
+                g_fol_sample = samples_df.loc[i, "p_cig"] * (1 - coefficient)
+
+                cases_dim_g_for_df = pd.DataFrame(
+                    dimensions[d].get_cases(g_for_sample))
                 columns = []
                 for v in range(len(dimensions[d].variables)):
-                    columns.append('Dim_' + dimensions[d].label +
+                    columns.append(dimensions[d].label +
                                    '_Var' + str(v))
+                cases_dim_g_for_df.columns = columns
+                cases_dim_g_for_df[dimensions[d].label] = g_for_sample
 
-                cases_dim_df.columns = columns
-                cases_dim_df['Dim_' + dimensions[d].label] = p_cig_sample
+
+                cases_dim_g_fol_df = pd.DataFrame(
+                    dimensions[d].get_cases(g_fol_sample))
+                columns = []
+                for v in range(len(dimensions[d].variables)):
+                    columns.append("g_fol" + '_Var' + str(v))
+                cases_dim_g_fol_df.columns = columns
+                cases_dim_g_fol_df["g_fol"] = g_fol_sample
+
+                cases_dim_df = pd.concat(
+                    [cases_dim_g_for_df, cases_dim_g_fol_df], axis=1)
                 total_samples_d = pd.concat(
                     [total_samples_d, cases_dim_df], axis=0)
         else:
             for i in range(n_samples):
-                cases_dim = dimensions[d].get_cases(samples_df.loc[i, str(d)])
+                cases_dim = dimensions[d].get_cases(samples_df.loc[i,
+                dimensions[d].label])
                 cases_dim_df = pd.DataFrame(cases_dim)
                 columns = []
                 for v in range(len(dimensions[d].variables)):
-                    columns.append("Dim_" + dimensions[d].label +
-                                   "_Var" + str(v))
+                    columns.append(dimensions[d].label + "_Var" + str(v))
 
                 cases_dim_df.columns = columns
-                cases_dim_df["Dim_" + dimensions[d].label] = (
-                    samples_df.loc)[i, str(d)]
+                cases_dim_df[dimensions[d].label] = (
+                    samples_df.loc)[i, dimensions[d].label]
                 total_samples_d = pd.concat(
                     [total_samples_d, cases_dim_df], axis=0)
 
@@ -191,7 +205,7 @@ def gen_cases(samples_df, n_samples, dimensions):
         total_samples = pd.concat(
             [total_samples, total_samples_d], axis=1)
 
-    column_names_dims = ["Dim" + str(d) for d in range(len(dimensions))]
+    column_names_dims = [dimensions[d].label for d in range(len(dimensions))]
     cases_df = total_samples.drop(column_names_dims, axis=1)
     dims_df = total_samples[column_names_dims]
     return cases_df, dims_df
@@ -275,6 +289,7 @@ def gen_grid(dims):
                     dims[j].divs,
                     lower[j],
                     upper[j],
+                    dims[j].label
                 )
             )
         grid.append(Cell(dimensions))
@@ -353,6 +368,7 @@ def gen_grid_children(dims, dims_df, cases_heritage_df):
                     dims[j].divs,
                     lower[j],
                     upper[j],
+                    dims[j].label
                 )
             )
 

@@ -10,14 +10,28 @@ class Cell:
 
 
 class Dimension:
+    """Dimension class
+
+    An object from this class represents a concrete dimension of a specific
+    cell in our problem. It is defined by:
+        -variables: list of variables represented by tuples containing its
+                lower and upper borders.
+        -n_cases: number of cases taken for each sample (each sample represents
+                the total sum of a dimension). A case is a combination of
+                variables where all summed together equals the sample.
+        -divs: number of divisions in that dimension. It will be the growth
+                order of the number of cells
+        -borders: bounds of the dimension (maximum and minimum values of a
+                sample)
+        -label: dimension identifier
+
+    """
     def __init__(self, variables, n_cases, divs, lower, upper, label="None"):
         self.variables = variables
         self.n_cases = n_cases
         self.divs = divs
         self.borders = (lower, upper)
         self.label = label
-
-    #        self.sample=sample
 
     def get_cases(self, sample):
         # for ii in range(len(self.samples)):
