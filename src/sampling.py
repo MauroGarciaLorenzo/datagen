@@ -113,7 +113,123 @@ def explore_cell(
         return children_total, cases_df
 
 
-# generate n_samples samples for each dim
+def generate_columns(dim):
+    """Assigns names for every variable in a dimension.
+
+    :param dim: Involved dimension
+    :return: Names of de variables
+    """
+    return [f"{dim.label}_Var{v}" for v in range(len(dim.variables))]
+
+
+def process_p_cig_dimension(samples_df, p_cig):
+    """Gives value to g_for and g_fol dimension. p_cig samples values must be
+    distributed between g_for and g_fol assigning a random value between 0 and
+    1 as coefficient, giving g_for plus g_fol equals p_cig. g_for variables are
+    calculated in a normal way, while g_fol variables are defined as:
+        g_fol_i = p_cig_i - g_for_i
+
+    :param samples_df: Involved samples
+    :param dim: g_for dimension
+    :return:
+    """
+    results = []
+    for _, sample in samples_df.iterrows():
+        # Obtain cases_p_cig
+        cases_p_cig = pd.DataFrame(p_cig.get_cases(sample[p_cig.label]))
+        cases_p_cig.columns = generate_columns(p_cig)
+        cases_p_cig[p_cig.label] = sample[p_cig.label]
+        results.append(cases_p_cig)
+
+        # Obtain cases_g_for
+        coefficient = random.random()
+        g_for_sample = sample["p_cig"] * coefficient
+        cases_g_for = pd.DataFrame()
+        
+        for i in range(len(cases_p_cig)):
+            g_for_variables = [
+                (p_cig.variables[x][0], cases_p_cig.iloc[i, x])
+                for x in range(len(p_cig.variables))]
+            g_for = Dimension(
+                variables=g_for_variables,
+                n_cases=1,
+                divs=1,
+                lower=p_cig.borders[0],
+                upper=sample[p_cig.label],
+                label="g_for")
+            case_g_for = pd.DataFrame(g_for.get_cases(g_for_sample))
+            case_g_for.columns = generate_columns(g_for)
+            case_g_for[g_for.label] = g_for_sample
+            cases_g_for = pd.concat([cases_g_for, case_g_for], axis=1)
+
+    return pd.concat(results).reset_index(drop=True)
+"""
+        coefficient = random.random()
+        g_for_sample = sample["p_cig"] * coefficient
+        g_fol_sample = sample["p_cig"] * (1 - coefficient)
+
+        cases_dim_g_for_df = pd.DataFrame(dim.get_cases(g_for_sample))
+        cases_dim_g_for_df.columns = generate_columns(dim)
+        cases_dim_g_for_df[dim.label] = g_for_sample
+
+        cases_dim_g_fol = [
+            cases_dim_p_cig_df.iloc[row_idx, x] - cases_dim_g_for_df.iloc[0, x]
+            for x in range(cases_dim_g_for_df.shape[1])]
+        cases_dim_g_fol_df = pd.DataFrame([cases_dim_g_fol])
+        cases_dim_g_fol_df.columns = [
+            f"g_fol_Var{v}" for v in range(cases_dim_g_fol_df.shape[1])]
+
+        cases_dim_g_fol_df["g_fol"] = g_fol_sample
+
+        combined_df = pd.concat([cases_dim_g_for_df, cases_dim_g_fol_df],
+                                axis=1)
+        results.append(combined_df)
+"""
+
+
+def process_other_dimensions(samples_df, dim):
+    results = []
+    for _, sample in samples_df.iterrows():
+        cases_dim = pd.DataFrame(dim.get_cases(sample[dim.label]))
+        cases_dim.columns = generate_columns(dim)
+        cases_dim[dim.label] = sample[dim.label]
+        results.append(cases_dim)
+
+    return pd.concat(results).reset_index(drop=True)
+
+
+def gen_cases(samples_df, dimensions):
+    """Produces sum combinations of the samples given.
+
+    Assume that if g_for exists, p_cig must be before g_for
+
+    :param samples_df: Involved samples (dataframe)
+    :param dimensions: Involved dimensions
+    :return cases_df: Samples-driven produced cases dataframe
+    :return dims_df: Samples dataframe(one for each case)
+    """
+    total_samples_df = pd.DataFrame()
+
+    for dim in dimensions:
+        if dim.label == "p_cig":
+            total_samples_dim_df = process_p_cig_dimension(
+                samples_df, dim)
+
+        else:
+            total_samples_dim_df = process_other_dimensions(samples_df, dim)
+
+        total_samples_df = pd.concat(
+            [total_samples_df, total_samples_dim_df], axis=1)
+
+    column_names_dims = [dim.label for dim in dimensions]
+    if 'g_fol' in total_samples_df:
+        column_names_dims.append('g_fol')
+    cases_df = total_samples_df.drop(column_names_dims, axis=1)
+    dims_df = total_samples_df[column_names_dims]
+
+    return cases_df, dims_df
+
+
 def gen_samples(n_samples, dimensions):
     """Generates n_samples samples, which represent total sum of the variables
     within a dimension.
@@ -138,75 +254,6 @@ def gen_samples(n_samples, dimensions):
     df_samples = pd.DataFrame(samples_scaled,
                               columns=[dim.label for dim in dimensions])
     return df_samples
-
-
-def gen_cases(samples_df, n_samples, dimensions):
-    """Produces sum combinations of the samples given.
-
-    :param samples_df: Involved samples (dataframe)
-    :param n_samples: Number of samples taken
-    :param dimensions: Involved dimensions
-    :return cases_df: Samples-driven produced cases dataframe
-    :return dims_df: Samples dataframe(one for each case)
-    """
-    total_samples = pd.DataFrame()
-
-    # for each dim, get cases and re join cases
-    # ([Dim1Vars, Dim2Vars, Dim3Vars, ... DimNVars])
-    for d in range(len(dimensions)):
-        total_samples_d = pd.DataFrame()
-        if dimensions[d].label == "g_for":
-
-            for i in range(n_samples):
-                coefficient = random.random()
-                g_for_sample = samples_df.loc[i, "p_cig"] * coefficient
-                g_fol_sample = samples_df.loc[i, "p_cig"] * (1 - coefficient)
-
-                cases_dim_g_for_df = pd.DataFrame(
-                    dimensions[d].get_cases(g_for_sample))
-                columns = []
-                for v in range(len(dimensions[d].variables)):
-                    columns.append(dimensions[d].label +
-                                   '_Var' + str(v))
-                cases_dim_g_for_df.columns = columns
-                cases_dim_g_for_df[dimensions[d].label] = g_for_sample
-
-
-                cases_dim_g_fol_df = pd.DataFrame(
-                    dimensions[d].get_cases(g_fol_sample))
-                columns = []
-                for v in range(len(dimensions[d].variables)):
-                    columns.append("g_fol" + '_Var' + str(v))
-                cases_dim_g_fol_df.columns = columns
-                cases_dim_g_fol_df["g_fol"] = g_fol_sample
-
-                cases_dim_df = pd.concat(
-                    [cases_dim_g_for_df, cases_dim_g_fol_df], axis=1)
-                total_samples_d = pd.concat(
-                    [total_samples_d, cases_dim_df], axis=0)
-        else:
-            for i in range(n_samples):
-                cases_dim = dimensions[d].get_cases(samples_df.loc[i,
-                dimensions[d].label])
-                cases_dim_df = pd.DataFrame(cases_dim)
-                columns = []
-                for v in range(len(dimensions[d].variables)):
-                    columns.append(dimensions[d].label + "_Var" + str(v))
-
-                cases_dim_df.columns = columns
-                cases_dim_df[dimensions[d].label] = (
-                    samples_df.loc)[i, dimensions[d].label]
-                total_samples_d = pd.concat(
-                    [total_samples_d, cases_dim_df], axis=0)
-
-        total_samples_d = total_samples_d.reset_index(drop=True)
-        total_samples = pd.concat(
-            [total_samples, total_samples_d], axis=1)
-
-    column_names_dims = [dimensions[d].label for d in range(len(dimensions))]
-    cases_df = total_samples.drop(column_names_dims, axis=1)
-    dims_df = total_samples[column_names_dims]
-    return cases_df, dims_df
 
 
 def sensitivity(cases):

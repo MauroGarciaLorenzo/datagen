@@ -26,6 +26,7 @@ class Dimension:
         -label: dimension identifier
 
     """
+
     def __init__(self, variables, n_cases, divs, lower, upper, label="None"):
         self.variables = variables
         self.n_cases = n_cases
@@ -34,26 +35,44 @@ class Dimension:
         self.label = label
 
     def get_cases(self, sample):
+        tolerance = 0.1
+        valid_cases = []
+
+        while len(valid_cases) < self.n_cases:
+            case = np.array(
+                [np.random.uniform(lb, ub) for lb, ub in self.variables])
+
+            if abs(np.sum(case) - sample) <= tolerance:
+                valid_cases.append(case)
+
+        return np.array(valid_cases)
+
+    """
+        def get_cases(self, sample):
         # for ii in range(len(self.samples)):
         sampler = qmc.LatinHypercube(d=len(self.variables))
-        samples_lhs = sampler.random(n=self.n_cases)
+        current_cases = []
+        while len(current_cases) < self.n_cases:
+            samples_lhs = sampler.random(n=self.n_cases)
+            lb = []
+            ub = []
+            for v in range(len(self.variables)):
+                lb.append(self.variables[v][0])
+                ub.append(self.variables[v][1])
 
-        lb = []
-        ub = []
-        for v in range(len(self.variables)):
-            lb.append(self.variables[v][0])
-            ub.append(self.variables[v][1])
+            # scale to upper and lower bounds
+            new_samples = qmc.scale(samples_lhs, lb, ub)
+            # scale to comply the total sum per row (sample)
+            sum_new_samples = np.sum(new_samples, axis=1)
+            alpha = sum_new_samples / sample
+            norm_samples = np.zeros([self.n_cases, len(self.variables)])
 
-        new_samples = qmc.scale(samples_lhs, lb, ub)
+            for kk in range(self.n_cases):
+                for jj in range(len(self.variables)):
+                    norm_samples[kk, jj] = new_samples[kk, jj] / alpha[kk]
 
-        sum_new_samples = np.sum(new_samples, axis=1)
-
-        alpha = sum_new_samples / sample
-
-        norm_samples = np.zeros([self.n_cases, len(self.variables)])
-
-        for kk in range(self.n_cases):
-            for jj in range(len(self.variables)):
-                norm_samples[kk, jj] = new_samples[kk, jj] / alpha[kk]
-
+            for i in range(len(norm_samples)):
+                if all(norm_samples[i] < ub) and all(norm_samples[i] > lb):
+                    current_cases.append(norm_samples[i])
         return norm_samples
+"""
