@@ -5,32 +5,42 @@ from utils import f
 import time
 
 @task(returns=1)
-def main():
-    variables_d1 = [(0, 2), (0, 1.5), (0, 1.5)]
-    variables_d2 = [(0, 1), (0, 1.5), (0, 1.5), (1, 2)]
-    variables_d3 = [(1, 3.5), (1, 3.5)]
-    dim_min = [0, 1, 2]
-    dim_max = [5, 6, 7]
-    n_samples = 3
-    n_cases = 2
-    tolerance = 0.1
-    max_depth = 5
-    divs = [2,1,1]
-    #ax = plt.figure().add_subplot(projection='3d')
-    Dims = []
-    Dims.append(Dimension(VariablesD1, n_subsamples, divs[0], dim_min[0], dim_max[0]))
-    Dims.append(Dimension(VariablesD2, n_subsamples, divs[1], dim_min[1], dim_max[1]))
-    Dims.append(Dimension(VariablesD3, n_subsamples, divs[2], dim_min[2], dim_max[2]))
-    t1=time.time()
-    exec(n_samples, Dims, f, error, None)
-    print("tiempo de execucion: ",time.time()-t1)
+def main(dimensions, n_samples, tolerance, ax):
+    """In this method we work with dimensions (main axes), which represent a
+    list of variables. For example, the value of each variable of a concrete
+    dimension could represent the power supplied by a generator, while the
+    value linked to that dimension should be the total sum of energy produced.
+
+    The function explores each initial cells and obtains two objects from it:
+        -execution_logs: dimensions, entropy, delta entropy and depth of each
+                        cell.
+        -cases_df: dataframe containing each case and associated stability
+                taken during the execution.
+
+    :param dimensions: List of dimensions involved
+    :param n_samples: Number of different values for each dimension
+    :param tolerance: Maximum size for a cell to be subdivided
+    :param ax: Plottable object
+    """
+    grid = gen_grid(dimensions)
+    execution_logs = [None] * len(grid)
+    depth = 0
+    cases = None
+    entropy = None
+    list_cases_df = []
+    for cell in range(len(grid)):
+        dims = grid[cell].dimensions
+        execution_logs[cell], cases_df = explore_cell(
+            dummy, n_samples, entropy, tolerance, depth, ax, dims, cases
+        )  # for each cell in grid, explore_cell
+        list_cases_df.append(cases_df)
 
     # implement reduce
     for cell in range(len(grid)):
         execution_logs[cell] = compss_wait_on(execution_logs[cell])
         list_cases_df[cell] = compss_wait_on(list_cases_df[cell])
     cases_df = pd.concat(list_cases_df, ignore_index=True)
-
     execution_logs = flatten_list(execution_logs)
     print_results(execution_logs, cases_df)
+    print("")
 
