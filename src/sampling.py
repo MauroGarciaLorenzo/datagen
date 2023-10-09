@@ -40,7 +40,7 @@ def getLastChildren(grid, last_children):
 
 @task(returns=2)
 def explore_cell(
-        func, n_samples, entropy, tolerance, depth, cell, ax, dimensions,
+        func, n_samples, entropy, tolerance, depth, ax, dimensions,
         cases_heritage_df):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
@@ -57,7 +57,6 @@ def explore_cell(
     if exceeded)
     :param depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
-    :param cell: Own cell object. Determines its dimensions
     :param ax: Plottable object
     :param dimensions: Cell dimensions
     :param cases_heritage_df: Inherited cases dataframe
@@ -71,7 +70,7 @@ def explore_cell(
     )  # generate first samples (n_samples for each dimension)
 
     # generate cases (n_cases(attribute of the class Dimension) for each dim)
-    cases_df, dims_df = gen_cases(samples_df, n_samples, dimensions)
+    cases_df, dims_df = gen_cases(samples_df, dimensions)
 
     # eval each case
     stabilities = []
@@ -99,7 +98,6 @@ def explore_cell(
                 ent,
                 tolerance,
                 depth + 1,
-                cell,
                 ax,
                 dim,
                 cases_heritage_df,
