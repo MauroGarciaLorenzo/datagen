@@ -65,14 +65,13 @@ def explore_cell(
     :return cases_df: Concatenation of inherited cases and those produced by
     the cell
     """
-    samples_df = gen_samples(
-        n_samples, dimensions
-    )  # generate first samples (n_samples for each dimension)
+    # Generate samples (n_samples for each dimension)
+    samples_df = gen_samples(n_samples, dimensions)
 
-    # generate cases (n_cases(attribute of the class Dimension) for each dim)
+    # Generate cases (n_cases (attribute of the class Dimension) for each dim)
     cases_df, dims_df = gen_cases(samples_df, dimensions)
 
-    # eval each case
+    # Eval each case
     stabilities = []
     for row in range(len(cases_df)):
         stabilities.append(eval_stability(cases_df.iloc[row, :], func))
@@ -82,6 +81,7 @@ def explore_cell(
 
     entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
+    # Finish recursivity if entropy decreases or cell become too small
     if delta_entropy < 0 or not check_dims(dimensions, tolerance):
         return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
@@ -217,8 +217,6 @@ def process_other_dimensions(samples_df, dim):
 def gen_cases(samples_df, dimensions):
     """Produces sum combinations of the samples given.
 
-    Assume that if g_for exists, p_cig must be before g_for
-
     :param samples_df: Involved samples (dataframe)
     :param dimensions: Involved dimensions
     :return cases_df: Samples-driven produced cases dataframe
@@ -319,7 +317,10 @@ def eval_stability(case, f):
 
 
 def gen_grid(dims):
-    """Generate initial grid
+    """
+    Generate grid. Every cell is made out of a list of the Dimension objects
+    involved in the problem, with the only difference that the lower and upper
+    bounds change for each cell.
 
     :param dims: Involved dimensions
     :return: Grid
@@ -356,10 +357,11 @@ def gen_grid(dims):
 
 
 def calculate_entropy(freqs):
-    """Obtain cell entropy from stability and non-stability frequencies
+    """Obtain cell entropy from stability and non-stability frequencies.
 
-    :param freqs: Stable and non-stable cases
-    :return: Entropy
+    :param freqs: two-element list with the frequency (1-based) of stable and
+    non-stable cases, respectively.
+    :return: Entropy.
     """
     e = 0
     for ii in range(len(freqs)):
