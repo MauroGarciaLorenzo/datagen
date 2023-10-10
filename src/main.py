@@ -1,9 +1,9 @@
 
 import sys
+
 import pandas as pd
 
-from sampling import explore_cell, gen_grid
-from objective_function import dummy
+from sampling import explore_cell, gen_grid, explore_children
 from utils import flatten_list
 from viz import print_results
 
@@ -18,7 +18,7 @@ except ImportError:
 
 
 @task(returns=1)
-def main(dimensions, n_samples, tolerance, ax):
+def main(dimensions, n_samples, tolerance, ax, func):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -36,24 +36,15 @@ def main(dimensions, n_samples, tolerance, ax):
     :param ax: Plottable object
     """
     grid = gen_grid(dimensions)
-    execution_logs = [None] * len(grid)
-    depth = 0
-    cases = None
-    entropy = None
-    list_cases_df = []
-    for cell in range(len(grid)):
-        dims = grid[cell].dimensions
-        execution_logs[cell], cases_df = explore_cell(
-            dummy, n_samples, entropy, tolerance, depth, ax, dims, cases
-        )  # for each cell in grid, explore_cell
-        list_cases_df.append(cases_df)
+    cases_df, execution_logs = explore_children(ax,
+                                                cases_df=None,
+                                                children_grid=grid,
+                                                depth=0,
+                                                dims_df=pd.DataFrame(),
+                                                func=func,
+                                                n_samples=n_samples,
+                                                tolerance=tolerance)
 
-    # implement reduce
-    for cell in range(len(grid)):
-        execution_logs[cell] = compss_wait_on(execution_logs[cell])
-        list_cases_df[cell] = compss_wait_on(list_cases_df[cell])
-    cases_df = pd.concat(list_cases_df, ignore_index=True)
-    execution_logs = flatten_list(execution_logs)
     print_results(execution_logs, cases_df)
     print("")
 
