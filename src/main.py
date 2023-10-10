@@ -1,11 +1,20 @@
+
+import sys
+import pandas as pd
+
 from sampling import explore_cell, gen_grid
 from objective_function import dummy
-from pycompss.api.task import task
-from pycompss.api.api import compss_wait_on
-
 from utils import flatten_list
 from viz import print_results
-import pandas as pd
+
+sys.path.append("../")
+
+try:
+    from pycompss.api.task import task
+    from pycompss.api.api import compss_wait_on
+except ImportError:
+    from dummies.task import task
+    from dummies.api import compss_wait_on
 
 
 @task(returns=1)

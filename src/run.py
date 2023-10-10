@@ -1,9 +1,17 @@
+
 import sys
 sys.path.append("../")
-from pycompss.api.task import task
+
 from src.classes import Dimension
 from src.main import main
 import numpy as np
+
+try:
+    from pycompss.api.task import task
+    from pycompss.api.api import compss_wait_on
+except ImportError:
+    from dummies.task import task
+    from dummies.api import compss_wait_on
 
 
 @task(returns=1)
@@ -60,4 +68,5 @@ def run():
     main(dimensions, n_samples, tolerance, ax)
 
 
-run()
+if __name__ == "__main__":
+    run()

@@ -12,21 +12,32 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-
-from sklearn.linear_model import LogisticRegression
-from utils import check_dims, flatten_list
-from classes import Cell, Dimension
-from pycompss.api.api import compss_wait_on
-from pycompss.api.task import task
-from scipy.stats import qmc
-import numpy as np
-import pandas as pd
-import random
-
-"""Data generator based on the entropy of different regions of space
+"""
+Data generator based on the entropy of different regions of space
 
 Provides the functions needed in the algorithm
 """
+
+import random
+import sys
+
+import numpy as np
+import pandas as pd
+
+from sklearn.linear_model import LogisticRegression
+from scipy.stats import qmc
+
+sys.path.append("../")
+
+from utils import check_dims, flatten_list
+from classes import Cell, Dimension
+
+try:
+    from pycompss.api.task import task
+    from pycompss.api.api import compss_wait_on
+except ImportError:
+    from dummies.task import task
+    from dummies.api import compss_wait_on
 
 
 def getLastChildren(grid, last_children):
