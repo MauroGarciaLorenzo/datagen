@@ -1,10 +1,10 @@
 
 import sys
-
 import numpy as np
 
 sys.path.append("../")
 
+from objective_function import dummy
 from src.classes import Dimension
 from src.main import main
 
@@ -73,7 +73,7 @@ def run():
                       lower=dim_min[2],
                       upper=dim_max[2],
                       label="2")]
-    main(dimensions, n_samples, tolerance, ax)
+    main(dimensions, n_samples, tolerance, ax, dummy)
 
 
 if __name__ == '__main__':

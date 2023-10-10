@@ -5,6 +5,8 @@ sys.path.append("../")
 from src.classes import Dimension
 from src.main import main
 import numpy as np
+from objective_function import dummy
+
 
 try:
     from pycompss.api.task import task
@@ -65,7 +67,7 @@ def run():
                   Dimension(tau_q_g_for, n_cases, divs[1], dim_min[2],
                             dim_max[2], "tau_q_g_for")]
     ax = None
-    main(dimensions, n_samples, tolerance, ax)
+    main(dimensions, n_samples, tolerance, ax, dummy)
 
 
 if __name__ == "__main__":
