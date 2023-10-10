@@ -73,8 +73,8 @@ def explore_cell(
 
     # Eval each case
     stabilities = []
-    for row in range(len(cases_df)):
-        stabilities.append(eval_stability(cases_df.iloc[row, :], func))
+    for i in range(len(cases_df)):
+        stabilities.append(eval_stability(cases_df.iloc[i, :], func))
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
@@ -91,11 +91,11 @@ def explore_cell(
         for cell_child in range(len(children_total)):
             dim = children[cell_child][0]
             cases_heritage_df = children[cell_child][1]
-            ent = children[cell_child][2]
+            entropy_children = children[cell_child][2]
             children_total[cell_child], cases_children_df = explore_cell(
                 func,
                 n_samples,
-                ent,
+                entropy_children,
                 tolerance,
                 depth + 1,
                 ax,
@@ -363,36 +363,36 @@ def calculate_entropy(freqs):
     non-stable cases, respectively.
     :return: Entropy.
     """
-    e = 0
-    for ii in range(len(freqs)):
-        if freqs[ii] != 0:
-            e = e - freqs[ii] * np.log(freqs[ii])
-    return e
+    cell_entropy = 0
+    for i in range(len(freqs)):
+        if freqs[i] != 0:
+            cell_entropy = cell_entropy - freqs[i] * np.log(freqs[i])
+    return cell_entropy
 
 
-def eval_entropy(stabilities, entropy):
+def eval_entropy(stabilities, entropy_parent):
     """Calculate entropy of the cell using its list of stabilities.
 
     :param stabilities: List of stabilities (result of the evaluation of every
     case)
-    :param entropy: Parent entropy based on concrete cases (those which
+    :param entropy_parent: Parent entropy based on concrete cases (those which
     correspond to the cell)
     :return: Entropy and delta entropy
     """
     freqs = []
-    cont = 0
+    counter = 0
     for stability in stabilities:
         stability = compss_wait_on(stability)
         if stability == 1:
-            cont += 1
-    freqs.append(cont / len(stabilities))
-    freqs.append((len(stabilities) - cont) / len(stabilities))
-    e = calculate_entropy(freqs)
-    if entropy is None:
+            counter += 1
+    freqs.append(counter / len(stabilities))
+    freqs.append((len(stabilities) - counter) / len(stabilities))
+    entropy = calculate_entropy(freqs)
+    if entropy_parent is None:
         delta_entropy = 1
     else:
-        delta_entropy = e - entropy
-    return e, delta_entropy
+        delta_entropy = entropy - entropy_parent
+    return entropy, delta_entropy
 
 
 def gen_grid_children(dims, dims_df, cases_heritage_df):
@@ -437,8 +437,7 @@ def gen_grid_children(dims, dims_df, cases_heritage_df):
         for k in range(len(dims_df)):
             row = dims_df.iloc[k, :]
             if all([row[t] >= lower[t] for t in range(n_dims)]) and all(
-                    [row[t] <= upper[t] for t in range(n_dims)]
-            ):
+                    [row[t] <= upper[t] for t in range(n_dims)]):
                 cases_df = pd.concat(
                     [cases_df, cases_heritage_df.iloc[[k], :]],
                     ignore_index=True)
