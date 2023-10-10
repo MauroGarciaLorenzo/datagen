@@ -1,4 +1,7 @@
 import sys
+
+import numpy as np
+
 sys.path.append("../")
 from pycompss.api.task import task
 from src.classes import Dimension
@@ -28,12 +31,12 @@ def run():
     tolerance (maximum difference upper-lower bound of a dimension within a
     cell to be subdivided).
     """
-    variables_d1 = [(0, 2), (0, 1.5), (0, 1.5)]
-    variables_d2 = [(0, 1), (0, 1.5), (0, 1.5), (1, 2)]
-    variables_d3 = [(1, 3.5), (1, 3.5)]
+    variables_d1 = np.array([(0, 2), (0, 1.5), (0, 1.5)])
+    variables_d2 = np.array([(0, 1), (0, 1.5), (0, 1.5), (1, 2)])
+    variables_d3 = np.array([(1, 3.5), (1, 3.5)])
     dim_min = [0, 1, 2]
     dim_max = [5, 6, 7]
-    n_samples = 3
+    n_samples = 2
     n_cases = 2
     tolerance = 0.1
     # max_depth = 5
