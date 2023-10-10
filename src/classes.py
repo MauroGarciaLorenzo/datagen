@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import truncnorm
+from scipy.stats import qmc
 
 
 class Cell:
