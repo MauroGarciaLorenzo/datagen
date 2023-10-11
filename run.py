@@ -1,19 +1,16 @@
 
-import sys
-sys.path.append("../")
-
-from src.classes import Dimension
-from src.main import main
 import numpy as np
-from objective_function import dummy
 
+from datagen.src.classes import Dimension
+from datagen.src.main import main
+from datagen.src.objective_function import dummy
 
 try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
 except ImportError:
-    from dummies.task import task
-    from dummies.api import compss_wait_on
+    from datagen.dummies import task
+    from datagen.dummies import compss_wait_on
 
 
 @task(returns=1)
