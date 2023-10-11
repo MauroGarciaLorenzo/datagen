@@ -30,16 +30,34 @@ class Dimension:
         self.label = label
 
     def get_cases(self, sample):
+        """
+        Generate `n_cases` number of random cases for the given sample.
+
+        The cases are generated using normal distribution with means obtained
+        from distributing the sample value over the different values in a
+        proportional way with respect to their ranges (lower/upper bounds).
+
+        The standard deviation of each variable is selected so that there is a
+        probability of 99 % of a new point lying inside the variable range.
+
+        :param sample: A random input value representing the dimension, with
+            the requirement that the different variables of the dimension
+            must collectively sum up to it.
+        :return cases: Array of the generated cases
+        """
         cases = []
+        # Perform scaling
         var_avg = ((self.variables[:, 1] - self.variables[:, 0]) / 2
                    + self.variables[:, 0])
         avg_sum = var_avg.sum()
         alpha = sample / avg_sum
         scaled_avgs = var_avg * alpha
         stds = []
+        # Perform scaling
         for i in range(len(self.variables)):
             d_min = min(abs(self.variables[i][0] - scaled_avgs[i]),
                         abs(self.variables[i][1] - scaled_avgs[i]))
+            # Initialize standard deviations.
             stds.append(d_min / 3)
         while len(cases) < self.n_cases:
             case = np.random.normal(scaled_avgs, stds)
@@ -48,4 +66,8 @@ class Dimension:
             case = np.clip(case, lower_bounds, upper_bounds)
             if self.borders[0] < case.sum() < self.borders[1]:
                 cases.append(case)
+            else:
+                print(f"Warning: (label {self.label}) Case sum out of "
+                      f"dimension borders {self.borders} in {case} for sample "
+                      f"{sample}. Retrying...")
         return cases
