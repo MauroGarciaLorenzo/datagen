@@ -19,7 +19,6 @@ Provides the functions needed in the algorithm
 """
 
 import random
-import sys
 
 import numpy as np
 import pandas as pd
@@ -27,17 +26,15 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from scipy.stats import qmc
 
-sys.path.append("../")
-
-from utils import check_dims, flatten_list
-from classes import Cell, Dimension
+from .utils import check_dims, flatten_list
+from .classes import Cell, Dimension
 
 try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
 except ImportError:
-    from dummies.task import task
-    from dummies.api import compss_wait_on
+    from datagen.dummies import task
+    from datagen.dummies import compss_wait_on
 
 
 def getLastChildren(grid, last_children):

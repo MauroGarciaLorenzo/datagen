@@ -1,20 +1,15 @@
 
-import sys
-
 import pandas as pd
 
-from sampling import explore_cell, gen_grid, explore_children
-from utils import flatten_list
-from viz import print_results
-
-sys.path.append("../")
+from .sampling import gen_grid, explore_children
+from .viz import print_results
 
 try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
 except ImportError:
-    from dummies.task import task
-    from dummies.api import compss_wait_on
+    from datagen.dummies import task
+    from datagen.dummies import compss_wait_on
 
 
 @task(returns=1)
