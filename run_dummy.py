@@ -40,35 +40,32 @@ def run():
     variables_d1 = np.array([(0, 2), (0, 1.5), (0, 1.5)])
     variables_d2 = np.array([(0, 1), (0, 1.5), (0, 1.5), (1, 2)])
     variables_d3 = np.array([(1, 3.5), (1, 3.5)])
-    dim_min = [0, 1, 2]
-    dim_max = [5, 6, 7]
     n_samples = 2
     n_cases = 2
     tolerance = 0.1
     # max_depth = 5
-    divs = [2, 1, 1]
     # ax = plt.figure().add_subplot(projection='3d')
     ax = None
     dimensions = [Dimension(
                     variables=variables_d1,
                     n_cases=n_cases,
-                    divs=divs[0],
-                    lower=dim_min[0],
-                    upper=dim_max[0],
+                    divs=2,
+                    lower=0,
+                    upper=5,
                     label="0"),
                   Dimension(
                       variables=variables_d2,
                       n_cases=n_cases,
-                      divs=divs[1],
-                      lower=dim_min[1],
-                      upper=dim_max[1],
+                      divs=1,
+                      lower=1,
+                      upper=6,
                       label="1"),
                   Dimension(
                       variables=variables_d3,
                       n_cases=n_cases,
-                      divs=divs[2],
-                      lower=dim_min[2],
-                      upper=dim_max[2],
+                      divs=1,
+                      lower=2,
+                      upper=7,
                       label="2")]
     main(dimensions, n_samples, tolerance, ax, dummy)
 
