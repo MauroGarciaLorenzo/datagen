@@ -59,7 +59,10 @@ class Dimension:
                         abs(self.variables[i][1] - scaled_avgs[i]))
             # Initialize standard deviations.
             stds.append(d_min / 3)
-        while len(cases) < self.n_cases:
+        iters = 0
+        iter_limit = len(self.variables) * self.n_cases * 10000
+
+        while len(cases) < self.n_cases and iters < iter_limit:
             case = np.random.normal(scaled_avgs, stds)
             lower_bounds = self.variables[:, 0]
             upper_bounds = self.variables[:, 1]
@@ -70,4 +73,9 @@ class Dimension:
                 print(f"Warning: (label {self.label}) Case sum out of "
                       f"dimension borders {self.borders} in {case} for sample "
                       f"{sample}. Retrying...")
+            iters += 1
+
+        while len(cases) < self.n_cases:
+            cases.append([None] * len(self.variables))
+
         return cases
