@@ -62,7 +62,7 @@ class Dimension:
             # Initialize standard deviations.
             stds.append(d_min / 3)
         iters = 0
-        iter_limit = len(self.variables) * self.n_cases * 10000
+        iter_limit = len(self.variables) * self.n_cases * 1000
 
         while len(cases) < self.n_cases and iters < iter_limit:
             case = np.random.normal(scaled_avgs, stds)
