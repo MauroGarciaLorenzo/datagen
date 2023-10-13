@@ -45,21 +45,60 @@ def run():
     tau_q_g_for = np.array([(0, 2)])
     n_samples = 5
     n_cases = 2
-    tolerance = 0.1
+    tolerance = 0.5
     # max_depth = 5
     # ax = plt.figure().add_subplot(projection='3d')
-    dimensions = [Dimension(p_sg, n_cases, 2, 0,
-                            5, "p_sg"),
-                  Dimension(p_cig, n_cases, 1, 0,
-                            6, "p_cig"),
-                  Dimension(tau_f_g_for, n_cases, 1, 0,
-                            2, "tau_f_g_for"),
-                  Dimension(tau_v_g_for, n_cases, 1, 0,
-                            2, "tau_v_g_for"),
-                  Dimension(tau_p_g_for, n_cases, 1, 0,
-                            2, "tau_p_g_for"),
-                  Dimension(tau_q_g_for, n_cases, 1, 0,
-                            2, "tau_q_g_for")]
+    dimensions = [
+        Dimension(
+            variables=p_sg,
+            n_cases=n_cases,
+            divs=2,
+            lower=0,
+            upper=5,
+            label="p_sg"
+        ),
+        Dimension(
+            variables=p_cig,
+            n_cases=n_cases,
+            divs=1,
+            lower=0,
+            upper=6,
+            label="p_cig"
+        ),
+        Dimension(
+            variables=tau_f_g_for,
+            n_cases=n_cases,
+            divs=1,
+            lower=0,
+            upper=2,
+            label="tau_f_g_for"
+        ),
+        Dimension(
+            variables=tau_v_g_for,
+            n_cases=n_cases,
+            divs=1,
+            lower=0,
+            upper=2,
+            label="tau_v_g_for"
+        ),
+        Dimension(
+            variables=tau_p_g_for,
+            n_cases=n_cases,
+            divs=1,
+            lower=0,
+            upper=2,
+            label="tau_p_g_for"
+        ),
+        Dimension(
+            variables=tau_q_g_for,
+            n_cases=n_cases,
+            divs=1,
+            lower=0,
+            upper=2,
+            label="tau_q_g_for"
+        )
+    ]
+
     ax = None
     main(dimensions, n_samples, tolerance, ax, dummy)
 
