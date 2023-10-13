@@ -197,7 +197,7 @@ def process_p_cig_dimension(samples_df, p_cig):
         cases_g_for_df = pd.DataFrame(
             cases_g_for,
             columns=[f"g_for_Var{v}" for v in range(len(p_cig.variables))])
-        dims_g_for_df = pd.DataFrame(dims_g_for, columns=["g_fol"])
+        dims_g_for_df = pd.DataFrame(dims_g_for, columns=["g_for"])
 
         cases_g_fol_df = pd.DataFrame(
             cases_g_fol,
@@ -438,10 +438,11 @@ def get_children_parameters(children_grid, dims_df, cases_heritage_df):
             cases_df = pd.DataFrame()
 
         for k in range(len(dims_df)):
-            row = dims_df.iloc[k, :]
+            row = dims_df.drop(columns=['g_for', 'g_fol'],
+                               errors='ignore').iloc[k, :]
             if (all([row[t] >= cell.dimensions[t].borders[0]
                     for t in range(len(cell.dimensions))]) and
-                    all([row[t] <= cell.dimensions[t].borders[0]
+                    all([row[t] <= cell.dimensions[t].borders[1]
                          for t in range(len(cell.dimensions))])):
                 cases_df = pd.concat(
                     [cases_df, cases_heritage_df.iloc[[k], :]],
