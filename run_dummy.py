@@ -42,7 +42,7 @@ def run():
     variables_d3 = np.array([(1, 3.5), (1, 3.5)])
     n_samples = 2
     n_cases = 2
-    tolerance = 0.1
+    tolerance = 0.5
     # max_depth = 5
     # ax = plt.figure().add_subplot(projection='3d')
     ax = None
