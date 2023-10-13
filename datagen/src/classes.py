@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 
 
@@ -31,7 +33,7 @@ class Dimension:
         self.label = label
         self.tolerance = tolerance
 
-    def get_cases(self, sample):
+    def get_cases_normal(self, sample):
         """
         Generate `n_cases` number of random cases for the given sample.
 
@@ -76,6 +78,64 @@ class Dimension:
                       f"dimension borders {self.borders} in {case} for sample "
                       f"{sample}. Retrying...")
             iters += 1
+
+        while len(cases) < self.n_cases:
+            cases.append([None] * len(self.variables))
+
+        return cases
+
+    def get_cases_extreme(self, sample):
+        cases = []
+        new_case_count = 0
+        while len(cases) < self.n_cases:
+            # Assign random value between variables minimum and remaining sum
+            new_case_count += 1
+            if new_case_count >= 5000:
+                print(f"Warning: Iterations count exceeded. Retrying")
+                break
+            total_sum = 0
+            case = []
+            for i in range(len(self.variables)):
+                limits = (self.variables[i, 0],
+                          min(self.variables[i, 1], abs(sample - total_sum)))
+                if limits[1] < limits[0]:
+                    print(f"Warning: sample {sample} exceeded by total sum "
+                          f"({total_sum}) in case {case}")
+                    break
+                var = random.random() * (limits[1] - limits[0]) + limits[0]
+                case.append(var)
+                total_sum += var
+
+            # Distribute remaining sum within variables
+            # Shuffle variables
+            indexes = list(range(len(self.variables)))
+            random.shuffle(indexes)
+            variables_shuffled = self.variables[indexes]
+            case = [case[i] for i in indexes]
+
+            distribute_sum_count = 0
+            remaining_sum = sample - total_sum
+            while abs(remaining_sum) > self.tolerance:
+                distribute_sum_count += 1
+                if distribute_sum_count >= 500:
+                    print(f"Warning: sample {sample} couldn't be reached"
+                          f" by total sum {total_sum}) in case {case}")
+                    break
+                for i in range(len(case)):
+                    if abs(remaining_sum) <= self.tolerance:  # TODO: toler??
+                        break
+                    new_sum_range = (
+                        0,
+                        min(remaining_sum, variables_shuffled[i, 1] - case[i]))
+                    var_sum = random.random() * new_sum_range[1]
+                    case[i] += var_sum
+                    remaining_sum -= var_sum
+
+            # Restore variables order
+            restore_order = np.argsort(indexes)
+            case = [case[i] for i in restore_order]
+            if abs(remaining_sum) <= self.tolerance:
+                cases.append(case)
 
         while len(cases) < self.n_cases:
             cases.append([None] * len(self.variables))
