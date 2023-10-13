@@ -1,7 +1,7 @@
 
 import pandas as pd
 
-from .sampling import gen_grid, explore_children
+from .sampling import gen_grid, explore_grid
 from .viz import print_results
 
 try:
@@ -31,15 +31,14 @@ def main(dimensions, n_samples, tolerance, ax, func):
     :param ax: Plottable object
     """
     grid = gen_grid(dimensions)
-    cases_df, execution_logs = explore_children(ax,
-                                                cases_df=None,
-                                                children_grid=grid,
-                                                depth=0,
-                                                dims_df=pd.DataFrame(),
-                                                func=func,
-                                                n_samples=n_samples,
-                                                tolerance=tolerance)
-
+    cases_df, execution_logs = explore_grid(ax,
+                                            cases_df=None,
+                                            grid=grid,
+                                            depth=0,
+                                            dims_df=pd.DataFrame(),
+                                            func=func,
+                                            n_samples=n_samples,
+                                            tolerance=tolerance)
     print_results(execution_logs, cases_df)
     print("")
 
