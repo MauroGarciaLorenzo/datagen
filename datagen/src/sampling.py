@@ -94,23 +94,23 @@ def explore_cell(
         return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
         children_grid = gen_grid(dimensions)
-        cases_df, children_total = explore_children(ax, cases_df,
-                                                    children_grid, depth,
-                                                    dims_df, func, n_samples,
-                                                    tolerance)
+        cases_df, children_total = explore_grid(ax, cases_df,
+                                                children_grid, depth,
+                                                dims_df, func, n_samples,
+                                                tolerance)
         return children_total, cases_df
 
 
-def explore_children(ax, cases_df, children_grid, depth, dims_df, func,
-                     n_samples, tolerance):
-    children = get_children_parameters(children_grid, dims_df, cases_df)
-    children_total = [None] * len(children)
+def explore_grid(ax, cases_df, grid, depth, dims_df, func,
+                 n_samples, tolerance):
+    total_cases_df, total_entropies = get_children_parameters(
+        grid, dims_df, cases_df)
+    children_total_params = []
     list_cases_children_df = []
-    for cell_child in range(len(children_grid)):
-        dim = children_grid[cell_child].dimensions
-        cases_heritage_df = children[cell_child][0]
-        entropy_children = children[cell_child][1]
-        children_total[cell_child], cases_children_df = explore_cell(
+    for children_cell, cases_heritage_df, entropy_children \
+            in zip(grid, total_cases_df, total_entropies):
+        dim = children_cell.dimensions
+        child_total_params, cases_children_df = explore_cell(
             func,
             n_samples,
             entropy_children,
@@ -120,13 +120,14 @@ def explore_children(ax, cases_df, children_grid, depth, dims_df, func,
             dim,
             cases_heritage_df,
         )
+        children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
     # implement reduction
-    children_total = compss_wait_on(children_total)
+    children_total_params = compss_wait_on(children_total_params)
     list_cases_children_df = compss_wait_on(list_cases_children_df)
     cases_df = pd.concat(list_cases_children_df, ignore_index=True)
-    children_total = flatten_list(children_total)
-    return cases_df, children_total
+    children_total_params = flatten_list(children_total_params)
+    return cases_df, children_total_params
 
 
 def generate_columns(dim):
@@ -419,7 +420,8 @@ def get_children_parameters(children_grid, dims_df, cases_heritage_df):
     :param cases_heritage_df: Inherited cases dataframe
     :return: List of children (with these attributes set)
     """
-    children_parameters = []
+    total_cases_df = []
+    total_entropies = []
     for cell in children_grid:
         if cases_heritage_df is not None:
             cases_df = pd.DataFrame(columns=cases_heritage_df.columns)
@@ -442,6 +444,7 @@ def get_children_parameters(children_grid, dims_df, cases_heritage_df):
                 cases_df["Stability"], None
             )
 
-        children_parameters.append((cases_df, entropy))
+        total_cases_df.append(cases_df)
+        total_entropies.append(entropy)
 
-    return children_parameters
+    return total_cases_df, total_entropies
