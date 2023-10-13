@@ -155,7 +155,7 @@ def process_p_cig_dimension(samples_df, p_cig):
 
     for _, sample in samples_df.iterrows():
         # Obtain cases_p_cig
-        cases_p_cig_df = pd.DataFrame(p_cig.get_cases(sample[p_cig.label]),
+        cases_p_cig_df = pd.DataFrame(p_cig.get_cases_extreme(sample[p_cig.label]),
                                       columns=generate_columns(p_cig)).dropna()
         n_rows = cases_p_cig_df.shape[0]
         dims_p_cig_df = pd.DataFrame(
@@ -184,7 +184,7 @@ def process_p_cig_dimension(samples_df, p_cig):
                 upper=sample[p_cig.label],
                 label="g_for",
                 tolerance=p_cig.tolerance)
-            case_g_for = (g_for.get_cases(g_for_sample))[0]
+            case_g_for = (g_for.get_cases_extreme(g_for_sample))[0]
             if all(x is not None for x in case_g_for) and \
                     all(x is not np.nan for x in case_g_for):
                 dims_g_for.append(g_for_sample)
@@ -226,7 +226,7 @@ def process_other_dimensions(samples_df, dim):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
-        cases = dim.get_cases(sample[dim.label])
+        cases = dim.get_cases_extreme(sample[dim.label])
         for case in cases:
             if (all(x is not
                     None for x in case) and
