@@ -182,7 +182,8 @@ def process_p_cig_dimension(samples_df, p_cig):
                 divs=1,
                 lower=p_cig.borders[0],
                 upper=sample[p_cig.label],
-                label="g_for")
+                label="g_for",
+                tolerance=p_cig.tolerance)
             case_g_for = (g_for.get_cases(g_for_sample))[0]
             if all(x is not None for x in case_g_for) and \
                     all(x is not np.nan for x in case_g_for):
@@ -373,7 +374,8 @@ def gen_grid(dims):
                     dims[j].divs,
                     lower[j],
                     upper[j],
-                    dims[j].label
+                    dims[j].label,
+                    tolerance=dims[j].tolerance
                 )
             )
         grid.append(Cell(dimensions))

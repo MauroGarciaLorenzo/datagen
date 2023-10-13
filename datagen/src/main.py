@@ -30,6 +30,8 @@ def main(dimensions, n_samples, tolerance, ax, func):
     :param tolerance: Maximum size for a cell to be subdivided
     :param ax: Plottable object
     """
+    for dim in dimensions:
+        dim.tolerance = (dim.borders[1] - dim.borders[0]) / 10
     grid = gen_grid(dimensions)
     cases_df, execution_logs = explore_grid(ax,
                                             cases_df=None,
