@@ -77,9 +77,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     cases_df, dims_df = gen_cases(samples_df, dimensions)
 
     # Eval each case
-    stabilities = []
-    for i in range(len(cases_df)):
-        stabilities.append(eval_stability(cases_df.iloc[i, :], func))
+    stabilities = [eval_stability(case, func) for case in cases_df.values]
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
@@ -274,18 +272,15 @@ def gen_samples(n_samples, dimensions):
     """
     sampler = qmc.LatinHypercube(d=len(dimensions))
     samples = sampler.random(n=n_samples)
-    samples_scaled = np.zeros([n_samples, len(dimensions)])
 
-    for s in range(n_samples):
-        samples_s = samples[s, :]
-        for d in range(len(dimensions)):
-            dimension = dimensions[d]
-            lower, upper = dimension.borders
-            sample = samples_s[d]
-            samples_scaled[s, d] = lower + sample * (upper - lower)
+    lower_bounds = np.array([dim.borders[0] for dim in dimensions])
+    upper_bounds = np.array([dim.borders[1] for dim in dimensions])
+
+    samples_scaled = lower_bounds + samples * (upper_bounds - lower_bounds)
 
     df_samples = pd.DataFrame(samples_scaled,
                               columns=[dim.label for dim in dimensions])
+
     return df_samples
 
 
