@@ -84,28 +84,43 @@ class Dimension:
 
         return cases
 
-    def get_cases_extreme(self, sample):
+    def get_cases_extreme(self, sample, iter_limit=5000):
+        """This case generator aims to reach more variance between cases within
+         a sample. Here, we assign random values to de variables in the range
+         lower bound of this variable - minimum between upper bound of the
+         variable and remaining sum, so that we never exceed sample.
+
+         Once every variable has value, we will add to it a random value
+         between this value and the maximum possible value (explained above)
+         until error is less than defined.
+
+        :param sample: Target sum
+        :param iter_limit: Iterations limit. Useful to avoid an infinite loop
+        :return: Combinations of N_cases variables that, when summed together,
+        equal sample. If the combination could not be found with the defined
+        iter_limit, this case will be none.
+        """
         cases = []
         new_case_count = 0
-        while len(cases) < self.n_cases:
+        while len(cases) < self.n_cases and new_case_count < iter_limit:
             # Assign random value between variables minimum and remaining sum
             new_case_count += 1
-            if new_case_count >= 5000:
-                print(f"Warning: Iterations count exceeded. Retrying")
-                break
             total_sum = 0
             case = []
+            valid_case = True
             for i in range(len(self.variables)):
                 limits = (self.variables[i, 0],
                           min(self.variables[i, 1], abs(sample - total_sum)))
-                if limits[1] < limits[0]:
+                if limits[1] <= limits[0]:
                     print(f"Warning: sample {sample} exceeded by total sum "
                           f"({total_sum}) in case {case}")
+                    valid_case = False
                     break
                 var = random.random() * (limits[1] - limits[0]) + limits[0]
                 case.append(var)
                 total_sum += var
-
+            if not valid_case:
+                continue
             # Distribute remaining sum within variables
             # Shuffle variables
             indexes = list(range(len(self.variables)))
@@ -115,12 +130,9 @@ class Dimension:
 
             distribute_sum_count = 0
             remaining_sum = sample - total_sum
-            while abs(remaining_sum) > self.tolerance:
+            while (abs(remaining_sum) > self.tolerance and
+                   distribute_sum_count < 500):
                 distribute_sum_count += 1
-                if distribute_sum_count >= 500:
-                    print(f"Warning: sample {sample} couldn't be reached"
-                          f" by total sum {total_sum}) in case {case}")
-                    break
                 for i in range(len(case)):
                     if abs(remaining_sum) <= self.tolerance:  # TODO: toler??
                         break
@@ -131,11 +143,18 @@ class Dimension:
                     case[i] += var_sum
                     remaining_sum -= var_sum
 
+            if distribute_sum_count >= 500:
+                print(f"Warning: sample {sample} couldn't be reached"
+                      f" by total sum {total_sum}) in case {case}")
+                continue
             # Restore variables order
             restore_order = np.argsort(indexes)
             case = [case[i] for i in restore_order]
             if abs(remaining_sum) <= self.tolerance:
                 cases.append(case)
+
+        if new_case_count >= 5000:
+            print(f"Warning: Iterations count exceeded. Retrying")
 
         while len(cases) < self.n_cases:
             cases.append([None] * len(self.variables))
