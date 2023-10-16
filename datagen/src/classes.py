@@ -126,10 +126,10 @@ class Dimension:
         iter_limit, this case will be none.
         """
         cases = []
-        new_case_count = 0
-        while len(cases) < self.n_cases and new_case_count < iter_limit:
+        iters_case = 0
+        while len(cases) < self.n_cases and iters_case < iter_limit:
             # Assign random value between variables minimum and remaining sum
-            new_case_count += 1
+            iters_case += 1
             total_sum = 0
             case = []
             valid_case = True
@@ -153,11 +153,11 @@ class Dimension:
             variables_shuffled = self.variables[indexes]
             case = [case[i] for i in indexes]
 
-            distribute_sum_count = 0
+            iters_reloop = 0
             remaining_sum = sample - total_sum
             while (abs(remaining_sum) > self.tolerance and
-                   distribute_sum_count < 500):
-                distribute_sum_count += 1
+                   iters_reloop < 500):
+                iters_reloop += 1
                 for i in range(len(case)):
                     if abs(remaining_sum) <= self.tolerance:  # TODO: toler??
                         break
@@ -168,7 +168,7 @@ class Dimension:
                     case[i] += var_sum
                     remaining_sum -= var_sum
 
-            if distribute_sum_count >= 500:
+            if iters_reloop >= 500:
                 print(f"Warning: sample {sample} couldn't be reached"
                       f" by total sum {total_sum}) in case {case}")
                 continue
@@ -178,7 +178,7 @@ class Dimension:
             if abs(remaining_sum) <= self.tolerance:
                 cases.append(case)
 
-        if new_case_count >= 5000:
+        if iters_case >= 5000:
             print(f"Warning: Iterations count exceeded. Retrying")
 
         while len(cases) < self.n_cases:
