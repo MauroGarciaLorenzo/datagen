@@ -38,7 +38,7 @@ def run():
     cell to be subdivided).
     """
     variables_d1 = np.array([(0, 2), (0, 1.5), (0, 1.5)])
-    variables_d2 = np.array([(0, 1), (0, 1.5), (0, 1.5), (1, 2)])
+    variables_d2 = np.array([(0, 1), (0, 1.5), (0, 1.5), (0, 2)])
     variables_d3 = np.array([(1, 3.5), (1, 3.5)])
     n_samples = 2
     n_cases = 2
@@ -46,6 +46,7 @@ def run():
     # max_depth = 5
     # ax = plt.figure().add_subplot(projection='3d')
     ax = None
+    dimensions = [
         Dimension(variables=variables_d1, n_cases=n_cases, divs=2,
                   borders=(0, 5), label="0"),
         Dimension(variables=variables_d2, n_cases=n_cases, divs=1,

@@ -60,8 +60,6 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :param n_samples: number of samples to produce
     :param entropy: Entropy of the father calculated from the cases that fits
     into this cell's space
-    :param tolerance: Maximum length of a dimension (it won't subdivide itself
-    if exceeded)
     :param depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
     :param ax: Plottable object
@@ -140,15 +138,16 @@ def process_p_cig_dimension(samples_df, p_cig):
 
     :param samples_df: Involved samples
     :param p_cig: p_cig dimension
-    :return:
+    :return: Cases obtained and samples ()
     """
     cases_df = pd.DataFrame()
     dims_df = pd.DataFrame()
 
     for _, sample in samples_df.iterrows():
         # Obtain cases_p_cig
-        cases_p_cig_df = pd.DataFrame(p_cig.get_cases_extreme(sample[p_cig.label]),
-                                      columns=generate_columns(p_cig)).dropna()
+        cases_p_cig_df = pd.DataFrame(
+            p_cig.get_cases_extreme(sample[p_cig.label]),
+            columns=generate_columns(p_cig)).dropna()
         n_rows = cases_p_cig_df.shape[0]
         dims_p_cig_df = pd.DataFrame(
             {p_cig.label: np.repeat(sample[p_cig.label], n_rows)})
@@ -164,7 +163,6 @@ def process_p_cig_dimension(samples_df, p_cig):
         dims_g_for = []
         dims_g_fol = []
         for i in range(len(cases_p_cig_df)):
-            # create g_for_case
             g_for_variables = np.array([
                 (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
                 for x in range(len(p_cig.variables))])
@@ -214,6 +212,13 @@ def process_p_cig_dimension(samples_df, p_cig):
 
 
 def process_other_dimensions(samples_df, dim):
+    """
+    This method assign values to the variables within a generic dimension.
+
+    :param samples_df: Dataframe containing every sample in this cell
+    :param dim: Concrete dimension
+    :return:
+    """
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
@@ -426,8 +431,10 @@ def get_children_parameters(children_grid, dims_df, cases_heritage_df):
             cases_df = pd.DataFrame()
 
         for k in range(len(dims_df)):
-            row = dims_df.drop(columns=['g_for', 'g_fol'],
-                               errors='ignore').iloc[k, :]
+            row = dims_df.iloc[k, :]
+            # cell dimensions don't include g_for and g_fol, but dims_df do
+            if 'g_for' in dims_df.columns and 'g_fol' in dims_df.columns:
+                row = row.drop(columns=['g_for', 'g_fol'])
             if (all([row[t] >= cell.dimensions[t].borders[0]
                     for t in range(len(cell.dimensions))]) and
                     all([row[t] <= cell.dimensions[t].borders[1]
