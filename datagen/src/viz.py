@@ -19,6 +19,7 @@ understanding and visualizing the stability of each case, the entropy,
 delta entropy, and depth of the explored cells. Additionally, there's a
 function to plot sample data.
 """
+import pandas as pd
 
 
 def print_grid(grid):
@@ -49,11 +50,17 @@ def print_results(execution_logs, cases_df):
     :param cases_df: dataframe containing every case evaluated by the program
                 and each evaluation (stability)
     """
+    pd.set_option('display.max_rows', 50)
+    pd.set_option('display.max_columns', 20)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+
     print("samples-stability:")
     print(cases_df)
+    print("")
     print("number of cells: ", len(execution_logs))
     for r in execution_logs:
-        print("dimensions: ", r[0])
+        #print("dimensions: ", r[0])
         print("entropy: ", r[1])
         print("delta entropy: ", r[2])
         print("depth: ", r[3])
