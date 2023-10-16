@@ -103,6 +103,7 @@ class Dimension:
                       f"dimension borders {self.borders} in {case} for sample "
                       f"{sample}. Retrying...")
             iters += 1
+        print(f"Dim {self.label}: get_cases_normal run {iters} iterations.")
 
         while len(cases) < self.n_cases:
             cases.append([None] * len(self.variables))
@@ -137,8 +138,10 @@ class Dimension:
                 limits = (self.variables[i, 0],
                           min(self.variables[i, 1], abs(sample - total_sum)))
                 if limits[1] <= limits[0]:
-                    print(f"Warning: sample {sample} exceeded by total sum "
-                          f"({total_sum}) in case {case}")
+                    print(f"Lower bound for variable {i} in dimension "
+                          f"{self.label} ({limits[0]}) exceeds the remaining "
+                          f"sum {sample - total_sum} to reach the sample value"
+                          f" {sample}.")
                     valid_case = False
                     break
                 var = random.random() * (limits[1] - limits[0]) + limits[0]
