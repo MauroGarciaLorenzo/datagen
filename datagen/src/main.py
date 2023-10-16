@@ -13,7 +13,7 @@ except ImportError:
 
 
 @task(returns=1)
-def main(dimensions, n_samples, tolerance, ax, func):
+def main(dimensions, n_samples, rel_tolerance, ax, func):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -27,20 +27,15 @@ def main(dimensions, n_samples, tolerance, ax, func):
 
     :param dimensions: List of dimensions involved
     :param n_samples: Number of different values for each dimension
-    :param tolerance: Maximum size for a cell to be subdivided
+    :param rel_tolerance: Maximum size for a cell to be subdivided
     :param ax: Plottable object
     """
     for dim in dimensions:
-        dim.tolerance = (dim.borders[1] - dim.borders[0]) / 10
+        dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
     grid = gen_grid(dimensions)
-    cases_df, execution_logs = explore_grid(ax,
-                                            cases_df=None,
-                                            grid=grid,
-                                            depth=0,
-                                            dims_df=pd.DataFrame(),
-                                            func=func,
-                                            n_samples=n_samples,
-                                            tolerance=tolerance)
+    cases_df, execution_logs = explore_grid(ax, cases_df=None, grid=grid,
+                                            depth=0, dims_df=pd.DataFrame(),
+                                            func=func, n_samples=n_samples)
     print_results(execution_logs, cases_df)
     print("")
 

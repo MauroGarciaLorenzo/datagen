@@ -1,10 +1,8 @@
-def check_dims(dimensions, tolerance):
+def check_dims(dimensions):
     """This method check if the size of every dimension is smaller than the
     tolerance declared.
 
     :param dimensions: Cell dimensions
-    :param tolerance: maximum difference upper-lower bound of a dimension
-                    within a cell to be subdivided
     :return: True if tolerance is bigger than this difference, false otherwise
     """
     for d in dimensions:
