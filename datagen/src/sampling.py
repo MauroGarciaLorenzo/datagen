@@ -47,9 +47,8 @@ def getLastChildren(grid, last_children):
 
 
 @task(returns=2)
-def explore_cell(
-        func, n_samples, entropy, tolerance, depth, ax, dimensions,
-        cases_heritage_df):
+def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
+                 cases_heritage_df):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -90,19 +89,17 @@ def explore_cell(
     entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
     # Finish recursivity if entropy decreases or cell become too small
-    if delta_entropy < 0 or not check_dims(dimensions, tolerance):
+    if delta_entropy < 0 or not check_dims(dimensions):
         return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
         children_grid = gen_grid(dimensions)
-        cases_df, children_total = explore_grid(ax, cases_df,
-                                                children_grid, depth,
-                                                dims_df, func, n_samples,
-                                                tolerance)
+        cases_df, children_total = explore_grid(ax, cases_df, children_grid,
+                                                depth, dims_df, func,
+                                                n_samples)
         return children_total, cases_df
 
 
-def explore_grid(ax, cases_df, grid, depth, dims_df, func,
-                 n_samples, tolerance):
+def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples):
     total_cases_df, total_entropies = get_children_parameters(
         grid, dims_df, cases_df)
     children_total_params = []
@@ -110,16 +107,11 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func,
     for children_cell, cases_heritage_df, entropy_children \
             in zip(grid, total_cases_df, total_entropies):
         dim = children_cell.dimensions
-        child_total_params, cases_children_df = explore_cell(
-            func,
-            n_samples,
-            entropy_children,
-            tolerance,
-            depth + 1,
-            ax,
-            dim,
-            cases_heritage_df,
-        )
+        child_total_params, cases_children_df = explore_cell(func, n_samples,
+                                                             entropy_children,
+                                                             depth + 1, ax,
+                                                             dim,
+                                                             cases_heritage_df)
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
     # implement reduction
