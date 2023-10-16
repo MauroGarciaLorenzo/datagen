@@ -47,6 +47,7 @@ def main(dimensions, n_samples, rel_tolerance, ax, func):
     :param n_samples: Number of different values for each dimension
     :param rel_tolerance: Maximum size for a cell to be subdivided
     :param ax: Plottable object
+    :param func: Objective function
     """
     for dim in dimensions:
         dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
