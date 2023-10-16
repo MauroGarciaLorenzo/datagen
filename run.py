@@ -33,7 +33,7 @@ def run():
         -upper: upper bound of the dimension (maximum value of a sample)
         -label: dimension identifier
 
-        Apart from that, it can also be specified the number of samplesand the
+        Apart from that, it can also be specified the number of samples and
         tolerance (maximum difference upper-lower bound of a dimension within a
         cell to be subdivided).
         """
