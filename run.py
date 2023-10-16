@@ -13,7 +13,7 @@ except ImportError:
     from datagen.dummies import compss_wait_on
 
 
-@task(returns=1)
+@task()
 def run():
     """
     In this method we work with dimensions (main axes), which represent a

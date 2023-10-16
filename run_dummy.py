@@ -13,7 +13,7 @@ except ImportError:
     from datagen.dummies import compss_wait_on
 
 
-@task(returns=1)
+@task()
 def run():
     """
     In this method we work with dimensions (main axes), which represent a
@@ -42,14 +42,14 @@ def run():
     variables_d3 = np.array([(1, 3.5), (1, 3.5)])
     n_samples = 2
     n_cases = 2
-    rel_tolerance = 0.1
+    rel_tolerance = 0.01
     # max_depth = 5
     # ax = plt.figure().add_subplot(projection='3d')
     ax = None
     dimensions = [
         Dimension(variables=variables_d1, n_cases=n_cases, divs=2,
                   borders=(0, 5), label="0"),
-        Dimension(variables=variables_d2, n_cases=n_cases, divs=1,
+        Dimension(variables=variables_d2, n_cases=n_cases, divs=2,
                   borders=(1, 6), label="1"),
         Dimension(variables=variables_d3, n_cases=n_cases, divs=1,
                   borders=(2, 7), label="2")]
