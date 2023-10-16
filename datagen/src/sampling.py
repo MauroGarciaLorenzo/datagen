@@ -12,14 +12,14 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-"""
-Data generator based on the entropy of different regions of space
-
-Provides the functions needed in the algorithm
+"""This module serves as a comprehensive data generator based on the entropy
+of different regions of space. The main objectives are to produce samples
+and cases from a given set of dimensions and then evaluate these cases to
+determine their stability. Parallel execution is used to evaluate the
+stability of each case.
 """
 
 import random
-
 import numpy as np
 import pandas as pd
 
@@ -138,7 +138,7 @@ def process_p_cig_dimension(samples_df, p_cig):
 
     :param samples_df: Involved samples
     :param p_cig: p_cig dimension
-    :return: Cases obtained and samples ()
+    :return: Cases obtained and samples extended (one sample for each case)
     """
     cases_df = pd.DataFrame()
     dims_df = pd.DataFrame()
@@ -216,8 +216,8 @@ def process_other_dimensions(samples_df, dim):
     This method assign values to the variables within a generic dimension.
 
     :param samples_df: Dataframe containing every sample in this cell
-    :param dim: Concrete dimension
-    :return:
+    :param dim: Involved dimension
+    :return: Cases obtained and samples extended (one sample for each case)
     """
     total_cases = []
     total_dim = []
