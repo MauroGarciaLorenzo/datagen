@@ -24,12 +24,12 @@ class Dimension:
                 sample)
         -label: dimension identifier
     """
-    def __init__(self, variables, n_cases, divs, lower, upper, label="None",
-                 tolerance=0):
+    def __init__(self, variables, n_cases, divs, borders, label,
+                 tolerance=None):
         self.variables = variables
         self.n_cases = n_cases
         self.divs = divs
-        self.borders = (lower, upper)
+        self.borders = borders
         self.label = label
         self.tolerance = tolerance
 

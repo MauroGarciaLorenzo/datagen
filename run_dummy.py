@@ -46,28 +46,13 @@ def run():
     # max_depth = 5
     # ax = plt.figure().add_subplot(projection='3d')
     ax = None
-    dimensions = [Dimension(
-                    variables=variables_d1,
-                    n_cases=n_cases,
-                    divs=2,
-                    lower=0,
-                    upper=5,
-                    label="0"),
-                  Dimension(
-                      variables=variables_d2,
-                      n_cases=n_cases,
-                      divs=1,
-                      lower=1,
-                      upper=6,
-                      label="1"),
-                  Dimension(
-                      variables=variables_d3,
-                      n_cases=n_cases,
-                      divs=1,
-                      lower=2,
-                      upper=7,
-                      label="2")]
-    main(dimensions, n_samples, tolerance, ax, dummy)
+        Dimension(variables=variables_d1, n_cases=n_cases, divs=2,
+                  borders=(0, 5), label="0"),
+        Dimension(variables=variables_d2, n_cases=n_cases, divs=1,
+                  borders=(1, 6), label="1"),
+        Dimension(variables=variables_d3, n_cases=n_cases, divs=1,
+                  borders=(2, 7), label="2")]
+    main(dimensions, n_samples, rel_tolerance, ax, dummy)
 
 
 if __name__ == '__main__':

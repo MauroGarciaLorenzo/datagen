@@ -176,14 +176,13 @@ def process_p_cig_dimension(samples_df, p_cig):
             g_for_variables = np.array([
                 (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
                 for x in range(len(p_cig.variables))])
-            g_for = Dimension(
-                variables=g_for_variables,
-                n_cases=1,
-                divs=1,
-                lower=p_cig.borders[0],
-                upper=sample[p_cig.label],
-                label="g_for",
-                tolerance=p_cig.tolerance)
+            g_for = Dimension(variables=g_for_variables,
+                              n_cases=1,
+                              divs=1,
+                              borders=(p_cig.borders[0], sample[p_cig.label]),
+                              label="g_for",
+                              tolerance=p_cig.tolerance)
+            # create g_for_case
             case_g_for = (g_for.get_cases_extreme(g_for_sample))[0]
             if all(x is not None for x in case_g_for) and \
                     all(x is not np.nan for x in case_g_for):
@@ -368,15 +367,12 @@ def gen_grid(dims):
         dimensions = []
         for j in range(len(dims)):
             dimensions.append(
-                Dimension(
-                    dims[j].variables,
-                    dims[j].n_cases,
-                    dims[j].divs,
-                    lower[j],
-                    upper[j],
-                    dims[j].label,
-                    tolerance=dims[j].tolerance
-                )
+                Dimension(variables=dims[j].variables,
+                          n_cases=dims[j].n_cases,
+                          divs=dims[j].divs,
+                          borders=(lower[j], upper[j]),
+                          label=dims[j].label,
+                          tolerance=dims[j].tolerance)
             )
         grid.append(Cell(dimensions))
     return grid
