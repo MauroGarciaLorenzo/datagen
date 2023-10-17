@@ -169,8 +169,7 @@ def process_p_cig_dimension(samples_df, p_cig):
                               tolerance=p_cig.tolerance)
             # Create g_for case
             case_g_for = (g_for.get_cases_extreme(g_for_sample))[0]
-            if all(x is not None for x in case_g_for) and \
-                    all(x is not np.nan for x in case_g_for):
+            if not np.isnan(case_g_for).any():
                 dims_g_for.append(g_for_sample)
                 cases_g_for.append(case_g_for)
                 dims_g_fol.append(g_fol_sample)
@@ -220,9 +219,7 @@ def process_other_dimensions(samples_df, dim):
     for _, sample in samples_df.iterrows():
         cases = dim.get_cases_extreme(sample[dim.label])
         for case in cases:
-            if (all(x is not
-                    None for x in case) and
-                    all(x is not np.nan for x in case)):
+            if not np.isnan(case).any():
                 total_cases.append(case)
                 total_dim.append(sample[dim.label])
 
