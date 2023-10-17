@@ -26,8 +26,8 @@ try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
 except ImportError:
-    from datagen.dummies import task
-    from datagen.dummies import compss_wait_on
+    from datagen.dummies.task import task
+    from datagen.dummies.api import compss_wait_on
 
 
 def main(dimensions, n_samples, rel_tolerance, ax, func):
