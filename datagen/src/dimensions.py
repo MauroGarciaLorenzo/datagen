@@ -106,7 +106,7 @@ class Dimension:
         print(f"Dim {self.label}: get_cases_normal run {iters} iterations.")
 
         while len(cases) < self.n_cases:
-            cases.append([None] * len(self.variables))
+            cases.append([np.nan] * len(self.variables))
 
         return cases
 
@@ -186,6 +186,6 @@ class Dimension:
             print(f"Warning: Iterations count exceeded. Retrying")
 
         while len(cases) < self.n_cases:
-            cases.append([None] * len(self.variables))
+            cases.append([np.nan] * len(self.variables))
 
         return cases
