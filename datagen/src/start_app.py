@@ -44,7 +44,10 @@ def main(dimensions, n_samples, rel_tolerance, ax, func):
 
     :param dimensions: List of dimensions involved
     :param n_samples: Number of different values for each dimension
-    :param rel_tolerance: Maximum size for a cell to be subdivided
+    :param rel_tolerance: Fraction of the dimension's range that will be used
+        as the minimum size of new cells in grid generation. 
+        e.g., if rel_tolerance = 0.1 the dimension's tolerance will be 10 % of
+        its range
     :param ax: Plottable object
     :param func: Objective function
     """

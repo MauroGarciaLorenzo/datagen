@@ -21,7 +21,7 @@ exploration.
 
 
 def check_dims(dimensions):
-    """This method check if the size of every dimension is smaller than the
+    """This method checks if the size of every dimension is smaller than the
     tolerance declared.
 
     :param dimensions: Cell dimensions

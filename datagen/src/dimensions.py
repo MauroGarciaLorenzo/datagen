@@ -113,19 +113,22 @@ class Dimension:
     def get_cases_extreme(self, sample, iter_limit=5000, 
                           iter_limit_reloop=500):
         """This case generator aims to reach more variance between cases within
-         a sample. Here, we assign random values to de variables in the range
-         lower bound of this variable - minimum between upper bound of the
-         variable and remaining sum, so that we never exceed sample.
+        a sample. Here, we assign random values to de variables in the range
+        lower bound of this variable - minimum between upper bound of the
+        variable and remaining sum, so that we never exceed sample.
 
-         Once every variable has value, we will add to it a random value
-         between this value and the maximum possible value (explained above)
-         until error is less than defined.
+        Once every variable has value, we will add to it a random value
+        between this value and the maximum possible value (explained above)
+        until error is less than defined.
 
         :param sample: Target sum
-        :param iter_limit: Iterations limit. Useful to avoid an infinite loop
-        :return: Combinations of N_cases variables that, when summed together,
-        equal sample. If the combination could not be found with the defined
-        iter_limit, this case will be none.
+        :param iter_limit: Maximum number of iterations. Useful to avoid
+            infinite loops
+        :param iter_limit_reloop: Maximum number of iterations to go over all
+            variables again and distribute the remaining sum
+        :return: Combinations of n_cases variables that, when summed together,
+            equal sample. If the combination cannot not be found with the
+            defined iter_limit, this case will be filled with NaN values.
         """
         cases = []
         iters_case = 0
