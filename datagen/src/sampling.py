@@ -139,9 +139,9 @@ def process_p_cig_dimension(samples_df, p_cig):
         cases_p_cig_df = pd.DataFrame(
             p_cig.get_cases_extreme(sample[p_cig.label]),
             columns=generate_columns(p_cig)).dropna()
-        n_rows = cases_p_cig_df.shape[0]
+        n_rows = len(cases_p_cig_df)
         dims_p_cig_df = pd.DataFrame(
-            {p_cig.label: np.repeat(sample[p_cig.label], n_rows)})
+            np.repeat(sample[p_cig.label], n_rows), columns=[p_cig.label])
 
         # Obtain the complimentary g_for and g_fol percentages
         grid_forming_perc = random.random()
@@ -151,7 +151,6 @@ def process_p_cig_dimension(samples_df, p_cig):
         # Obtain g_for and g_fol cases
         cases_g_for = []
         cases_g_fol = []
-
         dims_g_for = []
         dims_g_fol = []
         for i in range(len(cases_p_cig_df)):
@@ -175,18 +174,24 @@ def process_p_cig_dimension(samples_df, p_cig):
                 dims_g_fol.append(g_fol_sample)
                 # Compose g_fol subtracting p_cig from g_for case variables
                 cases_g_fol.append(
-                    [cases_p_cig_df.iloc[i, x] - cases_g_for[i][x]
+                    [cases_p_cig_df.iloc[i, x] - case_g_for[x]
                      for x in range(len(p_cig.variables))])
 
         cases_g_for_df = pd.DataFrame(
             cases_g_for,
             columns=[f"g_for_Var{v}" for v in range(len(p_cig.variables))])
         dims_g_for_df = pd.DataFrame(dims_g_for, columns=["g_for"])
-
         cases_g_fol_df = pd.DataFrame(
             cases_g_fol,
             columns=[f"g_fol_Var{v}" for v in range(len(p_cig.variables))])
         dims_g_fol_df = pd.DataFrame(dims_g_fol, columns=["g_fol"])
+
+        # Error check
+        check_sum = (cases_g_fol_df.sum(axis=1) + cases_g_for_df.sum(axis=1)
+                     - cases_p_cig_df.sum(axis=1)).to_numpy()
+        if not np.isclose(check_sum, 0).all():
+            raise ValueError("Sum of g_for and g_fol must equal p_cig")
+
         # Concat p_cig, g_for and g_fol into a complete case dataframe
         sample_cases_df = pd.concat(
             [cases_p_cig_df, cases_g_for_df, cases_g_fol_df], axis=1)
