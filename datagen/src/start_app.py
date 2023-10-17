@@ -30,7 +30,6 @@ except ImportError:
     from datagen.dummies import compss_wait_on
 
 
-@task(returns=1)
 def main(dimensions, n_samples, rel_tolerance, ax, func):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete

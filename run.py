@@ -2,7 +2,7 @@
 import numpy as np
 
 from datagen.src.dimensions import Dimension
-from datagen.src.main import main
+from datagen.src.start_app import main
 from datagen.src.objective_function import dummy
 
 try:
@@ -14,7 +14,7 @@ except ImportError:
 
 
 @task()
-def run():
+def main():
     """
     In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
@@ -68,4 +68,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    main()
