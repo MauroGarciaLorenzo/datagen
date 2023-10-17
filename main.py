@@ -2,6 +2,7 @@ from classes3_2 import exec, Dimension
 import random
 from pycompss.api.task import task
 from utils import f
+import time
 
 @task(returns=1)
 def main():
@@ -20,8 +21,9 @@ def main():
     Dims.append(Dimension(VariablesD1, n_subsamples, divs[0], dim_min[0], dim_max[0]))
     Dims.append(Dimension(VariablesD2, n_subsamples, divs[1], dim_min[1], dim_max[1]))
     Dims.append(Dimension(VariablesD3, n_subsamples, divs[2], dim_min[2], dim_max[2]))
+    t1=time.time()
     exec(n_samples, Dims, f, error, None)
-
+    print("tiempo de execucion: ",time.time()-t1)
 
 def print_grid(grid):
     print("")
