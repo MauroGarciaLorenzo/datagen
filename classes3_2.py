@@ -24,20 +24,20 @@ def exec(n_samples, Dims, f, error, ax):
     for cell in range(len(grid)):
         result[cell] = compss_wait_on(result[cell])
     
-    result = flatten_list(result) 
+    result = flatten_list(result)
+    tot_samples=0
     for r in result:
-        print("number of samples in cell:", len(r[1]))
-        print("samples-stability:")
-        for i in r[1]:
-            for j in i.subsample: print(j)
-            print(i.stability)
-            print("-----------------------------------------------------------------")
-        print("entropy:", r[2])
-        print("delta entropy:", r[3])
-        print("depth:", r[4])
-        print("")
-        print("")
-        print("")
+        tot_samples=tot_samples+len(r[1])
+        # print(len(r[1]))
+        # for i in r[1]:
+        #     for j in i.subsample: print(j)
+        #     print(i.stability)
+        # print("entropy:", r[2])
+        # print("delta entropy:", r[3])
+        # print("depth:", r[4])
+        # print("")
+        # print("")
+    print('N_tot_samples:',tot_samples)
     return grid
 
 def getLastChildren(grid, last_children):
