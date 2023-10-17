@@ -3,7 +3,7 @@ import numpy as np
 
 from datagen.src.objective_function import dummy
 from datagen.src.dimensions import Dimension
-from datagen.src.main import main
+from datagen.src.start_app import main
 
 try:
     from pycompss.api.task import task
@@ -14,7 +14,7 @@ except ImportError:
 
 
 @task()
-def run():
+def main():
     """
     In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
@@ -57,4 +57,4 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    main()
