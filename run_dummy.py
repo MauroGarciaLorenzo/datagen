@@ -2,7 +2,7 @@
 import numpy as np
 
 from datagen.src.objective_function import dummy
-from datagen.src.classes import Dimension
+from datagen.src.dimensions import Dimension
 from datagen.src.main import main
 
 try:
@@ -41,8 +41,8 @@ def run():
     variables_d2 = np.array([(0, 1), (0, 1.5), (0, 1.5), (0, 2)])
     variables_d3 = np.array([(1, 3.5), (1, 3.5)])
     n_samples = 2
-    n_cases = 2
-    rel_tolerance = 0.01
+    n_cases = 1
+    rel_tolerance = 0.1
     # max_depth = 5
     # ax = plt.figure().add_subplot(projection='3d')
     ax = None

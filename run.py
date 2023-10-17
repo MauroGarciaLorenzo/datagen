@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from datagen.src.classes import Dimension
+from datagen.src.dimensions import Dimension
 from datagen.src.main import main
 from datagen.src.objective_function import dummy
 
@@ -43,15 +43,15 @@ def run():
     tau_v_g_for = np.array([(0, 2)])
     tau_p_g_for = np.array([(0, 2)])
     tau_q_g_for = np.array([(0, 2)])
-    n_samples = 5
-    n_cases = 2
+    n_samples = 2
+    n_cases = 3
     rel_tolerance = 0.1
     # max_depth = 5
     # ax = plt.figure().add_subplot(projection='3d')
     dimensions = [
         Dimension(variables=p_sg, n_cases=n_cases, divs=2, borders=(0, 5),
                   label="p_sg"),
-        Dimension(variables=p_cig, n_cases=n_cases, divs=1, borders=(0, 6),
+        Dimension(variables=p_cig, n_cases=n_cases, divs=2, borders=(0, 6),
                   label="p_cig"),
         Dimension(variables=tau_f_g_for, n_cases=n_cases, divs=1,
                   borders=(0, 2), label="tau_f_g_for"),

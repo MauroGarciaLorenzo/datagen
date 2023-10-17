@@ -4,4 +4,4 @@ from .viz import *
 from .sampling import *
 from .objective_function import *
 from .utils import *
-from .classes import *
+from .dimensions import *

@@ -27,7 +27,7 @@ from sklearn.linear_model import LogisticRegression
 from scipy.stats import qmc
 
 from .utils import check_dims, flatten_list
-from .classes import Cell, Dimension
+from .dimensions import Cell, Dimension
 
 try:
     from pycompss.api.task import task
@@ -35,15 +35,6 @@ try:
 except ImportError:
     from datagen.dummies import task
     from datagen.dummies import compss_wait_on
-
-
-def getLastChildren(grid, last_children):
-    for cell in grid:
-        if not cell.children:
-            last_children.append(cell)
-        else:
-            last_children.extend(getLastChildren(cell.children, []))
-    return last_children
 
 
 @task(returns=2)
@@ -396,7 +387,6 @@ def eval_entropy(stabilities, entropy_parent):
     freqs = []
     counter = 0
     for stability in stabilities:
-        stability = compss_wait_on(stability)
         if stability == 1:
             counter += 1
     freqs.append(counter / len(stabilities))
