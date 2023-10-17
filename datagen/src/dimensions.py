@@ -110,7 +110,8 @@ class Dimension:
 
         return cases
 
-    def get_cases_extreme(self, sample, iter_limit=5000):
+    def get_cases_extreme(self, sample, iter_limit=5000, 
+                          iter_limit_reloop=500):
         """This case generator aims to reach more variance between cases within
          a sample. Here, we assign random values to de variables in the range
          lower bound of this variable - minimum between upper bound of the
@@ -159,7 +160,7 @@ class Dimension:
             iters_reloop = 0
             remaining_sum = sample - total_sum
             while (abs(remaining_sum) > self.tolerance and
-                   iters_reloop < 500):
+                   iters_reloop < iter_limit_reloop):
                 iters_reloop += 1
                 for i in range(len(case)):
                     if abs(remaining_sum) <= self.tolerance:  # TODO: toler??
@@ -171,7 +172,7 @@ class Dimension:
                     case[i] += var_sum
                     remaining_sum -= var_sum
 
-            if iters_reloop >= 500:
+            if iters_reloop >= iter_limit_reloop:
                 print(f"Warning: sample {sample} couldn't be reached"
                       f" by total sum {total_sum}) in case {case}")
                 continue
@@ -181,7 +182,7 @@ class Dimension:
             if abs(remaining_sum) <= self.tolerance:
                 cases.append(case)
 
-        if iters_case >= 5000:
+        if iters_case >= iter_limit:
             print(f"Warning: Iterations count exceeded. Retrying")
 
         while len(cases) < self.n_cases:
