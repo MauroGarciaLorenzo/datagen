@@ -119,10 +119,12 @@ def generate_columns(dim):
 
 
 def process_p_cig_dimension(samples_df, p_cig):
-    """Gives value to g_for and g_fol dimension. p_cig samples values must be
-    distributed between g_for and g_fol assigning a random value between 0 and
-    1 as coefficient, giving g_for plus g_fol equals p_cig. g_for variables are
-    calculated in a normal way, while g_fol variables are defined as:
+    """ Assigns values to g_for and g_fol dimensions.
+
+    p_cig samples values must be distributed between g_for and g_fol assigning
+    a random value between 0 and 1 as a one-to-one percentage, resulting in
+    g_for plus g_fol equalling p_cig. g_for variables are calculated as usual,
+    while g_fol variables are complimentary to g_for to sum g_fol:
         g_fol_i = p_cig_i - g_for_i
 
     :param samples_df: Involved samples
@@ -133,7 +135,7 @@ def process_p_cig_dimension(samples_df, p_cig):
     dims_df = pd.DataFrame()
 
     for _, sample in samples_df.iterrows():
-        # Obtain cases_p_cig
+        # Obtain p_cig cases
         cases_p_cig_df = pd.DataFrame(
             p_cig.get_cases_extreme(sample[p_cig.label]),
             columns=generate_columns(p_cig)).dropna()
@@ -141,17 +143,21 @@ def process_p_cig_dimension(samples_df, p_cig):
         dims_p_cig_df = pd.DataFrame(
             {p_cig.label: np.repeat(sample[p_cig.label], n_rows)})
 
-        # Obtain cases_g_for and g_fol
+        # Obtain the complimentary g_for and g_fol percentages
         grid_forming_perc = random.random()
         g_for_sample = sample["p_cig"] * grid_forming_perc
         g_fol_sample = sample["p_cig"] * (1 - grid_forming_perc)
 
+        # Obtain g_for and g_fol cases
         cases_g_for = []
         cases_g_fol = []
 
         dims_g_for = []
         dims_g_fol = []
         for i in range(len(cases_p_cig_df)):
+            # Compose g_for dimension
+            # Pick bounds of each variable. The min value is p_cig dimension's
+            # min bound, and max is the value sampled for ith p_cig's variable
             g_for_variables = np.array([
                 (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
                 for x in range(len(p_cig.variables))])
@@ -161,13 +167,14 @@ def process_p_cig_dimension(samples_df, p_cig):
                               borders=(p_cig.borders[0], sample[p_cig.label]),
                               label="g_for",
                               tolerance=p_cig.tolerance)
-            # create g_for_case
+            # Create g_for case
             case_g_for = (g_for.get_cases_extreme(g_for_sample))[0]
             if all(x is not None for x in case_g_for) and \
                     all(x is not np.nan for x in case_g_for):
                 dims_g_for.append(g_for_sample)
                 cases_g_for.append(case_g_for)
                 dims_g_fol.append(g_fol_sample)
+                # Compose g_fol subtracting p_cig from g_for case variables
                 cases_g_fol.append(
                     [cases_p_cig_df.iloc[i, x] - cases_g_for[i][x]
                      for x in range(len(p_cig.variables))])
@@ -181,13 +188,13 @@ def process_p_cig_dimension(samples_df, p_cig):
             cases_g_fol,
             columns=[f"g_fol_Var{v}" for v in range(len(p_cig.variables))])
         dims_g_fol_df = pd.DataFrame(dims_g_fol, columns=["g_fol"])
-        # concat a concrete sample of p_cig, g_for and g_fol
+        # Concat p_cig, g_for and g_fol into a complete case dataframe
         sample_cases_df = pd.concat(
             [cases_p_cig_df, cases_g_for_df, cases_g_fol_df], axis=1)
         sample_dims_df = pd.concat(
             [dims_p_cig_df, dims_g_for_df, dims_g_fol_df], axis=1)
 
-        # concat samples of p_cig, g_for and g_fol
+        # Concat samples of p_cig, g_for and g_fol
         cases_df = pd.concat([cases_df, sample_cases_df], axis=0,
                              ignore_index=True)
         dims_df = pd.concat([dims_df, sample_dims_df], axis=0,
@@ -202,7 +209,7 @@ def process_p_cig_dimension(samples_df, p_cig):
 
 def process_other_dimensions(samples_df, dim):
     """
-    This method assign values to the variables within a generic dimension.
+    This method assigns values to the variables within a generic dimension.
 
     :param samples_df: Dataframe containing every sample in this cell
     :param dim: Involved dimension
@@ -225,7 +232,8 @@ def process_other_dimensions(samples_df, dim):
 
 
 def gen_cases(samples_df, dimensions):
-    """Produces sum combinations of the samples given.
+    """Produces sum combinations of the samples given. Each sample sum
+    combination is called a "case".
 
     :param samples_df: Involved samples (dataframe)
     :param dimensions: Involved dimensions
@@ -310,8 +318,6 @@ def sensitivity(cases):
     return divs
 
 
-# task defined (every case is going to be evaluated in parallel)
-# funtion is received as a parameter
 @task(returns=1)
 def eval_stability(case, f):
     """Call objective function and return its result.
