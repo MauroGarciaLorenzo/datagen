@@ -3,7 +3,7 @@ import numpy as np
 
 from datagen.src.objective_function import dummy
 from datagen.src.dimensions import Dimension
-from datagen.src.start_app import main
+from datagen.src.start_app import start
 
 try:
     from pycompss.api.task import task
@@ -53,7 +53,7 @@ def main():
                   borders=(1, 6), label="1"),
         Dimension(variables=variables_d3, n_cases=n_cases, divs=1,
                   borders=(2, 7), label="2")]
-    main(dimensions, n_samples, rel_tolerance, ax, dummy)
+    start(dimensions, n_samples, rel_tolerance, ax, dummy)
 
 
 if __name__ == '__main__':
