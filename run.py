@@ -2,7 +2,7 @@
 import numpy as np
 
 from datagen.src.dimensions import Dimension
-from datagen.src.start_app import main
+from datagen.src.start_app import start
 from datagen.src.objective_function import dummy
 
 try:
@@ -64,7 +64,7 @@ def main():
     ]
 
     ax = None
-    main(dimensions, n_samples, rel_tolerance, ax, dummy)
+    start(dimensions, n_samples, rel_tolerance, ax, dummy)
 
 
 if __name__ == "__main__":
