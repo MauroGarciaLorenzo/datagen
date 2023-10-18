@@ -53,7 +53,8 @@ def main():
                   borders=(1, 6), label="1"),
         Dimension(variables=variables_d3, n_cases=n_cases, divs=1,
                   borders=(2, 7), label="2")]
-    start(dimensions, n_samples, rel_tolerance, ax, dummy)
+    cases_df, execution_logs = start(dimensions, n_samples, rel_tolerance, ax,
+                                     dummy)
 
 
 if __name__ == '__main__':

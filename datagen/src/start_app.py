@@ -59,4 +59,5 @@ def start(dimensions, n_samples, rel_tolerance, ax, func):
                                             func=func, n_samples=n_samples)
     print_results(execution_logs, cases_df)
     print("")
+    return cases_df, execution_logs
 
