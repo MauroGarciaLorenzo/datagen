@@ -33,9 +33,11 @@ def main():
         -upper: upper bound of the dimension (maximum value of a sample)
         -label: dimension identifier
 
-    Apart from that, it can also be specified the number of samples and the
-    tolerance (maximum difference upper-lower bound of a dimension within a
-    cell to be subdivided).
+    Apart from that, it can also be specified the number of samples and
+    the relative tolerance (indicates the portion of the size of the original
+    dimension). For example, if we have a dimension of size 10 and relative
+    tolerance is 0.5, the smallest cell in this dimension will have size 5.
+    Lastly, user should provide the objective function.
     """
     variables_d1 = np.array([(0, 2), (0, 1.5), (0, 1.5)])
     variables_d2 = np.array([(0, 1), (0, 1.5), (0, 1.5), (0, 2)])

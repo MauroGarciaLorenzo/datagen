@@ -119,7 +119,7 @@ class Dimension:
 
         Once every variable has value, we will add to it a random value
         between this value and the maximum possible value (explained above)
-        until error is less than defined.
+        until error is less than defined (dimension tolerance).
 
         :param sample: Target sum
         :param iter_limit: Maximum number of iterations. Useful to avoid
