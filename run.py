@@ -64,7 +64,8 @@ def main():
     ]
 
     ax = None
-    start(dimensions, n_samples, rel_tolerance, ax, dummy)
+    cases_df, execution_logs = start(dimensions, n_samples, rel_tolerance, ax,
+                                     dummy)
 
 
 if __name__ == "__main__":
