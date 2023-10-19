@@ -37,12 +37,13 @@ def main():
     the relative tolerance (indicates the portion of the size of the original
     dimension). For example, if we have a dimension of size 10 and relative
     tolerance is 0.5, the smallest cell in this dimension will have size 5.
-    Lastly, user should provide the objective function.
+    Lastly, user should provide the objective function and a boolean indicating
+    whether sensitivity analysis is used or not (use_sensitivity).
     """
     variables_d1 = np.array([(0, 2), (0, 1.5), (0, 1.5)])
     variables_d2 = np.array([(0, 1), (0, 1.5), (0, 1.5), (0, 2)])
     variables_d3 = np.array([(1, 3.5), (1, 3.5)])
-    n_samples = 2
+    n_samples = 10
     n_cases = 1
     rel_tolerance = 0.1
     # max_depth = 5
@@ -55,8 +56,9 @@ def main():
                   borders=(1, 6), label="1"),
         Dimension(variables=variables_d3, n_cases=n_cases, divs=1,
                   borders=(2, 7), label="2")]
+    use_sensitivity = True
     cases_df, execution_logs = start(dimensions, n_samples, rel_tolerance, ax,
-                                     dummy)
+                                     dummy, use_sensitivity)
 
 
 if __name__ == '__main__':
