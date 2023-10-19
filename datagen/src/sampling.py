@@ -79,6 +79,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     if delta_entropy < 0 or not check_dims(dimensions):
         return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
+        # dims_df = sensitivity(cases_df)
         children_grid = gen_grid(dimensions)
         cases_df, children_total = explore_grid(ax, cases_df, children_grid,
                                                 depth, dims_df, func,
@@ -285,39 +286,70 @@ def gen_samples(n_samples, dimensions):
     return df_samples
 
 
-def sensitivity(cases):
+def sensitivity(cases_df):
     """Sensitivity analysis. Decides which dimensions are more important to the
      decision.
 
     :param cases: Involved cases
     :return: Divisions for each dimension
     """
-    x = []
-    y = []
-    for s in cases:
-        x.append(s.case_dim)
-        y.append(s.stability)
-    x = np.array(x)
-    y = np.array(y)
+    labels = set(col.rsplit('_Var')[0]
+                 for col in cases_df.columns if '_Var' in col)
+    dims_df = pd.DataFrame()
+    for label in labels:
+        matching_columns = (
+            cases_df.filter(regex=label + r'_*', axis=1).sum(axis=1))
+        dims_df[label] = matching_columns
+    dims_df.columns = labels
+    x = np.array(dims_df)
+    y = np.array(cases_df["Stability"])
+
     x_avg = np.mean(x, axis=0)
     x_min = np.min(x, axis=0)
     x_max = np.max(x, axis=0)
     model = LogisticRegression()
     model.fit(x, y)
-    y_test = np.zeros([2, 1])
-    std = np.zeros([len(x_avg), 1])
+    y_test = np.zeros([2, ])
+    std = np.zeros([len(x_avg), ])
     for i in range(len(x_min)):
         x_test = np.copy(x_avg).reshape(1, -1)
         x_test[0, i] = x_min[i]
-        y_test[0, 0] = model.predict(x_test)
+        y_test[0] = model.predict(x_test)
         x_test[0, i] = x_max[i]
-        y_test[1, 0] = model.predict(x_test)
+        y_test[1] = model.predict(x_test)
+        std[i] = np.std(y_test)
+
+    dim_max_std = np.argmax(std)
+
+
+"""
+    X=[]
+    y=[]
+    for s in subsamples:
+        X.append(s.subsample_dim)
+        y.append(s.stability)
+        
+    X=np.array(X)
+    y=np.array(y)
+    x_avg = np.mean(x, axis=0)
+    x_min = np.min(x, axis=0)
+    x_max = np.max(x, axis=0)
+    model = LogisticRegression()
+    model.fit(x, y)
+    y_test = np.zeros([2,])
+    std = np.zeros([len(x_avg),])
+    for i in range(len(x_min)):
+        x_test = np.copy(x_avg).reshape(1, -1)
+        x_test[0, i] = x_min[i]
+        y_test[0] = model.predict(x_test)
+        x_test[0, i] = x_max[i]
+        y_test[1] = model.predict(x_test)
         std[i] = np.std(y_test)
 
     dim_max_std = np.argmax(std)
     divs = [1, 1, 1]
-    divs[dim_max_std] = 2
-    return divs
+    divs[dim_max_std] = 2"""
+
 
 
 @task(returns=1)
