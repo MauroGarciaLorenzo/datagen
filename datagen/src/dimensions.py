@@ -110,8 +110,7 @@ class Dimension:
 
         return cases
 
-    def get_cases_extreme(self, sample, iter_limit=5000, 
-                          iter_limit_reloop=500):
+    def get_cases_extreme(self, sample, iter_limit=500, iter_limit_reloop=50):
         """This case generator aims to reach more variance between cases within
         a sample. Here, we assign random values to de variables in the range
         lower bound of this variable - minimum between upper bound of the
@@ -130,64 +129,53 @@ class Dimension:
             equal sample. If the combination cannot not be found with the
             defined iter_limit, this case will be filled with NaN values.
         """
+        # Distribute remaining sum within variables
+        # Shuffle variables
+        indexes = list(range(len(self.variables)))
+        random.shuffle(indexes)
+        variables_shuffled = self.variables[indexes]
         cases = []
-        iters_case = 0
-        while len(cases) < self.n_cases and iters_case < iter_limit:
-            # Assign random value between variables minimum and remaining sum
-            iters_case += 1
-            total_sum = 0
-            case = []
-            valid_case = True
-            for i in range(len(self.variables)):
-                limits = (self.variables[i, 0],
-                          min(self.variables[i, 1], abs(sample - total_sum)))
-                if limits[1] <= limits[0]:
-                    print(f"Lower bound for variable {i} in dimension "
-                          f"{self.label} ({limits[0]}) exceeds the remaining "
-                          f"sum {sample - total_sum} to reach the sample value"
-                          f" {sample}.")
-                    valid_case = False
-                    break
-                var = random.random() * (limits[1] - limits[0]) + limits[0]
-                case.append(var)
-                total_sum += var
-            if not valid_case:
-                continue
-            # Distribute remaining sum within variables
-            # Shuffle variables
-            indexes = list(range(len(self.variables)))
-            random.shuffle(indexes)
-            variables_shuffled = self.variables[indexes]
-            case = [case[i] for i in indexes]
+        iters_cases = 0
+        max_val = sum([v[1] for v in variables_shuffled])
+        min_val = sum([v[0] for v in variables_shuffled])
+        if max_val >= sample >= min_val:
+            while len(cases) < self.n_cases and iters_cases < iter_limit:
+                iters_cases += 1
+                total_sum = 0
+                case = [v[0] for v in variables_shuffled]
 
-            iters_reloop = 0
-            remaining_sum = sample - total_sum
-            while (abs(remaining_sum) > self.tolerance and
-                   iters_reloop < iter_limit_reloop):
-                iters_reloop += 1
-                for i in range(len(case)):
-                    if abs(remaining_sum) <= self.tolerance:  # TODO: toler??
-                        break
-                    new_sum_range = (
-                        0,
-                        min(remaining_sum, variables_shuffled[i, 1] - case[i]))
-                    var_sum = random.random() * new_sum_range[1]
-                    case[i] += var_sum
-                    remaining_sum -= var_sum
+                iters_reloop = 0
 
-            if iters_reloop >= iter_limit_reloop:
-                print(f"Warning: sample {sample} couldn't be reached"
-                      f" by total sum {total_sum}) in case {case}")
-                continue
-            # Restore variables order
-            restore_order = np.argsort(indexes)
-            case = [case[i] for i in restore_order]
-            if abs(remaining_sum) <= self.tolerance:
-                cases.append(case)
+                while (abs(total_sum - sample) > 1e-5 and
+                       iters_reloop < iter_limit):
+                    iters_reloop += 1
+                    for i in range(len(case)):
+                        if abs(total_sum - sample) <= 1e-5:
+                            break
+                        new_var = random.uniform(case[i],
+                                                 variables_shuffled[i, 1])
+                        new_var = np.clip(new_var, case[i],
+                                          case[i] + sample - total_sum)
+                        case[i] = new_var
+                        total_sum = sum(case)
 
-        if iters_case >= iter_limit:
-            print(f"Warning: Iterations count exceeded. Retrying")
+                if iters_reloop >= iter_limit:
+                    print(f"Warning: sample {sample} couldn't be reached"
+                          f" by total sum {total_sum}) in case {case}")
+                    continue
 
+                # Restore variables order
+                restore_order = np.argsort(indexes)
+                case = [case[i] for i in restore_order]
+                if abs(sample - total_sum) <= 1e-5:
+                    cases.append(case)
+
+            if iters_cases >= iter_limit:
+                print("Warning: Iterations count exceeded. "
+                      "Retrying with normal sampling")
+                return self.get_cases_normal(sample)
+        else:
+            print(f"Warning. Sample {sample} cannot be reached.")
         while len(cases) < self.n_cases:
             cases.append([np.nan] * len(self.variables))
 
