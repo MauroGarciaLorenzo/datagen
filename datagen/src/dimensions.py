@@ -51,7 +51,7 @@ class Dimension:
     """
     def __init__(self, variables, n_cases, divs, borders, label,
                  tolerance=None):
-        self.variables = variables
+        self.variables = np.array(variables, dtype='float')
         self.n_cases = n_cases
         self.divs = divs
         self.borders = borders
@@ -110,7 +110,8 @@ class Dimension:
 
         return cases
 
-    def get_cases_extreme(self, sample, iter_limit=500, iter_limit_reloop=50):
+    def get_cases_extreme(self, sample, iter_limit=5000,
+                          iter_limit_reloop=500):
         """This case generator aims to reach more variance between cases within
         a sample. Here, we assign random values to de variables in the range
         lower bound of this variable - minimum between upper bound of the
@@ -131,52 +132,49 @@ class Dimension:
         """
         # Distribute remaining sum within variables
         # Shuffle variables
-        indexes = list(range(len(self.variables)))
-        random.shuffle(indexes)
-        variables_shuffled = self.variables[indexes]
         cases = []
         iters_cases = 0
-        max_val = sum([v[1] for v in variables_shuffled])
-        min_val = sum([v[0] for v in variables_shuffled])
-        if max_val >= sample >= min_val:
-            while len(cases) < self.n_cases and iters_cases < iter_limit:
-                iters_cases += 1
-                total_sum = 0
-                case = [v[0] for v in variables_shuffled]
+        max_val = sum([v[1] for v in self.variables])
+        min_val = sum([v[0] for v in self.variables])
 
-                iters_reloop = 0
-
-                while (abs(total_sum - sample) > 1e-5 and
-                       iters_reloop < iter_limit):
-                    iters_reloop += 1
-                    for i in range(len(case)):
-                        if abs(total_sum - sample) <= 1e-5:
-                            break
-                        new_var = random.uniform(case[i],
-                                                 variables_shuffled[i, 1])
-                        new_var = np.clip(new_var, case[i],
-                                          case[i] + sample - total_sum)
-                        case[i] = new_var
-                        total_sum = sum(case)
-
-                if iters_reloop >= iter_limit:
-                    print(f"Warning: sample {sample} couldn't be reached"
-                          f" by total sum {total_sum}) in case {case}")
-                    continue
-
-                # Restore variables order
-                restore_order = np.argsort(indexes)
-                case = [case[i] for i in restore_order]
-                if abs(sample - total_sum) <= 1e-5:
-                    cases.append(case)
-
-            if iters_cases >= iter_limit:
-                print("Warning: Iterations count exceeded. "
-                      "Retrying with normal sampling")
-                return self.get_cases_normal(sample)
-        else:
+        if not (max_val >= sample >= min_val):
             print(f"Warning. Sample {sample} cannot be reached.")
-        while len(cases) < self.n_cases:
-            cases.append([np.nan] * len(self.variables))
+            return
+
+        while len(cases) < self.n_cases and iters_cases < iter_limit:
+            iters_cases += 1
+            initial_case = self.variables[:, 0]
+            case = initial_case.copy()
+            total_sum = sum(case)
+            iters_reloop = 0
+            # TODO: isclose
+            while (abs(total_sum - sample) > 1e-5 and
+                   iters_reloop < iter_limit):
+                indexes = list(range(len(self.variables)))
+                random.shuffle(indexes)
+
+                iters_reloop += 1
+                for i in indexes:
+                    if abs(total_sum - sample) <= 1e-5:
+                        break
+                    new_var = random.uniform(case[i],
+                                             self.variables[i, 1])
+                    new_var = np.clip(new_var, case[i],
+                                      case[i] + sample - total_sum)
+                    case[i] = new_var
+                    total_sum = sum(case)
+
+            if iters_reloop >= iter_limit_reloop:
+                print(f"Warning: sample {sample} couldn't be reached"
+                      f" by total sum {total_sum}) in case {case}")
+                continue
+
+            if abs(sample - total_sum) <= 1e-5:
+                cases.append(case)
+
+        if iters_cases >= iter_limit:
+            print("Warning: Iterations count exceeded. "
+                  "Retrying with normal sampling")
+            return self.get_cases_normal(sample)
 
         return cases
