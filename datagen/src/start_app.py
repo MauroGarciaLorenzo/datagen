@@ -30,7 +30,7 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def start(dimensions, n_samples, rel_tolerance, ax, func):
+def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -49,6 +49,8 @@ def start(dimensions, n_samples, rel_tolerance, ax, func):
         e.g., if rel_tolerance = 0.1 the dimension's tolerance will be 10 % of
         its range
     :param ax: Plottable object
+    :param use_sensitivity: Boolean indicating whether sensitivity analysis is
+    used or not
     :param func: Objective function
     """
     for dim in dimensions:
@@ -56,7 +58,8 @@ def start(dimensions, n_samples, rel_tolerance, ax, func):
     grid = gen_grid(dimensions)
     cases_df, execution_logs = explore_grid(ax, cases_df=None, grid=grid,
                                             depth=0, dims_df=pd.DataFrame(),
-                                            func=func, n_samples=n_samples)
+                                            func=func, n_samples=n_samples,
+                                            use_sensitivity = use_sensitivity)
     print_results(execution_logs, cases_df)
     if cases_df.min().min() < 0:
         print("Warning. Negative numbers in dataframe.")

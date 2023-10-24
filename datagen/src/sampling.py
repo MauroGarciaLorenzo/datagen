@@ -22,9 +22,11 @@ stability of each case.
 import random
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.linear_model import LogisticRegression
 from scipy.stats import qmc
+from sklearn.preprocessing import StandardScaler
 
 from .utils import check_dims, flatten_list
 from .dimensions import Cell, Dimension
@@ -39,7 +41,7 @@ except ImportError:
 
 @task(returns=2)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
-                 cases_heritage_df):
+                 cases_heritage_df, use_sensitivity):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -48,7 +50,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     Otherwise, it will return the cases and logs taken until this point.
 
     :param func: Objective function
-    :param n_samples: number of samples to produce
+    :param n_samples: Number of samples to produce
     :param entropy: Entropy of the father calculated from the cases that fits
     into this cell's space
     :param depth: Maximum recursivity depth (it won't subdivide itself if
@@ -56,6 +58,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :param ax: Plottable object
     :param dimensions: Cell dimensions
     :param cases_heritage_df: Inherited cases dataframe
+    :param use_sensitivity: Boolean indicating whether sensitivity analysis is
+    used or not
     :return children_total: List of children dimensions, entropy,
     delta_entropy and depth
     :return cases_df: Concatenation of inherited cases and those produced by
@@ -79,14 +83,35 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     if delta_entropy < 0 or not check_dims(dimensions):
         return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
+        if use_sensitivity:
+            dimensions = sensitivity(cases_df, dimensions)
         children_grid = gen_grid(dimensions)
         cases_df, children_total = explore_grid(ax, cases_df, children_grid,
                                                 depth, dims_df, func,
-                                                n_samples)
+                                                n_samples, use_sensitivity)
         return children_total, cases_df
 
 
-def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples):
+def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
+                 use_sensitivity):
+    """
+    For a given grid (children grid) and cases taken, this function is in
+    charge of distributing those samples among those cells and, finally,
+    retrieving its results.
+
+    :param ax: Plottable object
+    :param cases_df: Concatenation of inherited cases and those produced by
+    the cell
+    :param grid: Children grid
+    :param depth: Maximum recursivity depth (it won't subdivide itself if
+    exceeded)
+    :param dims_df: Samples dataframe(one for each case)
+    :param func: Objective function
+    :param n_samples: Number of samples to produce
+    :param use_sensitivity: Boolean indicating whether sensitivity analysis is
+    used or not
+    :return: Children cases and parameters
+    """
     total_cases_df, total_entropies = get_children_parameters(
         grid, dims_df, cases_df)
     children_total_params = []
@@ -98,10 +123,10 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples):
                                                              entropy_children,
                                                              depth + 1, ax,
                                                              dim,
-                                                             cases_heritage_df)
+                                                             cases_heritage_df,
+                                                             use_sensitivity)
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
-    # implement reduction
     children_total_params = compss_wait_on(children_total_params)
     list_cases_children_df = compss_wait_on(list_cases_children_df)
     cases_df = pd.concat(list_cases_children_df, ignore_index=True)
@@ -285,39 +310,42 @@ def gen_samples(n_samples, dimensions):
     return df_samples
 
 
-def sensitivity(cases):
+def sensitivity(cases_df, dimensions):
     """Sensitivity analysis. Decides which dimensions are more important to the
      decision.
 
-    :param cases: Involved cases
+    :param cases_df: Involved cases
+    :param dimensions: Involved dimensions
     :return: Divisions for each dimension
     """
-    x = []
-    y = []
-    for s in cases:
-        x.append(s.case_dim)
-        y.append(s.stability)
-    x = np.array(x)
-    y = np.array(y)
-    x_avg = np.mean(x, axis=0)
-    x_min = np.min(x, axis=0)
-    x_max = np.max(x, axis=0)
-    model = LogisticRegression()
-    model.fit(x, y)
-    y_test = np.zeros([2, 1])
-    std = np.zeros([len(x_avg), 1])
-    for i in range(len(x_min)):
-        x_test = np.copy(x_avg).reshape(1, -1)
-        x_test[0, i] = x_min[i]
-        y_test[0, 0] = model.predict(x_test)
-        x_test[0, i] = x_max[i]
-        y_test[1, 0] = model.predict(x_test)
-        std[i] = np.std(y_test)
+    labels = list(set(col.rsplit('_Var')[0]
+                      for col in cases_df.columns if '_Var' in col))
+    dims_df = pd.DataFrame()
+    for label in labels:
+        matching_columns = (
+            cases_df.filter(regex=label + r'_*', axis=1).sum(axis=1))
+        dims_df[label] = matching_columns
+    dims_df.columns = labels
+    x = np.array(dims_df)
+    y = np.array(cases_df["Stability"])
+    y = y.astype('int')
+    scaler = StandardScaler()
+    x_scaled = scaler.fit_transform(x)
+    x_avg = np.mean(x_scaled, axis=0)
+    x_min = np.min(x_scaled, axis=0)
+    x_max = np.max(x_scaled, axis=0)
+    model = RandomForestClassifier()
+    model.fit(x_scaled, y)
+    importances = model.feature_importances_
 
-    dim_max_std = np.argmax(std)
-    divs = [1, 1, 1]
-    divs[dim_max_std] = 2
-    return divs
+    dim_max_imp = np.argmax(importances)
+    main_label = list(labels)[dim_max_imp]
+    for dim in dimensions:
+        if dim.label == main_label:
+            dim.divs = 2
+        else:
+            dim.divs = 1
+    return dimensions
 
 
 @task(returns=1)
