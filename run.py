@@ -39,12 +39,12 @@ def main():
     tolerance is 0.5, the smallest cell in this dimension will have size 5.
     Lastly, user should provide the objective function.
     """
-    p_sg = np.array([(0, 2), (0, 1.5), (0, 1.5)])
-    p_cig = np.array([(0, 1), (0, 1.5), (0, 1.5), (0, 2)])
-    tau_f_g_for = np.array([(0, 2)])
-    tau_v_g_for = np.array([(0, 2)])
-    tau_p_g_for = np.array([(0, 2)])
-    tau_q_g_for = np.array([(0, 2)])
+    p_sg = [(0, 2), (0, 1.5), (0, 1.5)]
+    p_cig = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
+    tau_f_g_for = [(0., 2)]
+    tau_v_g_for = [(0., 2)]
+    tau_p_g_for = [(0., 2)]
+    tau_q_g_for = [(0., 2)]
     n_samples = 2
     n_cases = 3
     rel_tolerance = 0.1
