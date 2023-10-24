@@ -40,10 +40,12 @@ def main():
     Lastly, user should provide the objective function and a boolean indicating
     whether sensitivity analysis is used or not (use_sensitivity).
     """
-    variables_d1 = np.array([(0, 2), (0, 1.5), (0, 1.5)])
-    variables_d2 = np.array([(0, 1), (0, 1.5), (0, 1.5), (0, 2)])
-    variables_d3 = np.array([(1, 3.5), (1, 3.5)])
-    n_samples = 10
+    
+    variables_d1 = [(0, 2), (0, 1.5), (0, 1.5)]
+    variables_d2 = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
+    variables_d3 = [(1, 3.5), (1, 3.5)]
+    n_samples = 2
+
     n_cases = 1
     rel_tolerance = 0.1
     # max_depth = 5

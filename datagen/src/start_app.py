@@ -61,6 +61,8 @@ def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity):
                                             func=func, n_samples=n_samples,
                                             use_sensitivity = use_sensitivity)
     print_results(execution_logs, cases_df)
+    if cases_df.min().min() < 0:
+        print("Warning. Negative numbers in dataframe.")
     print("")
     return cases_df, execution_logs
 
