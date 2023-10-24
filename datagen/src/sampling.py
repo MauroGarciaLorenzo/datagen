@@ -329,15 +329,13 @@ def sensitivity(cases_df, dimensions):
     x = np.array(dims_df)
     y = np.array(cases_df["Stability"])
     y = y.astype('int')
+
     scaler = StandardScaler()
     x_scaled = scaler.fit_transform(x)
-    x_avg = np.mean(x_scaled, axis=0)
-    x_min = np.min(x_scaled, axis=0)
-    x_max = np.max(x_scaled, axis=0)
     model = RandomForestClassifier()
     model.fit(x_scaled, y)
-    importances = model.feature_importances_
 
+    importances = model.feature_importances_
     dim_max_imp = np.argmax(importances)
     main_label = list(labels)[dim_max_imp]
     for dim in dimensions:
