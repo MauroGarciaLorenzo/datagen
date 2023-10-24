@@ -22,9 +22,11 @@ stability of each case.
 import random
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.linear_model import LogisticRegression
 from scipy.stats import qmc
+from sklearn.preprocessing import StandardScaler
 
 from .utils import check_dims, flatten_list
 from .dimensions import Cell, Dimension
@@ -316,8 +318,8 @@ def sensitivity(cases_df, dimensions):
     :param dimensions: Involved dimensions
     :return: Divisions for each dimension
     """
-    labels = set(col.rsplit('_Var')[0]
-                 for col in cases_df.columns if '_Var' in col)
+    labels = list(set(col.rsplit('_Var')[0]
+                      for col in cases_df.columns if '_Var' in col))
     dims_df = pd.DataFrame()
     for label in labels:
         matching_columns = (
@@ -327,24 +329,17 @@ def sensitivity(cases_df, dimensions):
     x = np.array(dims_df)
     y = np.array(cases_df["Stability"])
     y = y.astype('int')
+    scaler = StandardScaler()
+    x_scaled = scaler.fit_transform(x)
+    x_avg = np.mean(x_scaled, axis=0)
+    x_min = np.min(x_scaled, axis=0)
+    x_max = np.max(x_scaled, axis=0)
+    model = RandomForestClassifier()
+    model.fit(x_scaled, y)
+    importances = model.feature_importances_
 
-    x_avg = np.mean(x, axis=0)
-    x_min = np.min(x, axis=0)
-    x_max = np.max(x, axis=0)
-    model = LogisticRegression()
-    model.fit(x, y)
-    y_test = np.zeros([2, ])
-    std = np.zeros([len(x_avg), ])
-    for i in range(len(x_min)):
-        x_test = np.copy(x_avg).reshape(1, -1)
-        x_test[0, i] = x_min[i]
-        y_test[0] = model.predict(x_test)
-        x_test[0, i] = x_max[i]
-        y_test[1] = model.predict(x_test)
-        std[i] = np.std(y_test)
-
-    dim_max_std = np.argmax(std)
-    main_label = list(labels)[dim_max_std]
+    dim_max_imp = np.argmax(importances)
+    main_label = list(labels)[dim_max_imp]
     for dim in dimensions:
         if dim.label == main_label:
             dim.divs = 2

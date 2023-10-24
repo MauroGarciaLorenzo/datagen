@@ -2,6 +2,9 @@
 from unittest import TestCase
 
 from datagen import *
+from datagen.tests.utils import gen_df_for_dims, linear_function, \
+    dim0_func, parab_func
+from datagen.src.sampling import sensitivity
 
 
 class Test(TestCase):
@@ -100,3 +103,35 @@ class Test(TestCase):
         self.assertEqual(len(total_cases_df[1]), 2)
         pd.testing.assert_frame_equal(total_cases_df[1],
                                       self.cases_heritage_df.iloc[1:3])
+
+    def test_sensitivity(self):
+        variables = [(0, 10), (0, 10), (0, 10), (0, 10)]
+        dim1 = Dimension(variables, n_cases=3, divs=1, borders=(0, 70),
+                         label="Dim1")
+        dim2 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
+                         label="Dim2")
+        dim3 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
+                         label="Dim3")
+        dims = [dim1, dim2, dim3]
+        cases_df = gen_df_for_dims(dims, 1000)
+
+        linear_cases_df = cases_df.copy()
+        parab_cases_df = cases_df.copy()
+        dim0_cases_df = cases_df.copy()
+
+        linear_cases_df["Stability"] = (
+            linear_cases_df.apply(linear_function, axis=1))
+        parab_cases_df["Stability"] = parab_cases_df.apply(parab_func, axis=1)
+        dim0_cases_df["Stability"] = dim0_cases_df.apply(dim0_func, axis=1)
+
+        dims_linear = sensitivity(linear_cases_df, dims)
+        dims_linear_divs = [dim.divs for dim in dims_linear]
+        dims_parab = sensitivity(parab_cases_df, dims)
+        dims_parab_divs = [dim.divs for dim in dims_parab]
+        dims_dim0 = sensitivity(dim0_cases_df, dims)
+        dims_dim0_divs = [dim.divs for dim in dims_dim0]
+
+        self.assertEqual(dims_linear_divs, [1, 1, 2])
+        self.assertEqual(dims_parab_divs, [1, 2, 1])
+        self.assertEqual(dims_dim0_divs, [2, 1, 1])
+
