@@ -311,8 +311,9 @@ def gen_samples(n_samples, dimensions):
 
 
 def sensitivity(cases_df, dimensions):
-    """Sensitivity analysis. Decides which dimensions are more important to the
-     decision.
+    """Sensitivity analysis. Decides which dimension is more important to the
+     decision, and sets its divisions to 2. The remaining dimensions will not
+     be subdivided.
 
     :param cases_df: Involved cases
     :param dimensions: Involved dimensions
@@ -399,8 +400,8 @@ def calculate_entropy(freqs):
     """Obtain cell entropy from stability and non-stability frequencies.
 
     :param freqs: two-element list with the frequency (1-based) of stable and
-    non-stable cases, respectively.
-    :return: Entropy.
+    non-stable cases, respectively
+    :return: Entropy
     """
     cell_entropy = 0
     for i in range(len(freqs)):
