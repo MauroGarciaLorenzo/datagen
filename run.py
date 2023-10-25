@@ -47,11 +47,11 @@ def main():
     tau_v_g_for = [(0., 2)]
     tau_p_g_for = [(0., 2)]
     tau_q_g_for = [(0., 2)]
-    n_samples = 2
-    n_cases = 3
+    n_samples = 5
+    n_cases = 1
     
-    rel_tolerance = 0.1
-    # max_depth = 5
+    rel_tolerance = 0.2
+    max_depth = 10
     # ax = plt.figure().add_subplot(projection='3d')
     dimensions = [
         Dimension(variables=p_sg, n_cases=n_cases, divs=2, borders=(0, 5),
@@ -71,7 +71,7 @@ def main():
     ax = None
     use_sensitivity = True
     cases_df, execution_logs = start(dimensions, n_samples, rel_tolerance, ax,
-                                     dummy, use_sensitivity)
+                                     dummy, use_sensitivity, max_depth)
 
 
 if __name__ == "__main__":

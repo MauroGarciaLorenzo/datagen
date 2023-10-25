@@ -41,7 +41,7 @@ except ImportError:
 
 @task(returns=2)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
-                 cases_heritage_df, use_sensitivity):
+                 cases_heritage_df, use_sensitivity, max_depth):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -53,8 +53,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :param n_samples: Number of samples to produce
     :param entropy: Entropy of the father calculated from the cases that fits
     into this cell's space
-    :param depth: Maximum recursivity depth (it won't subdivide itself if
-    exceeded)
+    :param depth: Recursivity depth
     :param ax: Plottable object
     :param dimensions: Cell dimensions
     :param cases_heritage_df: Inherited cases dataframe
@@ -62,6 +61,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     used or not
     :return children_total: List of children dimensions, entropy,
     delta_entropy and depth
+    :param max_depth: Maximum recursivity depth (it won't subdivide itself if
+    exceeded)
     :return cases_df: Concatenation of inherited cases and those produced by
     the cell
     """
@@ -80,7 +81,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
     # Finish recursivity if entropy decreases or cell become too small
-    if delta_entropy < 0 or not check_dims(dimensions):
+    if delta_entropy < 0 or not check_dims(dimensions) or depth == max_depth:
         return (dimensions, entropy, delta_entropy, depth), cases_df
     else:
         if use_sensitivity:
@@ -88,12 +89,13 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         children_grid = gen_grid(dimensions)
         cases_df, children_total = explore_grid(ax, cases_df, children_grid,
                                                 depth, dims_df, func,
-                                                n_samples, use_sensitivity)
+                                                n_samples, use_sensitivity,
+                                                max_depth)
         return children_total, cases_df
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
-                 use_sensitivity):
+                 use_sensitivity, max_depth):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -103,13 +105,14 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     :param cases_df: Concatenation of inherited cases and those produced by
     the cell
     :param grid: Children grid
-    :param depth: Maximum recursivity depth (it won't subdivide itself if
-    exceeded)
+    :param depth: Recursivity depth
     :param dims_df: Samples dataframe(one for each case)
     :param func: Objective function
     :param n_samples: Number of samples to produce
     :param use_sensitivity: Boolean indicating whether sensitivity analysis is
     used or not
+    :param max_depth: Maximum recursivity depth (it won't subdivide itself if
+    exceeded)
     :return: Children cases and parameters
     """
     total_cases_df, total_entropies = get_children_parameters(
@@ -124,7 +127,8 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                                                              depth + 1, ax,
                                                              dim,
                                                              cases_heritage_df,
-                                                             use_sensitivity)
+                                                             use_sensitivity,
+                                                             max_depth)
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
     children_total_params = compss_wait_on(children_total_params)

@@ -30,7 +30,8 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity):
+def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity,
+          max_depth):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -52,6 +53,7 @@ def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity):
     :param use_sensitivity: Boolean indicating whether sensitivity analysis is
     used or not
     :param func: Objective function
+    :param max_depth: Maximum depth for a cell to be subdivided
     """
     for dim in dimensions:
         dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
@@ -59,7 +61,9 @@ def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity):
     cases_df, execution_logs = explore_grid(ax, cases_df=None, grid=grid,
                                             depth=0, dims_df=pd.DataFrame(),
                                             func=func, n_samples=n_samples,
-                                            use_sensitivity = use_sensitivity)
+                                            use_sensitivity=use_sensitivity,
+                                            max_depth=max_depth,
+                                            )
     print_results(execution_logs, cases_df)
     if cases_df.min().min() < 0:
         print("Warning. Negative numbers in dataframe.")
