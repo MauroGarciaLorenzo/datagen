@@ -58,15 +58,16 @@ def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity,
     for dim in dimensions:
         dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
     grid = gen_grid(dimensions)
-    cases_df, execution_logs = explore_grid(ax, cases_df=None, grid=grid,
-                                            depth=0, dims_df=pd.DataFrame(),
-                                            func=func, n_samples=n_samples,
-                                            use_sensitivity=use_sensitivity,
-                                            max_depth=max_depth,
-                                            )
+    cases_df, dims_df, execution_logs = (
+        explore_grid(ax, cases_df=None, grid=grid,
+                     depth=0, dims_df=pd.DataFrame(),
+                     func=func, n_samples=n_samples,
+                     use_sensitivity=use_sensitivity,
+                     max_depth=max_depth,
+                     ))
     print_results(execution_logs, cases_df)
     if cases_df.min().min() < 0:
         print("Warning. Negative numbers in dataframe.")
     print("")
-    return cases_df, execution_logs
+    return cases_df, dims_df, execution_logs
 

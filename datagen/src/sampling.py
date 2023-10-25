@@ -41,7 +41,8 @@ except ImportError:
 
 @task(returns=2)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
-                 cases_heritage_df, use_sensitivity, max_depth):
+                 cases_heritage_df, dims_heritage_df, use_sensitivity,
+                 max_depth):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -77,21 +78,23 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
+    dims_df = pd.concat([dims_df, dims_heritage_df], ignore_index=True)
 
     entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
     # Finish recursivity if entropy decreases or cell become too small
     if delta_entropy < 0 or not check_dims(dimensions) or depth == max_depth:
-        return (dimensions, entropy, delta_entropy, depth), cases_df
+        return (dimensions, entropy, delta_entropy, depth), cases_df, dims_df
     else:
         if use_sensitivity:
             dimensions = sensitivity(cases_df, dimensions)
         children_grid = gen_grid(dimensions)
-        cases_df, children_total = explore_grid(ax, cases_df, children_grid,
-                                                depth, dims_df, func,
-                                                n_samples, use_sensitivity,
-                                                max_depth)
-        return children_total, cases_df
+        cases_df, dims_df, children_total = (
+            explore_grid(ax, cases_df, children_grid,
+                         depth, dims_df, func,
+                         n_samples, use_sensitivity,
+                         max_depth))
+        return children_total, cases_df, dims_df
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
@@ -115,27 +118,33 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     exceeded)
     :return: Children cases and parameters
     """
-    total_cases_df, total_entropies = get_children_parameters(
+    total_cases_df, total_dims_df, total_entropies = get_children_parameters(
         grid, dims_df, cases_df)
     children_total_params = []
     list_cases_children_df = []
-    for children_cell, cases_heritage_df, entropy_children \
-            in zip(grid, total_cases_df, total_entropies):
+    list_dims_children_df = []
+    for children_cell, cases_heritage_df, dims_heritage_df, entropy_children \
+            in zip(grid, total_cases_df, total_dims_df, total_entropies):
         dim = children_cell.dimensions
-        child_total_params, cases_children_df = explore_cell(func, n_samples,
-                                                             entropy_children,
-                                                             depth + 1, ax,
-                                                             dim,
-                                                             cases_heritage_df,
-                                                             use_sensitivity,
-                                                             max_depth)
+        child_total_params, cases_children_df, dims_children_df = (
+            explore_cell(func, n_samples,
+                         entropy_children,
+                         depth + 1, ax,
+                         dim,
+                         cases_heritage_df,
+                         dims_heritage_df,
+                         use_sensitivity,
+                         max_depth))
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
+        list_dims_children_df.append(dims_children_df)
     children_total_params = compss_wait_on(children_total_params)
     list_cases_children_df = compss_wait_on(list_cases_children_df)
+    list_dims_children_df = compss_wait_on(list_dims_children_df)
     cases_df = pd.concat(list_cases_children_df, ignore_index=True)
+    dims_df = pd.concat(list_dims_children_df, ignore_index=True)
     children_total_params = flatten_list(children_total_params)
-    return cases_df, children_total_params
+    return cases_df, dims_df, children_total_params
 
 
 def generate_columns(dim):
@@ -438,7 +447,7 @@ def eval_entropy(stabilities, entropy_parent):
     return entropy, delta_entropy
 
 
-def get_children_parameters(children_grid, dims_df, cases_heritage_df):
+def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
     """Obtains dimensions, cases_df, entropy and delta_entropy of each child
 
     :param children_grid: Grid to obtain parameters
@@ -447,25 +456,31 @@ def get_children_parameters(children_grid, dims_df, cases_heritage_df):
     :return: List of children (with these attributes set)
     """
     total_cases_df = []
+    total_dims_df = []
     total_entropies = []
     for cell in children_grid:
         if cases_heritage_df is not None:
             cases_df = pd.DataFrame(columns=cases_heritage_df.columns)
+            dims_df = pd.DataFrame(columns=dims_heritage_df.columns)
         else:
             cases_df = pd.DataFrame()
+            dims_df = pd.DataFrame()
 
-        for k in range(len(dims_df)):
-            row = dims_df.iloc[k, :]
+        for idx, row in dims_heritage_df.iterrows():
             # cell dimensions don't include g_for and g_fol, but dims_df do
-            if 'g_for' in dims_df.columns and 'g_fol' in dims_df.columns:
-                row = row.drop(columns=['g_for', 'g_fol'])
-            if (all([row[t] >= cell.dimensions[t].borders[0]
-                    for t in range(len(cell.dimensions))]) and
-                    all([row[t] <= cell.dimensions[t].borders[1]
-                         for t in range(len(cell.dimensions))])):
-                cases_df = pd.concat(
-                    [cases_df, cases_heritage_df.iloc[[k], :]],
-                    ignore_index=True)
+            if 'g_for' in row.index and 'g_fol' in row.index:
+                if not isinstance(row, pd.Series):
+                    raise TypeError("Row is not a pd.Series object")
+                row = row.drop(labels=['g_for', 'g_fol'])
+            cell_borders = [cell.dimensions[t].borders
+                            for t in range(len(cell.dimensions))]
+
+            # Check if every dimension in row is within cell borders
+            belongs = all(cell_borders[t][0] <= row[t] <= cell_borders[t][1]
+                          for t in range(len(cell.dimensions)))
+            if belongs:
+                cases_df = cases_df.append(cases_heritage_df.iloc[[idx], :])
+                dims_df = dims_df.append(dims_heritage_df.iloc[[idx], :])
 
         entropy = None
         if len(cases_df) > 0:
@@ -474,6 +489,11 @@ def get_children_parameters(children_grid, dims_df, cases_heritage_df):
             )
 
         total_cases_df.append(cases_df)
+        total_dims_df.append(dims_df)
         total_entropies.append(entropy)
-
-    return total_cases_df, total_entropies
+    if cases_heritage_df is None:
+        cases_heritage_df = pd.DataFrame()
+    if (sum([len(cases_df) for cases_df in total_cases_df]) !=
+            len(cases_heritage_df)):
+        raise Exception("Not every case was assigned to a child")
+    return total_cases_df, total_dims_df, total_entropies
