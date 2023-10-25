@@ -147,15 +147,14 @@ class Dimension:
             case = initial_case.copy()
             total_sum = sum(case)
             iters_reloop = 0
-            # TODO: isclose
-            while (abs(total_sum - sample) > 1e-5 and
+            while (not np.isclose(total_sum, sample) and
                    iters_reloop < iter_limit):
                 indexes = list(range(len(self.variables)))
                 random.shuffle(indexes)
 
                 iters_reloop += 1
                 for i in indexes:
-                    if abs(total_sum - sample) <= 1e-5:
+                    if np.isclose(total_sum, sample):
                         break
                     new_var = random.uniform(case[i],
                                              self.variables[i, 1])
@@ -168,10 +167,8 @@ class Dimension:
                 print(f"Warning: sample {sample} couldn't be reached"
                       f" by total sum {total_sum}) in case {case}")
                 continue
-
-            if abs(sample - total_sum) <= 1e-5:
+            if np.isclose(total_sum, sample):
                 cases.append(case)
-
         if iters_cases >= iter_limit:
             print("Warning: Iterations count exceeded. "
                   "Retrying with normal sampling")
