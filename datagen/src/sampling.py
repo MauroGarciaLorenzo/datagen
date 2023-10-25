@@ -280,23 +280,21 @@ def gen_cases(samples_df, dimensions):
     :return cases_df: Samples-driven produced cases dataframe
     :return dims_df: Samples dataframe(one for each case)
     """
-    total_cases_df = pd.DataFrame()
-    total_dims_df = pd.DataFrame()
+    total_cases = []
+    total_dims = []
 
     for dim in dimensions:
         if dim.label == "p_cig":
-            partial_cases_df, partial_dims_df = process_p_cig_dimension(
+            partial_cases, partial_dims = process_p_cig_dimension(
                 samples_df, dim)
         else:
-            partial_cases_df, partial_dims_df = process_other_dimensions(
+            partial_cases, partial_dims = process_other_dimensions(
                 samples_df, dim)
+        total_cases.append(partial_cases)
+        total_dims.append(partial_dims)
 
-        total_cases_df = pd.concat(
-            [total_cases_df, partial_cases_df], axis=1)
-
-        total_dims_df = pd.concat(
-            [total_dims_df, partial_dims_df], axis=1)
-
+    total_cases_df = pd.concat(total_cases, axis=1)
+    total_dims_df = pd.concat(total_dims, axis=1)
     return total_cases_df, total_dims_df
 
 
@@ -451,21 +449,16 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
     """Obtains dimensions, cases_df, entropy and delta_entropy of each child
 
     :param children_grid: Grid to obtain parameters
-    :param dims_df: Samples dataframe(one for each case)
+    :param dims_heritage_df: Samples dataframe(one for each case)
     :param cases_heritage_df: Inherited cases dataframe
     :return: List of children (with these attributes set)
     """
-    total_cases_df = []
-    total_dims_df = []
+    total_cases = []
+    total_dims = []
     total_entropies = []
     for cell in children_grid:
-        if cases_heritage_df is not None:
-            cases_df = pd.DataFrame(columns=cases_heritage_df.columns)
-            dims_df = pd.DataFrame(columns=dims_heritage_df.columns)
-        else:
-            cases_df = pd.DataFrame()
-            dims_df = pd.DataFrame()
-
+        dims = []
+        cases = []
         for idx, row in dims_heritage_df.iterrows():
             # cell dimensions don't include g_for and g_fol, but dims_df do
             if 'g_for' in row.index and 'g_fol' in row.index:
@@ -479,21 +472,24 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
             belongs = all(cell_borders[t][0] <= row[t] <= cell_borders[t][1]
                           for t in range(len(cell.dimensions)))
             if belongs:
-                cases_df = cases_df.append(cases_heritage_df.iloc[[idx], :])
-                dims_df = dims_df.append(dims_heritage_df.iloc[[idx], :])
+                cases.append(cases_heritage_df.iloc[[idx], :])
+                dims.append(dims_heritage_df.iloc[[idx], :])
 
-        entropy = None
-        if len(cases_df) > 0:
-            entropy, _ = eval_entropy(
-                cases_df["Stability"], None
-            )
-
-        total_cases_df.append(cases_df)
-        total_dims_df.append(dims_df)
+        if cases and dims:
+            stabilities = [int(case["Stability"]) for case in cases]
+            entropy, _ = eval_entropy(stabilities, None)
+            cases_df = pd.concat(cases, axis=0, ignore_index=True)
+            dims_df = pd.concat(dims, axis=0, ignore_index=True)
+        else:
+            entropy = None
+            cases_df = pd.DataFrame()
+            dims_df = pd.DataFrame()
+        total_cases.append(cases_df)
+        total_dims.append(dims_df)
         total_entropies.append(entropy)
+
     if cases_heritage_df is None:
         cases_heritage_df = pd.DataFrame()
-    if (sum([len(cases_df) for cases_df in total_cases_df]) !=
-            len(cases_heritage_df)):
+    if sum([len(cases) for cases in total_cases]) != len(cases_heritage_df):
         raise Exception("Not every case was assigned to a child")
-    return total_cases_df, total_dims_df, total_entropies
+    return total_cases, total_dims, total_entropies

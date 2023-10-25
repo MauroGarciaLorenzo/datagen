@@ -115,9 +115,10 @@ class Test(TestCase):
         self.assertEqual(result_delta_entropy, expected_delta_entropy)
 
     def test_get_children_parameters(self):
-        total_cases_df, _ = get_children_parameters(self.children_grid,
-                                                    self.dims_df,
-                                                    self.cases_heritage_df)
+        total_cases_df, total_dims_df, _ = (
+            get_children_parameters(self.children_grid,
+                                    self.dims_df,
+                                    self.cases_heritage_df))
 
         # (Dim1: 10-70, Dim2: 10-40, Dim3: 10-40)
         self.assertEqual(len(total_cases_df[0]), 2)
