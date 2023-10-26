@@ -40,7 +40,8 @@ class Test(TestCase):
                 else:
                     cases = dim.get_cases_extreme(sample)
                     for idx in range(len(cases)):
-                        self.assertAlmostEqual(sum(cases[idx]), sample, places=2)
+                        self.assertAlmostEqual(sum(cases[idx]), sample,
+                                               places=2)
                         for var in range(len(cases[idx])):
                             self.assertTrue(dim.variables[var, 0] <=
                                             cases[idx][var] <=

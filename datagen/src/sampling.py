@@ -334,7 +334,7 @@ def sensitivity(cases_df, dimensions):
     dims_df = pd.DataFrame()
     for label in labels:
         matching_columns = (
-            cases_df.filter(regex=label + r'_*', axis=1).sum(axis=1))
+            cases_df.filter(regex=r'^' + label + r'_*', axis=1).sum(axis=1))
         dims_df[label] = matching_columns
     dims_df.columns = labels
     x = np.array(dims_df)
