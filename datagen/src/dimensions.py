@@ -92,6 +92,13 @@ class Dimension:
             stds.append(d_min / 3)
         iters = 0
         iter_limit = len(self.variables) * self.n_cases * iter_limit_factor
+        max_val = sum([v[1] for v in self.variables])
+        min_val = sum([v[0] for v in self.variables])
+
+        if not (max_val >= sample >= min_val):
+            raise ValueError(f"Sample {sample} cannot be reached by "
+                             f"dimension {self.label}, with variables borders "
+                             f"{self.variables}")
 
         while len(cases) < self.n_cases and iters < iter_limit:
             case = np.random.normal(scaled_avgs, stds)
@@ -145,8 +152,9 @@ class Dimension:
         min_val = sum([v[0] for v in self.variables])
 
         if not (max_val >= sample >= min_val):
-            print(f"Warning. Sample {sample} cannot be reached.")
-            return
+            raise ValueError(f"Sample {sample} cannot be reached by "
+                             f"dimension {self.label}, with variables borders "
+                             f"{self.variables}")
 
         while len(cases) < self.n_cases and iters_cases < iter_limit:
             iters_cases += 1

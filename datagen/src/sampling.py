@@ -237,11 +237,8 @@ def process_p_cig_dimension(samples_df, p_cig):
             [dims_p_cig_df, dims_g_for_df, dims_g_fol_df], axis=1)
 
         # Concat samples and cases of p_cig, g_for and g_fol
-        not_na_index = sample_cases_df.notna().all(axis=1)
-        sample_cases_df = (
-            sample_cases_df.loc[not_na_index].reset_index(drop=True))
-        sample_dims_df = (
-            sample_dims_df.loc[not_na_index].reset_index(drop=True))
+        sample_cases_df = sample_cases_df.dropna().reset_index(drop=True)
+        sample_dims_df = sample_dims_df.dropna().reset_index(drop=True)
 
         cases.append(sample_cases_df)
         dims.append(sample_dims_df)
