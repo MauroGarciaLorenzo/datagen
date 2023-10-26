@@ -169,8 +169,8 @@ def process_p_cig_dimension(samples_df, p_cig):
     :param p_cig: p_cig dimension
     :return: Cases obtained and samples extended (one sample for each case)
     """
-    cases_df = pd.DataFrame()
-    dims_df = pd.DataFrame()
+    cases = []
+    dims = []
 
     for _, sample in samples_df.iterrows():
         # Obtain p_cig cases
@@ -236,16 +236,18 @@ def process_p_cig_dimension(samples_df, p_cig):
         sample_dims_df = pd.concat(
             [dims_p_cig_df, dims_g_for_df, dims_g_fol_df], axis=1)
 
-        # Concat samples of p_cig, g_for and g_fol
-        cases_df = pd.concat([cases_df, sample_cases_df], axis=0,
-                             ignore_index=True)
-        dims_df = pd.concat([dims_df, sample_dims_df], axis=0,
-                            ignore_index=True)
+        # Concat samples and cases of p_cig, g_for and g_fol
+        not_na_index = sample_cases_df.notna().all(axis=1)
+        sample_cases_df = (
+            sample_cases_df.loc[not_na_index].reset_index(drop=True))
+        sample_dims_df = (
+            sample_dims_df.loc[not_na_index].reset_index(drop=True))
 
-        not_na_index = cases_df.notna().all(axis=1)
-        cases_df = cases_df.loc[not_na_index].reset_index(drop=True)
-        dims_df = dims_df.loc[not_na_index].reset_index(drop=True)
+        cases.append(sample_cases_df)
+        dims.append(sample_dims_df)
 
+    cases_df = pd.concat(cases, axis=0, ignore_index=True)
+    dims_df = pd.concat(dims, axis=0, ignore_index=True)
     return cases_df, dims_df
 
 
