@@ -59,9 +59,9 @@ def main():
         Dimension(variables=variables_d3, n_cases=n_cases, divs=1,
                   borders=(2, 7), label="2")]
     use_sensitivity = True
-    cases_df, dims_df, execution_logs = (
+    cases_df, dims_df, execution_logs = \
         start(dimensions, n_samples, rel_tolerance, ax, dummy,
-              use_sensitivity, max_depth))
+              use_sensitivity, max_depth)
 
 
 if __name__ == '__main__':

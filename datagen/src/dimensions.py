@@ -58,7 +58,7 @@ class Dimension:
         self.label = label
         self.tolerance = tolerance
 
-    def get_cases_normal(self, sample):
+    def get_cases_normal(self, sample, iter_limit_factor=1000):
         """
         Generate `n_cases` number of random cases for the given sample.
 
@@ -72,6 +72,8 @@ class Dimension:
         :param sample: A random input value representing the dimension, with
             the requirement that the different variables of the dimension
             must collectively sum up to it.
+        :param iter_limit_factor: Factor to multiply for the maximum number of
+            iterations
         :return cases: Array of the generated cases
         """
         cases = []
@@ -86,32 +88,37 @@ class Dimension:
         for i in range(len(self.variables)):
             d_min = min(abs(self.variables[i][0] - scaled_avgs[i]),
                         abs(self.variables[i][1] - scaled_avgs[i]))
-            # Initialize standard deviations.
+            # Initialize standard deviations
             stds.append(d_min / 3)
         iters = 0
-        iter_limit = len(self.variables) * self.n_cases * 1000
+        iter_limit = len(self.variables) * self.n_cases * iter_limit_factor
 
         while len(cases) < self.n_cases and iters < iter_limit:
             case = np.random.normal(scaled_avgs, stds)
             lower_bounds = self.variables[:, 0]
             upper_bounds = self.variables[:, 1]
             case = np.clip(case, lower_bounds, upper_bounds)
-            if self.borders[0] < case.sum() < self.borders[1]:
+            case_sum = case.sum()
+            if self.borders[0] < case_sum < self.borders[1]:
                 cases.append(case)
             else:
-                print(f"Warning: (label {self.label}) Case sum out of "
-                      f"dimension borders {self.borders} in {case} for sample "
-                      f"{sample}. Retrying...")
+                print(f"get_cases_normal: Iteration {iters + 1}")
+                print(f"Warning: (label {self.label}) Case sum {case_sum} out "
+                      f"of dimension borders {self.borders} in {case} for "
+                      f"sample {sample}. Retrying...")
             iters += 1
         print(f"Dim {self.label}: get_cases_normal run {iters} iterations.")
 
         while len(cases) < self.n_cases:
+            print(f"Warning: Dim {self.label} - get_cases_normal exhausted "
+                  f"iterations: {iters} iterations.")
+            print("Adding NaN cases")
             cases.append([np.nan] * len(self.variables))
 
         return cases
 
     def get_cases_extreme(self, sample, iter_limit=5000,
-                          iter_limit_reloop=500):
+                          iter_limit_variables=500):
         """This case generator aims to reach more variance between cases within
         a sample. Here, we assign random values to de variables in the range
         lower bound of this variable - minimum between upper bound of the
@@ -124,8 +131,8 @@ class Dimension:
         :param sample: Target sum
         :param iter_limit: Maximum number of iterations. Useful to avoid
             infinite loops
-        :param iter_limit_reloop: Maximum number of iterations to go over all
-            variables again and distribute the remaining sum
+        :param iter_limit_variables: Maximum number of iterations to go over
+            all variables again and distribute the remaining sum
         :return: Combinations of n_cases variables that, when summed together,
             equal sample. If the combination cannot not be found with the
             defined iter_limit, this case will be filled with NaN values.
@@ -146,13 +153,13 @@ class Dimension:
             initial_case = self.variables[:, 0]
             case = initial_case.copy()
             total_sum = sum(case)
-            iters_reloop = 0
+            iters_variables = 0
             while (not np.isclose(total_sum, sample) and
-                   iters_reloop < iter_limit):
+                   iters_variables < iter_limit):
                 indexes = list(range(len(self.variables)))
                 random.shuffle(indexes)
 
-                iters_reloop += 1
+                iters_variables += 1
                 for i in indexes:
                     if np.isclose(total_sum, sample):
                         break
@@ -163,7 +170,7 @@ class Dimension:
                     case[i] = new_var
                     total_sum = sum(case)
 
-            if iters_reloop >= iter_limit_reloop:
+            if iters_variables >= iter_limit_variables:
                 print(f"Warning: sample {sample} couldn't be reached"
                       f" by total sum {total_sum}) in case {case}")
                 continue

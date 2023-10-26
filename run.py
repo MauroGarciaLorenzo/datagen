@@ -71,9 +71,9 @@ def main():
 
     ax = None
     use_sensitivity = False
-    cases_df, dims_df, execution_logs = (
+    cases_df, dims_df, execution_logs = \
         start(dimensions, n_samples, rel_tolerance, ax, dummy, use_sensitivity,
-              max_depth))
+              max_depth)
 
 
 if __name__ == "__main__":

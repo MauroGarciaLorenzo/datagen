@@ -83,7 +83,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
     # Finish recursivity if entropy decreases or cell become too small
-    if delta_entropy < 0 or not check_dims(dimensions) or depth == max_depth:
+    if delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth:
         return (dimensions, entropy, delta_entropy, depth), cases_df, dims_df
     else:
         if use_sensitivity:
@@ -460,15 +460,15 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
         dims = []
         cases = []
         for idx, row in dims_heritage_df.iterrows():
-            # cell dimensions don't include g_for and g_fol, but dims_df do
+            # Cell dimensions don't include g_for and g_fol, but dims_df do
             if 'g_for' in row.index and 'g_fol' in row.index:
                 if not isinstance(row, pd.Series):
                     raise TypeError("Row is not a pd.Series object")
                 row = row.drop(labels=['g_for', 'g_fol'])
-            cell_borders = [cell.dimensions[t].borders
-                            for t in range(len(cell.dimensions))]
 
             # Check if every dimension in row is within cell borders
+            cell_borders = [cell.dimensions[t].borders
+                            for t in range(len(cell.dimensions))]
             belongs = all(cell_borders[t][0] <= row[t] <= cell_borders[t][1]
                           for t in range(len(cell.dimensions)))
             if belongs:
