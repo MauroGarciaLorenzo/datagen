@@ -58,7 +58,7 @@ class Test(TestCase):
         dims_expected_df.columns = dim_labels
         dims_expected_df = dims_expected_df[dims_df.columns]
         pd.testing.assert_frame_equal(dims_expected_df, dims_df,
-                                      check_exact=False, check_less_precise=1)
+                                      check_exact=False)
 
         # assert that each value is within dimension borders
         for idx, row in dims_df.iterrows():
