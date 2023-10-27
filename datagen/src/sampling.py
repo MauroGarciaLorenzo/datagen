@@ -22,6 +22,7 @@ stability of each case.
 import random
 import numpy as np
 import pandas as pd
+from matplotlib import patches, pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.linear_model import LogisticRegression
@@ -67,6 +68,14 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :return cases_df: Concatenation of inherited cases and those produced by
     the cell
     """
+    if ax is not None and len(dimensions) == 2:
+        dim0 = (dimensions[0].borders[0], dimensions[0].borders[1])
+        dim1 = (dimensions[1].borders[0], dimensions[1].borders[1])
+
+        cell = patches.Rectangle((dim0[0], dim1[0]), dim0[1] - dim0[0],
+                                 dim1[1] - dim1[0], linewidth=1, edgecolor='black',
+                                 facecolor='none')
+        ax.add_patch(cell)
     # Generate samples (n_samples for each dimension)
     samples_df = gen_samples(n_samples, dimensions)
 
