@@ -58,6 +58,12 @@ class Dimension:
         self.label = label
         self.tolerance = tolerance
 
+    def __str__(self):
+        return f'Dimension("{self.label}", borders={self.borders})'
+
+    def __repr__(self):
+        return self.__str__()
+
     def get_cases_normal(self, sample, iter_limit_factor=1000):
         """
         Generate `n_cases` number of random cases for the given sample.
