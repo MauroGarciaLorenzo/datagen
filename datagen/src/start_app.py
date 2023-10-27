@@ -30,8 +30,8 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity,
-          max_depth):
+def start(dimensions, n_samples, rel_tolerance, func, use_sensitivity,
+          max_depth, ax=None, divs_per_cell=2):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -43,6 +43,7 @@ def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity,
         -cases_df: dataframe containing each case and associated stability
                 taken during the execution.
 
+    :param divs_per_cell:
     :param dimensions: List of dimensions involved
     :param n_samples: Number of different values for each dimension
     :param rel_tolerance: Fraction of the dimension's range that will be used
@@ -64,10 +65,17 @@ def start(dimensions, n_samples, rel_tolerance, ax, func, use_sensitivity,
                      func=func, n_samples=n_samples,
                      use_sensitivity=use_sensitivity,
                      max_depth=max_depth,
+                     divs_per_cell=divs_per_cell
                      ))
     print_results(execution_logs, cases_df)
     if cases_df.min().min() < 0:
         print("Warning. Negative numbers in dataframe.")
     print("")
+
+    if ax is not None and len(dimensions) == 2:
+        x_lims = (dimensions[0].borders[0], dimensions[0].borders[1])
+        y_lims = (dimensions[1].borders[0], dimensions[1].borders[1])
+        ax.set_xlim(left=x_lims[0], right=x_lims[1])
+        ax.set_ylim(bottom=y_lims[0], top=y_lims[1])
     return cases_df, dims_df, execution_logs
 

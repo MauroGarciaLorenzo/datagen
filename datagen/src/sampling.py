@@ -25,11 +25,10 @@ import pandas as pd
 from matplotlib import patches, pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 
-from sklearn.linear_model import LogisticRegression
 from scipy.stats import qmc
 from sklearn.preprocessing import StandardScaler
 
-from .utils import check_dims, flatten_list
+from .utils import check_dims, flatten_list, get_dimension
 from .dimensions import Cell, Dimension
 
 try:
@@ -43,7 +42,7 @@ except ImportError:
 @task(returns=2)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
-                 max_depth):
+                 max_depth, divs_per_cell):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -65,6 +64,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     delta_entropy and depth
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
+    :param dims_heritage_df: Inherited dims dataframe
+    :param divs_per_cell: Number of resultant cells from each recursive call
     :return cases_df: Concatenation of inherited cases and those produced by
     the cell
     """
@@ -96,18 +97,18 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         return (dimensions, entropy, delta_entropy, depth), cases_df, dims_df
     else:
         if use_sensitivity:
-            dimensions = sensitivity(cases_df, dimensions)
+            dimensions = sensitivity(cases_df, dimensions, divs_per_cell)
         children_grid = gen_grid(dimensions)
         cases_df, dims_df, children_total = (
             explore_grid(ax, cases_df, children_grid,
                          depth, dims_df, func,
                          n_samples, use_sensitivity,
-                         max_depth))
+                         max_depth, divs_per_cell))
         return children_total, cases_df, dims_df
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
-                 use_sensitivity, max_depth):
+                 use_sensitivity, max_depth, divs_per_cell):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -125,6 +126,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     used or not
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
+    :param divs_per_cell: Number of resultant cells from each recursive call
     :return: Children cases and parameters
     """
     total_cases_df, total_dims_df, total_entropies = get_children_parameters(
@@ -143,7 +145,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                          cases_heritage_df,
                          dims_heritage_df,
                          use_sensitivity,
-                         max_depth))
+                         max_depth, divs_per_cell))
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
         list_dims_children_df.append(dims_children_df)
@@ -329,13 +331,17 @@ def gen_samples(n_samples, dimensions):
     return df_samples
 
 
-def sensitivity(cases_df, dimensions):
-    """Sensitivity analysis. Decides which dimension is more important to the
-     decision, and sets its divisions to 2. The remaining dimensions will not
-     be subdivided.
+def sensitivity(cases_df, dimensions, divs_per_cell):
+    """This Sensitivity analysis is done by gathering cases and their
+    evaluated outputs, then train a Random Forest, getting the importance of
+    each variable in the decision. Each variable's division count is
+    initialized at 1. In a loop, iterated as many times as specified, we double
+    the number of subdivisions for the most influential variable and halve its
+    importance.
 
     :param cases_df: Involved cases
     :param dimensions: Involved dimensions
+    :param divs_per_cell: Number of resultant cells from each recursive call
     :return: Divisions for each dimension
     """
     labels = list(set(col.rsplit('_Var')[0]
@@ -356,13 +362,23 @@ def sensitivity(cases_df, dimensions):
     model.fit(x_scaled, y)
 
     importances = model.feature_importances_
-    dim_max_imp = np.argmax(importances)
-    main_label = list(labels)[dim_max_imp]
-    for dim in dimensions:
-        if dim.label == main_label:
-            dim.divs = 2
-        else:
-            dim.divs = 1
+    for d in dimensions:
+        d.divs = 1
+    splits_per_cell = int(np.round(np.log2(divs_per_cell)))
+
+    for _ in range(splits_per_cell):
+        index_max_importance = np.argmax(importances)
+        label_max_importance = list(labels)[index_max_importance]
+        dim_max_importance = get_dimension(label_max_importance, dimensions)
+
+        if ((dim_max_importance.borders[1] - dim_max_importance.borders[0]) /
+                dim_max_importance.divs < dim_max_importance.tolerance):
+            importances[index_max_importance] = 0
+
+        if importances[index_max_importance] != 0:
+            dim_max_importance.divs *= 2
+            importances[index_max_importance] /= 2
+
     return dimensions
 
 
