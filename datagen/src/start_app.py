@@ -19,7 +19,7 @@ cases and their associated stability."""
 
 import pandas as pd
 
-from .sampling import gen_grid, explore_grid
+from .sampling import explore_cell
 from .viz import print_results, boxplot
 from .utils import clean_dir
 
@@ -31,8 +31,8 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def start(dimensions, n_samples, rel_tolerance, func, use_sensitivity,
-          max_depth, ax=None, divs_per_cell=2, plot_boxplot=False):
+def start(dimensions, n_samples, rel_tolerance, func, max_depth,
+          use_sensitivity=None, ax=None, divs_per_cell=2, plot_boxplot=False):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -70,14 +70,13 @@ def start(dimensions, n_samples, rel_tolerance, func, use_sensitivity,
         ax.set_xlim(left=x_lims[0], right=x_lims[1])
         ax.set_ylim(bottom=y_lims[0], top=y_lims[1])
 
-    grid = gen_grid(dimensions)
-    cases_df, dims_df, execution_logs = (
-        explore_grid(ax, cases_df=None, grid=grid,
-                     depth=0, dims_df=pd.DataFrame(),
+    execution_logs, cases_df, dims_df = (
+        explore_cell(ax=ax, cases_heritage_df=None,
+                     depth=0, dims_heritage_df=pd.DataFrame(),
                      func=func, n_samples=n_samples,
                      use_sensitivity=use_sensitivity,
-                     max_depth=max_depth,
-                     divs_per_cell=divs_per_cell
+                     max_depth=max_depth, entropy=None,
+                     divs_per_cell=divs_per_cell, dimensions=dimensions
                      ))
     if plot_boxplot:
         boxplot(cases_df)

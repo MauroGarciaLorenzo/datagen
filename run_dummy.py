@@ -36,9 +36,15 @@ def main():
     the relative tolerance (indicates the portion of the size of the original
     dimension). For example, if we have a dimension of size 10 and relative
     tolerance is 0.5, the smallest cell in this dimension will have size 5.
-    Lastly, user should provide the objective function, a boolean indicating
-    whether sensitivity analysis is used or not (use_sensitivity), and the
-    number of children cells for each recursive call (divs_per_cell).
+    Lastly, user should provide the objective function. As optional parameters,
+    the user can define:
+        -use_sensitivity: a boolean indicating whether sensitivity analysis is
+        used or not.
+        -ax: plot axes in case it is desired to show stability points and cells
+        divisions (dimensions length must be 2). Plots saved in
+        "datagen/figures".
+        -plot_boxplot: a boolean indicating whether boxplots for each variable
+        must be obtained or not. Plots saved in "datagen/figures".
     """
     
     variables_d0 = [(0, 2), (0, 1.5), (0, 1.5)]
@@ -56,8 +62,8 @@ def main():
                   borders=(1, 6), label="Dim_1")]
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
-        start(dimensions, n_samples, rel_tolerance, dummy, use_sensitivity,
-              max_depth, ax=None, divs_per_cell=8, plot_boxplot=True)
+        start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
+              use_sensitivity, ax=None, divs_per_cell=8, plot_boxplot=True)
 
 
 if __name__ == '__main__':

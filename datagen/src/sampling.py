@@ -57,6 +57,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :param ax: Plottable object
     :param dimensions: Cell dimensions
     :param cases_heritage_df: Inherited cases dataframe
+    :param dims_heritage_df: Inherited dims dataframe
     :param use_sensitivity: Boolean indicating whether sensitivity analysis is
     used or not
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
