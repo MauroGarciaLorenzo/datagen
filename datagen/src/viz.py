@@ -45,6 +45,10 @@ def plot_divs(ax, children_grid):
                                  dim1[1] - dim1[0], linewidth=1,
                                  edgecolor='black', facecolor='none')
         ax.add_patch(cell)
+        dir_path = "figures"
+        file_name = format(time.time(), '.0f') + ".png"
+        path = os.path.join(dir_path, file_name)
+        ax.figure.savefig(fname=path, dpi=300)
 
 
 def boxplot(cases_df):

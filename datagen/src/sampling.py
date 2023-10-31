@@ -99,7 +99,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
             dimensions = sensitivity(cases_df, dimensions, divs_per_cell)
         children_grid = gen_grid(dimensions)
 
-        if ax is not None and len(children_grid) == 2:
+        if ax is not None and len(dimensions) == 2:
             plot_divs(ax, children_grid)
 
         cases_df, dims_df, children_total = (

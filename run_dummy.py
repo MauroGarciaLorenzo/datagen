@@ -63,7 +63,7 @@ def main():
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
         start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
-              use_sensitivity, ax=None, divs_per_cell=8, plot_boxplot=True)
+              use_sensitivity, ax=ax, divs_per_cell=8, plot_boxplot=True)
 
 
 if __name__ == '__main__':
