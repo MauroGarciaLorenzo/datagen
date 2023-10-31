@@ -28,7 +28,7 @@ from sklearn.preprocessing import StandardScaler
 
 from .utils import check_dims, flatten_list, get_dimension
 from .dimensions import Cell, Dimension
-from .viz import plot_divs
+from .viz import plot_divs, plot_stabilities
 
 try:
     from pycompss.api.task import task
@@ -83,7 +83,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:
-        plot_divs(ax, cases_df, dimensions, dims_df)
+        plot_stabilities(ax, cases_df, dims_df)
 
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
     dims_df = pd.concat([dims_df, dims_heritage_df], ignore_index=True)
@@ -97,6 +97,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         if use_sensitivity:
             dimensions = sensitivity(cases_df, dimensions, divs_per_cell)
         children_grid = gen_grid(dimensions)
+        plot_divs(ax, children_grid)
         cases_df, dims_df, children_total = (
             explore_grid(ax, cases_df, children_grid,
                          depth, dims_df, func,

@@ -25,21 +25,26 @@ import pandas as pd
 from matplotlib import pyplot as plt, patches
 
 
-def plot_divs(ax, cases_df, dimensions, dims_df):
-    dim0 = (dimensions[0].borders[0], dimensions[0].borders[1])
-    dim1 = (dimensions[1].borders[0], dimensions[1].borders[1])
-    cell = patches.Rectangle((dim0[0], dim1[0]), dim0[1] - dim0[0],
-                             dim1[1] - dim1[0], linewidth=1,
-                             edgecolor='black', facecolor='none')
-    ax.add_patch(cell)
-
+def plot_stabilities(ax, cases_df, dims_df):
+    time.sleep(0.5)
     for idx, dim_row in dims_df.iterrows():
         color = 'green' if cases_df.loc[idx, 'Stability'] == 1 else 'red'
         ax.scatter(dim_row[0], dim_row[1], color=color)
+
     dir_path = "figures"
     file_name = format(time.time(), '.0f') + ".png"
     path = os.path.join(dir_path, file_name)
     ax.figure.savefig(fname=path, dpi=300)
+
+
+def plot_divs(ax, children_grid):
+    for cell in children_grid:
+        dim0 = (cell.dimensions[0].borders[0], cell.dimensions[0].borders[1])
+        dim1 = (cell.dimensions[1].borders[0], cell.dimensions[1].borders[1])
+        cell = patches.Rectangle((dim0[0], dim1[0]), dim0[1] - dim0[0],
+                                 dim1[1] - dim1[0], linewidth=1,
+                                 edgecolor='black', facecolor='none')
+        ax.add_patch(cell)
 
 
 def boxplot(cases_df):
