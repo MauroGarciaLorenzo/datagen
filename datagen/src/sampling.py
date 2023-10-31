@@ -18,11 +18,9 @@ and cases from a given set of dimensions and then evaluate these cases to
 determine their stability. Parallel execution is used to evaluate the
 stability of each case.
 """
-
 import random
 import numpy as np
 import pandas as pd
-from matplotlib import patches, pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 
 from scipy.stats import qmc
@@ -30,6 +28,7 @@ from sklearn.preprocessing import StandardScaler
 
 from .utils import check_dims, flatten_list, get_dimension
 from .dimensions import Cell, Dimension
+from .viz import plot_divs
 
 try:
     from pycompss.api.task import task
@@ -39,7 +38,7 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-@task(returns=2)
+@task(returns=3)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell):
@@ -60,23 +59,17 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :param cases_heritage_df: Inherited cases dataframe
     :param use_sensitivity: Boolean indicating whether sensitivity analysis is
     used or not
-    :return children_total: List of children dimensions, entropy,
-    delta_entropy and depth
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
     :param dims_heritage_df: Inherited dims dataframe
     :param divs_per_cell: Number of resultant cells from each recursive call
+    :return children_total: List of children dimensions, entropy,
+    delta_entropy and depth
     :return cases_df: Concatenation of inherited cases and those produced by
     the cell
+    :return dims_df: Concatenation of inherited dims and those produced by
+    the cell
     """
-    if ax is not None and len(dimensions) == 2:
-        dim0 = (dimensions[0].borders[0], dimensions[0].borders[1])
-        dim1 = (dimensions[1].borders[0], dimensions[1].borders[1])
-
-        cell = patches.Rectangle((dim0[0], dim1[0]), dim0[1] - dim0[0],
-                                 dim1[1] - dim1[0], linewidth=1, edgecolor='black',
-                                 facecolor='none')
-        ax.add_patch(cell)
     # Generate samples (n_samples for each dimension)
     samples_df = gen_samples(n_samples, dimensions)
 
@@ -87,6 +80,11 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     stabilities = [eval_stability(case, func) for case in cases_df.values]
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
+
+    # Add rectangle to plot axes representing cell borders
+    if ax is not None and len(dimensions) == 2:
+        plot_divs(ax, cases_df, dimensions, dims_df)
+
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
     dims_df = pd.concat([dims_df, dims_heritage_df], ignore_index=True)
 
@@ -127,7 +125,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
     :param divs_per_cell: Number of resultant cells from each recursive call
-    :return: Children cases and parameters
+    :return: Children dims, cases and parameters
     """
     total_cases_df, total_dims_df, total_entropies = get_children_parameters(
         grid, dims_df, cases_df)

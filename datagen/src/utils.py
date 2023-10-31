@@ -18,6 +18,17 @@ small. It also includes a function to flatten nested lists into a single
 list, which is useful for processing the list of logs generated during the
 exploration.
 """
+import os
+
+
+def clean_dir(directory):
+    if os.path.exists(directory):
+        files = os.listdir(directory)
+
+        for file in files:
+            path = os.path.join(directory, file)
+            if os.path.isfile(path):
+                os.remove(path)
 
 
 def get_dimension(label, dimensions):

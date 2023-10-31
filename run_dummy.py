@@ -1,5 +1,3 @@
-
-import numpy as np
 from matplotlib import pyplot as plt
 
 from datagen.src.objective_function import dummy
@@ -43,25 +41,23 @@ def main():
     number of children cells for each recursive call (divs_per_cell).
     """
     
-    variables_d1 = [(0, 2), (0, 1.5), (0, 1.5)]
-    variables_d2 = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
+    variables_d0 = [(0, 2), (0, 1.5), (0, 1.5)]
+    variables_d1 = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
     variables_d3 = [(1, 3.5), (1, 3.5)]
-    n_samples = 2
-
+    n_samples = 3
     n_cases = 1
     rel_tolerance = 0.1
     max_depth = 5
     fig, ax = plt.subplots()
     dimensions = [
-        Dimension(variables=variables_d1, n_cases=n_cases, divs=2,
-                  borders=(0, 5), label="0"),
-        Dimension(variables=variables_d2, n_cases=n_cases, divs=1,
-                  borders=(1, 6), label="1")]
+        Dimension(variables=variables_d0, n_cases=n_cases, divs=2,
+                  borders=(0, 5), label="Dim_0"),
+        Dimension(variables=variables_d1, n_cases=n_cases, divs=1,
+                  borders=(1, 6), label="Dim_1")]
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
         start(dimensions, n_samples, rel_tolerance, dummy, use_sensitivity,
-              max_depth, ax, divs_per_cell=3)
-    plt.show()
+              max_depth, ax=None, divs_per_cell=8, plot_boxplot=True)
 
 
 if __name__ == '__main__':

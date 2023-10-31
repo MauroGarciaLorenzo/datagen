@@ -19,7 +19,49 @@ understanding and visualizing the stability of each case, the entropy,
 delta entropy, and depth of the explored cells. Additionally, there's a
 function to plot sample data.
 """
+import os
+import time
 import pandas as pd
+from matplotlib import pyplot as plt, patches
+
+
+def plot_divs(ax, cases_df, dimensions, dims_df):
+    dim0 = (dimensions[0].borders[0], dimensions[0].borders[1])
+    dim1 = (dimensions[1].borders[0], dimensions[1].borders[1])
+    cell = patches.Rectangle((dim0[0], dim1[0]), dim0[1] - dim0[0],
+                             dim1[1] - dim1[0], linewidth=1,
+                             edgecolor='black', facecolor='none')
+    ax.add_patch(cell)
+
+    for idx, dim_row in dims_df.iterrows():
+        color = 'green' if cases_df.loc[idx, 'Stability'] == 1 else 'red'
+        ax.scatter(dim_row[0], dim_row[1], color=color)
+    dir_path = "figures"
+    file_name = format(time.time(), '.0f') + ".png"
+    path = os.path.join(dir_path, file_name)
+    ax.figure.savefig(fname=path, dpi=300)
+
+
+def boxplot(cases_df):
+    labels = list(set(
+        col.rsplit('_Var')[0] for col in cases_df.columns if '_Var' in col))
+    dims = {}
+
+    for label in labels:
+        matching_columns = cases_df.filter(regex=f'^{label}_', axis=1)
+        dims[label] = matching_columns
+
+    for dim, variables in dims.items():
+        fig, ax = plt.subplots(1, 1, figsize=(12, 4))
+        boxplot_data = [variables[var].dropna() for var in variables]
+        ax.boxplot(boxplot_data)
+        ax.set_title(dim)
+        labels = [str(i) for i in range(variables.shape[1])]
+        ax.set_xticklabels(labels)
+        dir_path = "figures"
+        file_name = "boxplot_" + dim + ".png"
+        path = os.path.join(dir_path, file_name)
+        plt.savefig(fname=path, dpi=300)
 
 
 def print_grid(grid):
