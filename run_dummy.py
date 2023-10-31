@@ -1,5 +1,4 @@
-
-import numpy as np
+from matplotlib import pyplot as plt
 
 from datagen.src.objective_function import dummy
 from datagen.src.dimensions import Dimension
@@ -37,31 +36,28 @@ def main():
     the relative tolerance (indicates the portion of the size of the original
     dimension). For example, if we have a dimension of size 10 and relative
     tolerance is 0.5, the smallest cell in this dimension will have size 5.
-    Lastly, user should provide the objective function and a boolean indicating
-    whether sensitivity analysis is used or not (use_sensitivity).
+    Lastly, user should provide the objective function, a boolean indicating
+    whether sensitivity analysis is used or not (use_sensitivity), and the
+    number of children cells for each recursive call (divs_per_cell).
     """
     
-    variables_d1 = [(0, 2), (0, 1.5), (0, 1.5)]
-    variables_d2 = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
+    variables_d0 = [(0, 2), (0, 1.5), (0, 1.5)]
+    variables_d1 = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
     variables_d3 = [(1, 3.5), (1, 3.5)]
-    n_samples = 2
-
+    n_samples = 3
     n_cases = 1
     rel_tolerance = 0.1
     max_depth = 5
-    # ax = plt.figure().add_subplot(projection='3d')
-    ax = None
+    fig, ax = plt.subplots()
     dimensions = [
-        Dimension(variables=variables_d1, n_cases=n_cases, divs=2,
-                  borders=(0, 5), label="0"),
-        Dimension(variables=variables_d2, n_cases=n_cases, divs=2,
-                  borders=(1, 6), label="1"),
-        Dimension(variables=variables_d3, n_cases=n_cases, divs=1,
-                  borders=(2, 7), label="2")]
+        Dimension(variables=variables_d0, n_cases=n_cases, divs=2,
+                  borders=(0, 5), label="Dim_0"),
+        Dimension(variables=variables_d1, n_cases=n_cases, divs=1,
+                  borders=(1, 6), label="Dim_1")]
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
-        start(dimensions, n_samples, rel_tolerance, ax, dummy,
-              use_sensitivity, max_depth)
+        start(dimensions, n_samples, rel_tolerance, dummy, use_sensitivity,
+              max_depth, ax=None, divs_per_cell=8, plot_boxplot=True)
 
 
 if __name__ == '__main__':

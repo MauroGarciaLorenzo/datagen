@@ -148,6 +148,10 @@ class Test(TestCase):
         dim3 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
                          label="Dim3")
         dims = [dim1, dim2, dim3]
+        
+        for dim in dims:
+            dim.tolerance = (dim.borders[1] - dim.borders[0]) * 0.1
+
         cases_df = gen_df_for_dims(dims, 1000)
 
         linear_cases_df = cases_df.copy()
@@ -159,11 +163,11 @@ class Test(TestCase):
         parab_cases_df["Stability"] = parab_cases_df.apply(parab_func, axis=1)
         dim0_cases_df["Stability"] = dim0_cases_df.apply(dim0_func, axis=1)
 
-        dims_linear = sensitivity(linear_cases_df, dims)
+        dims_linear = sensitivity(linear_cases_df, dims, divs_per_cell=2)
         dims_linear_divs = [dim.divs for dim in dims_linear]
-        dims_parab = sensitivity(parab_cases_df, dims)
+        dims_parab = sensitivity(parab_cases_df, dims, divs_per_cell=2)
         dims_parab_divs = [dim.divs for dim in dims_parab]
-        dims_dim0 = sensitivity(dim0_cases_df, dims)
+        dims_dim0 = sensitivity(dim0_cases_df, dims, divs_per_cell=2)
         dims_dim0_divs = [dim.divs for dim in dims_dim0]
 
         self.assertEqual(dims_linear_divs, [1, 1, 2])

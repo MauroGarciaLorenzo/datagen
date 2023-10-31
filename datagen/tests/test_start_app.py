@@ -39,8 +39,8 @@ class Test(TestCase):
 
     def test_start(self):
         cases_df, dims_df, execution_logs = \
-            start(self.dimensions, self.n_samples, self.rel_tolerance, self.ax,
-                  self.func, self.use_sensitivity, self.max_depth)
+            start(self.dimensions, self.n_samples, self.rel_tolerance,
+                  self.func, self.use_sensitivity, self.max_depth, self.ax)
         # assert that cases_df must have 21 columns and dims_df 8
         self.assertEqual(cases_df.shape[1], 21)
         self.assertEqual(dims_df.shape[1], 8)

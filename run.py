@@ -1,5 +1,6 @@
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
@@ -37,8 +38,9 @@ def main():
     the relative tolerance (indicates the portion of the size of the original
     dimension). For example, if we have a dimension of size 10 and relative
     tolerance is 0.5, the smallest cell in this dimension will have size 5.
-    Lastly, user should provide the objective function and a boolean indicating
-    whether sensitivity analysis is used or not (use_sensitivity).
+    Lastly, user should provide the objective function, a boolean indicating
+    whether sensitivity analysis is used or not (use_sensitivity), and the
+    number of children cells for each recursive call (divs_per_cell).
     """
 
     p_sg = [(0, 2), (0, 1.5), (0, 1.5)]
@@ -67,14 +69,11 @@ def main():
                   borders=(0, 2), label="tau_q_g_for")
     ]
 
-    # ax = plt.figure().add_subplot(projection='3d')
-
-    ax = None
-    use_sensitivity = False
+    fig, ax = plt.subplots()
+    use_sensitivity = True
     cases_df, dims_df, execution_logs = \
-        start(dimensions, n_samples, rel_tolerance, ax, dummy, use_sensitivity,
-              max_depth)
-
+        start(dimensions, n_samples, rel_tolerance, dummy, use_sensitivity,
+              max_depth, ax, divs_per_cell=2)
 
 if __name__ == "__main__":
     main()
