@@ -28,7 +28,8 @@ from sklearn.preprocessing import StandardScaler
 
 from .utils import check_dims, flatten_list, get_dimension
 from .dimensions import Cell, Dimension
-from .viz import plot_divs, plot_stabilities
+from .viz import plot_divs, plot_stabilities, plot_importances_and_divisions
+from ..tests.utils import unique
 
 try:
     from pycompss.api.task import task
@@ -93,6 +94,10 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     # Finish recursivity if entropy decreases or cell become too small
     if delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth:
+        print("Stopped cell:")
+        print("    Entropy: ", entropy)
+        print("    Delta entropy: ", delta_entropy)
+        print("    Depth: ", depth)
         return (dimensions, entropy, delta_entropy, depth), cases_df, dims_df
     else:
         if use_sensitivity:
@@ -347,8 +352,8 @@ def sensitivity(cases_df, dimensions, divs_per_cell):
     :param divs_per_cell: Number of resultant cells from each recursive call
     :return: Divisions for each dimension
     """
-    labels = list(set(col.rsplit('_Var')[0]
-                      for col in cases_df.columns if '_Var' in col))
+    labels = unique(col.rsplit('_Var')[0]
+                    for col in cases_df.columns if '_Var' in col)
     dims_df = pd.DataFrame()
     for label in labels:
         matching_columns = (
@@ -370,6 +375,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell):
     splits_per_cell = int(np.round(np.log2(divs_per_cell)))
 
     for _ in range(splits_per_cell):
+        # plot_importances_and_divisions(dimensions, importances)
         index_max_importance = np.argmax(importances)
         label_max_importance = list(labels)[index_max_importance]
         dim_max_importance = get_dimension(label_max_importance, dimensions)
@@ -381,7 +387,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell):
         if importances[index_max_importance] != 0:
             dim_max_importance.divs *= 2
             importances[index_max_importance] /= 2
-
+    # plot_importances_and_divisions(dimensions, importances)
     return dimensions
 
 

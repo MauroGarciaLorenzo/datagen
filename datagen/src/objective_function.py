@@ -1,8 +1,10 @@
 import random
+import time
 
 
 # file where objective function is declared (dummy test)
 def dummy(case):
+    # time.sleep(10)
     return random.randint(0, 1)
 
 

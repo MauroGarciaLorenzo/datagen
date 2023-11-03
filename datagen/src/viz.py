@@ -25,8 +25,30 @@ import pandas as pd
 from matplotlib import pyplot as plt, patches
 
 
+def plot_importances_and_divisions(dimensions, importances):
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    labels = [f'Dimension {i}' for i in range(len(dimensions))]
+    plt.bar(labels, importances)
+    plt.ylim(0, 0.4)
+    plt.xlabel('Dimensions')
+    plt.ylabel('Importance')
+    plt.title('Dimensions importances')
+
+    plt.subplot(1, 2, 2)
+    divisions = [dim.divs for dim in dimensions]
+    plt.bar(labels, divisions)
+    plt.ylim(0, 4)
+    plt.xlabel('Dimensions')
+    plt.ylabel('Divisions')
+    plt.title('Dimensions divisions')
+
+    plt.tight_layout()
+    plt.show()
+
+
 def plot_stabilities(ax, cases_df, dims_df):
-    time.sleep(0.5)
+    time.sleep(1)
     for idx, dim_row in dims_df.iterrows():
         color = 'green' if cases_df.loc[idx, 'Stability'] == 1 else 'red'
         ax.scatter(dim_row[0], dim_row[1], color=color)
@@ -38,6 +60,7 @@ def plot_stabilities(ax, cases_df, dims_df):
 
 
 def plot_divs(ax, children_grid):
+    time.sleep(1)
     for cell in children_grid:
         dim0 = (cell.dimensions[0].borders[0], cell.dimensions[0].borders[1])
         dim1 = (cell.dimensions[1].borders[0], cell.dimensions[1].borders[1])
@@ -105,7 +128,8 @@ def print_results(execution_logs, cases_df):
     pd.set_option('display.max_columns', 20)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
-
+    print("")
+    print("")
     print("samples-stability:")
     print(cases_df)
     print("")

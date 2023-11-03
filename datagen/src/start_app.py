@@ -32,7 +32,7 @@ except ImportError:
 
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth,
-          use_sensitivity=None, ax=None, divs_per_cell=2, plot_boxplot=False):
+          use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the

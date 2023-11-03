@@ -5,6 +5,16 @@ import numpy as np
 from datagen import *
 
 
+def unique(sequence):
+    seen = set()
+    result = []
+    for item in sequence:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result
+
+
 def gen_df_for_dims(dims, n_rows=100):
     dim_set = {}
     for dim in dims:
