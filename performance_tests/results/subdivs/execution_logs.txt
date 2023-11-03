@@ -1,0 +1,21 @@
+Dimensions:
+Dimension("Dim_0", borders=(0.0, 2.5))
+Dimension("Dim_1", borders=(0.0, 6.0))
+Entropy: 0.0
+Delta Entropy: 0.0
+Depth: 5
+
+Dimensions:
+Dimension("Dim_0", borders=(2.5, 3.75))
+Dimension("Dim_1", borders=(0.0, 6.0))
+Entropy: 0.0
+Delta Entropy: -0.6730116670092565
+Depth: 5
+
+Dimensions:
+Dimension("Dim_0", borders=(3.75, 5.0))
+Dimension("Dim_1", borders=(0.0, 6.0))
+Entropy: 0.6931471805599453
+Delta Entropy: 0.6931471805599453
+Depth: 5
+

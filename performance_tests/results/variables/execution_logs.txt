@@ -1,0 +1,70 @@
+Dimensions:
+Dimension("Dim_0", borders=(0.0, 2.5))
+Dimension("Dim_1", borders=(0.0, 0.75))
+Entropy: 0.0
+Delta Entropy: -0.5623351446188083
+Depth: 5
+
+Dimensions:
+Dimension("Dim_0", borders=(0.0, 2.5))
+Dimension("Dim_1", borders=(0.75, 1.5))
+Entropy: 0.0
+Delta Entropy: 0.0
+Depth: 5
+
+Dimensions:
+Dimension("Dim_0", borders=(0.0, 2.5))
+Dimension("Dim_1", borders=(1.5, 2.25))
+Entropy: 0.0
+Delta Entropy: 0.0
+Depth: 5
+
+Dimensions:
+Dimension("Dim_0", borders=(0.0, 2.5))
+Dimension("Dim_1", borders=(2.25, 3.0))
+Entropy: 0.0
+Delta Entropy: 0.0
+Depth: 5
+
+Dimensions:
+Dimension("Dim_0", borders=(2.5, 5.0))
+Dimension("Dim_1", borders=(0.0, 3.0))
+Entropy: 0.0
+Delta Entropy: -0.6365141682948128
+Depth: 3
+
+Dimensions:
+Dimension("Dim_0", borders=(0.0, 2.5))
+Dimension("Dim_1", borders=(3.0, 6.0))
+Entropy: 0.0
+Delta Entropy: -0.6931471805599453
+Depth: 2
+
+Dimensions:
+Dimension("Dim_0", borders=(2.5, 3.75))
+Dimension("Dim_1", borders=(3.0, 4.5))
+Entropy: 0.0
+Delta Entropy: 0.0
+Depth: 5
+
+Dimensions:
+Dimension("Dim_0", borders=(2.5, 3.75))
+Dimension("Dim_1", borders=(4.5, 6.0))
+Entropy: 0.0
+Delta Entropy: -0.6931471805599453
+Depth: 4
+
+Dimensions:
+Dimension("Dim_0", borders=(3.75, 4.375))
+Dimension("Dim_1", borders=(3.0, 6.0))
+Entropy: 0.0
+Delta Entropy: 0.0
+Depth: 4
+
+Dimensions:
+Dimension("Dim_0", borders=(4.375, 5.0))
+Dimension("Dim_1", borders=(3.0, 6.0))
+Entropy: 0.6931471805599453
+Delta Entropy: 0.05663301226513251
+Depth: 4
+
