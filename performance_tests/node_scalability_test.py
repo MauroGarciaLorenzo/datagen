@@ -17,6 +17,7 @@ def main():
                                               divs_per_cell=2)
 
     result_dir = "results/node_scalability"
+    os.makedirs(result_dir, exist_ok=True)
 
     for file in os.listdir(result_dir):
         file_path = os.path.join(result_dir, file)
