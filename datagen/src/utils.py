@@ -24,11 +24,12 @@ import os
 def clean_dir(directory):
     if os.path.exists(directory):
         files = os.listdir(directory)
-
         for file in files:
             path = os.path.join(directory, file)
             if os.path.isfile(path):
                 os.remove(path)
+    else:
+        os.makedirs(directory, exist_ok=True)
 
 
 def get_dimension(label, dimensions):
@@ -69,3 +70,20 @@ def flatten_list(data):
         else:
             flattened_list.append(item)
     return flattened_list
+
+
+def save_results(cases_df, dims_df, execution_logs):
+    result_dir = "results"
+    cases_df.to_csv(os.path.join(result_dir, "cases_df.csv"), index=False)
+
+    dims_df.to_csv(os.path.join(result_dir, "dims_df.csv"), index=False)
+
+    with open(os.path.join(result_dir, "execution_logs.txt"), "w") as log_file:
+        for log_entry in execution_logs:
+            log_file.write("Dimensions:\n")
+            for dim in log_entry[0]:
+                log_file.write(f"{dim}\n")
+            log_file.write(f"Entropy: {log_entry[1]}\n")
+            log_file.write(f"Delta Entropy: {log_entry[2]}\n")
+            log_file.write(f"Depth: {log_entry[3]}\n")
+            log_file.write("\n")

@@ -21,7 +21,7 @@ import pandas as pd
 
 from .sampling import explore_cell
 from .viz import print_results, boxplot
-from .utils import clean_dir
+from .utils import clean_dir, save_results
 
 try:
     from pycompss.api.task import task
@@ -59,7 +59,8 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth,
     :param plot_boxplot: Indicates whether a boxplot representing all variables
     should be plotted
     """
-    clean_dir("figures")
+    clean_dir("results")
+    clean_dir("results/figures")
 
     for dim in dimensions:
         dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
@@ -81,6 +82,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth,
     if plot_boxplot:
         boxplot(cases_df)
     print_results(execution_logs, cases_df)
+    save_results(cases_df, dims_df, execution_logs)
     if cases_df.min().min() < 0:
         print("Warning. Negative numbers in dataframe.")
     print("")

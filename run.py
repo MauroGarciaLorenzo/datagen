@@ -44,9 +44,9 @@ def main():
         used or not.
         -ax: plot axes in case it is desired to show stability points and cells
         divisions (dimensions length must be 2). Plots saved in
-        "datagen/figures".
+        "datagen/results/figures".
         -plot_boxplot: a boolean indicating whether boxplots for each variable
-        must be obtained or not. Plots saved in "datagen/figures".
+        must be obtained or not. Plots saved in "datagen/results/figures".
     """
 
     p_sg = [(0, 2), (0, 1.5), (0, 1.5)]

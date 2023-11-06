@@ -53,7 +53,7 @@ def plot_stabilities(ax, cases_df, dims_df):
         color = 'green' if cases_df.loc[idx, 'Stability'] == 1 else 'red'
         ax.scatter(dim_row[0], dim_row[1], color=color)
 
-    dir_path = "figures"
+    dir_path = "results/figures"
     file_name = format(time.time(), '.0f') + ".png"
     path = os.path.join(dir_path, file_name)
     ax.figure.savefig(fname=path, dpi=300)
@@ -68,7 +68,7 @@ def plot_divs(ax, children_grid):
                                  dim1[1] - dim1[0], linewidth=1,
                                  edgecolor='black', facecolor='none')
         ax.add_patch(cell)
-    dir_path = "figures"
+    dir_path = "results/figures"
     file_name = format(time.time(), '.0f') + ".png"
     path = os.path.join(dir_path, file_name)
     ax.figure.savefig(fname=path, dpi=300)
@@ -90,7 +90,7 @@ def boxplot(cases_df):
         ax.set_title(dim)
         labels = [str(i) for i in range(variables.shape[1])]
         ax.set_xticklabels(labels)
-        dir_path = "figures"
+        dir_path = "results/figures"
         file_name = "boxplot_" + dim + ".png"
         path = os.path.join(dir_path, file_name)
         plt.savefig(fname=path, dpi=300)
