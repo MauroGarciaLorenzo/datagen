@@ -60,7 +60,8 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth,
     should be plotted
     """
     clean_dir("results")
-    clean_dir("results/figures")
+    if ax is not None and len(dimensions) == 2:
+        clean_dir("results/figures")
 
     for dim in dimensions:
         dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
