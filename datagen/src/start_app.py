@@ -80,6 +80,10 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth,
                      max_depth=max_depth, entropy=None,
                      divs_per_cell=divs_per_cell, dimensions=dimensions
                      ))
+    execution_logs = compss_wait_on(execution_logs)
+    cases_df = compss_wait_on(cases_df)
+    dims_df = compss_wait_on(dims_df)
+
     if plot_boxplot:
         boxplot(cases_df)
     print_results(execution_logs, cases_df)

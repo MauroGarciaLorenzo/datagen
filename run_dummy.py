@@ -51,8 +51,8 @@ def main():
     variables_d1 = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
     n_samples = 5
     n_cases = 2
-    rel_tolerance = 0.05
-    max_depth = 5
+    rel_tolerance = 0.1
+    max_depth = 3
     fig, ax = plt.subplots()
     dimensions = [
         Dimension(variables=variables_d0, n_cases=n_cases, divs=2,
@@ -63,7 +63,7 @@ def main():
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
         start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
-              use_sensitivity, ax=ax, divs_per_cell=8, plot_boxplot=True)
+              use_sensitivity, ax=ax, divs_per_cell=2, plot_boxplot=True)
 
 
 if __name__ == '__main__':
