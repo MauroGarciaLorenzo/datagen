@@ -3,14 +3,14 @@ import sys
 sys.path.append("..")
 
 from datagen.src.start_app import start
-from setup import setUp_basic
+from setup import setUp_basic, setUp_complex
 from pycompss.api.task import task
 
 
 @task()
 def main():
     (dimensions, n_samples, rel_tolerance, dummy, max_depth, use_sensitivity,
-     ax, divs_per_cell, plot_boxplot) = setUp_basic()
+     ax, divs_per_cell, plot_boxplot) = setUp_complex()
     cases_df, dims_df, execution_logs = start(dimensions, n_samples,
                                               rel_tolerance, dummy, max_depth,
                                               use_sensitivity, ax,
