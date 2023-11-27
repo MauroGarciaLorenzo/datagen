@@ -10,7 +10,7 @@ export PYTHONPATH="/home/bsc19/bsc19019/hp2c-dt/datagen/performance_tests":"/hom
 
 num_nodes=1
 
-while [ ${num_nodes} -le 4 ]
+while [ ${num_nodes} -le 8 ]
 do
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
@@ -19,8 +19,7 @@ do
   --worker_working_dir=local_disk \
   --master_working_dir=local_disk \
   --lang=python \
-  --qos=debug \
-  --exec_time=10 \
+  --exec_time=400 \
   --agents \
   --tracing \
   node_scalability_test.py
