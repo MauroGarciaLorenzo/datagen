@@ -166,3 +166,6 @@ logs/
 *.png
 *.csv
 *.txt
+*.out
+*.err
+.enqueue_compss
