@@ -22,6 +22,6 @@ do
   --exec_time=400 \
   --agents \
   --tracing \
-  node_scalability_test.py
+  node_scalability_test.py ${num_nodes}
   num_nodes=$((num_nodes * 2))
 done

@@ -8,15 +8,14 @@ from pycompss.api.task import task
 
 
 @task()
-def main():
+def main(args="0"):
     (dimensions, n_samples, rel_tolerance, dummy, max_depth, use_sensitivity,
-     ax, divs_per_cell, plot_boxplot) = setUp_complex()
+     ax, divs_per_cell, plot_boxplot) = setUp_basic()
     cases_df, dims_df, execution_logs = start(dimensions, n_samples,
                                               rel_tolerance, dummy, max_depth,
                                               use_sensitivity, ax,
                                               divs_per_cell=2)
-
-    result_dir = "results/node_scalability"
+    result_dir = "results/node_scalability" + args[0]
     os.makedirs(result_dir, exist_ok=True)
 
     for file in os.listdir(result_dir):
