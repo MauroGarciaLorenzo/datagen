@@ -23,8 +23,7 @@ class Test(TestCase):
         self.func = dummy
         self.dimensions = [
             Dimension(variables=p_sg, n_cases=self.n_cases, divs=2,
-                      borders=(10, 25.3),
-                      label="p_sg"),
+                      borders=(10, 25.3), label="p_sg"),
             Dimension(variables=p_cig, n_cases=self.n_cases, divs=1,
                       borders=(0, 6), label="p_cig"),
             Dimension(variables=tau_f_g_for, n_cases=self.n_cases, divs=1,
@@ -40,7 +39,8 @@ class Test(TestCase):
     def test_start(self):
         cases_df, dims_df, execution_logs = \
             start(self.dimensions, self.n_samples, self.rel_tolerance,
-                  self.func, self.max_depth, self.use_sensitivity, self.ax)
+                  self.func, self.max_depth,
+                  use_sensitivity=self.use_sensitivity, ax=self.ax)
         # assert that cases_df must have 21 columns and dims_df 8
         self.assertEqual(cases_df.shape[1], 21)
         self.assertEqual(dims_df.shape[1], 8)

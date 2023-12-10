@@ -42,13 +42,14 @@ except ImportError:
 @task(returns=3)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
-                 max_depth, divs_per_cell):
+                 max_depth, divs_per_cell, generator):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
     If delta entropy is positive, the cell will subdivide itself according to
     the divisions assigned to each dimension.
     Otherwise, it will return the cases and logs taken until this point.
+
 
     :param func: Objective function
     :param n_samples: Number of samples to produce
@@ -65,6 +66,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     exceeded)
     :param dims_heritage_df: Inherited dims dataframe
     :param divs_per_cell: Number of resultant cells from each recursive call
+    :param generator: Numpy generator for random values
     :return children_total: List of children dimensions, entropy,
     delta_entropy and depth
     :return cases_df: Concatenation of inherited cases and those produced by
@@ -73,10 +75,10 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     the cell
     """
     # Generate samples (n_samples for each dimension)
-    samples_df = gen_samples(n_samples, dimensions)
+    samples_df = gen_samples(n_samples, dimensions, generator)
 
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
-    cases_df, dims_df = gen_cases(samples_df, dimensions)
+    cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
     # Eval each case
     stabilities = [eval_stability(case, func) for case in cases_df.values]
@@ -101,22 +103,21 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         return (dimensions, entropy, delta_entropy, depth), cases_df, dims_df
     else:
         if use_sensitivity:
-            dimensions = sensitivity(cases_df, dimensions, divs_per_cell)
+            dimensions = sensitivity(cases_df, dimensions, divs_per_cell, generator)
         children_grid = gen_grid(dimensions)
 
         if ax is not None and len(dimensions) == 2:
             plot_divs(ax, children_grid)
 
         cases_df, dims_df, children_total = (
-            explore_grid(ax, cases_df, children_grid,
-                         depth, dims_df, func,
-                         n_samples, use_sensitivity,
-                         max_depth, divs_per_cell))
+            explore_grid(ax, cases_df, children_grid, depth, dims_df, func,
+                         n_samples, use_sensitivity, max_depth, divs_per_cell,
+                         generator))
         return children_total, cases_df, dims_df
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
-                 use_sensitivity, max_depth, divs_per_cell):
+                 use_sensitivity, max_depth, divs_per_cell, generator):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -135,6 +136,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
     :param divs_per_cell: Number of resultant cells from each recursive call
+    :param generator: Numpy generator for random values
     :return: Children dims, cases and parameters
     """
     total_cases_df, total_dims_df, total_entropies = get_children_parameters(
@@ -146,14 +148,9 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
             in zip(grid, total_cases_df, total_dims_df, total_entropies):
         dim = children_cell.dimensions
         child_total_params, cases_children_df, dims_children_df = (
-            explore_cell(func, n_samples,
-                         entropy_children,
-                         depth + 1, ax,
-                         dim,
-                         cases_heritage_df,
-                         dims_heritage_df,
-                         use_sensitivity,
-                         max_depth, divs_per_cell))
+            explore_cell(func, n_samples, entropy_children, depth + 1, ax, dim,
+                         cases_heritage_df, dims_heritage_df, use_sensitivity,
+                         max_depth, divs_per_cell, generator))
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
         list_dims_children_df.append(dims_children_df)
@@ -175,7 +172,7 @@ def generate_columns(dim):
     return [f"{dim.label}_Var{v}" for v in range(len(dim.variables))]
 
 
-def process_p_cig_dimension(samples_df, p_cig):
+def process_p_cig_dimension(samples_df, p_cig, generator):
     """ Assigns values to g_for and g_fol dimensions.
 
     p_cig samples values must be distributed between g_for and g_fol assigning
@@ -184,6 +181,7 @@ def process_p_cig_dimension(samples_df, p_cig):
     while g_fol variables are complimentary to g_for to sum g_fol:
         g_fol_i = p_cig_i - g_for_i
 
+    :param generator:
     :param samples_df: Involved samples
     :param p_cig: p_cig dimension
     :return: Cases obtained and samples extended (one sample for each case)
@@ -194,14 +192,14 @@ def process_p_cig_dimension(samples_df, p_cig):
     for _, sample in samples_df.iterrows():
         # Obtain p_cig cases
         cases_p_cig_df = pd.DataFrame(
-            p_cig.get_cases_extreme(sample[p_cig.label]),
+            p_cig.get_cases_extreme(sample[p_cig.label], generator),
             columns=generate_columns(p_cig)).dropna()
         n_rows = len(cases_p_cig_df)
         dims_p_cig_df = pd.DataFrame(
             np.repeat(sample[p_cig.label], n_rows), columns=[p_cig.label])
 
         # Obtain the complimentary g_for and g_fol percentages
-        grid_forming_perc = random.random()
+        grid_forming_perc = generator.random()
         g_for_sample = sample["p_cig"] * grid_forming_perc
         g_fol_sample = sample["p_cig"] * (1 - grid_forming_perc)
 
@@ -217,14 +215,11 @@ def process_p_cig_dimension(samples_df, p_cig):
             g_for_variables = np.array([
                 (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
                 for x in range(len(p_cig.variables))])
-            g_for = Dimension(variables=g_for_variables,
-                              n_cases=1,
-                              divs=1,
+            g_for = Dimension(variables=g_for_variables, n_cases=1, divs=1,
                               borders=(p_cig.borders[0], sample[p_cig.label]),
-                              label="g_for",
-                              tolerance=p_cig.tolerance)
+                              label="g_for", tolerance=p_cig.tolerance)
             # Create g_for case
-            case_g_for = (g_for.get_cases_extreme(g_for_sample))[0]
+            case_g_for = (g_for.get_cases_extreme(g_for_sample, generator))[0]
             if not np.isnan(case_g_for).any():
                 dims_g_for.append(g_for_sample)
                 cases_g_for.append(case_g_for)
@@ -267,10 +262,11 @@ def process_p_cig_dimension(samples_df, p_cig):
     return cases_df, dims_df
 
 
-def process_other_dimensions(samples_df, dim):
+def process_other_dimensions(samples_df, dim, generator):
     """
     This method assigns values to the variables within a generic dimension.
 
+    :param generator:
     :param samples_df: Dataframe containing every sample in this cell
     :param dim: Involved dimension
     :return: Cases obtained and samples extended (one sample for each case)
@@ -278,7 +274,7 @@ def process_other_dimensions(samples_df, dim):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
-        cases = dim.get_cases_extreme(sample[dim.label])
+        cases = dim.get_cases_extreme(sample[dim.label], generator)
         for case in cases:
             if not np.isnan(case).any():
                 total_cases.append(case)
@@ -289,10 +285,11 @@ def process_other_dimensions(samples_df, dim):
     return cases_df, dims_df
 
 
-def gen_cases(samples_df, dimensions):
+def gen_cases(samples_df, dimensions, generator):
     """Produces sum combinations of the samples given. Each sample sum
     combination is called a "case".
 
+    :param generator:
     :param samples_df: Involved samples (dataframe)
     :param dimensions: Involved dimensions
     :return cases_df: Samples-driven produced cases dataframe
@@ -303,11 +300,11 @@ def gen_cases(samples_df, dimensions):
 
     for dim in dimensions:
         if dim.label == "p_cig":
-            partial_cases, partial_dims = process_p_cig_dimension(
-                samples_df, dim)
+            partial_cases, partial_dims = process_p_cig_dimension(samples_df,
+                                                                  dim, generator)
         else:
-            partial_cases, partial_dims = process_other_dimensions(
-                samples_df, dim)
+            partial_cases, partial_dims = process_other_dimensions(samples_df,
+                                                                   dim, generator)
         total_cases.append(partial_cases)
         total_dims.append(partial_dims)
 
@@ -316,16 +313,17 @@ def gen_cases(samples_df, dimensions):
     return total_cases_df, total_dims_df
 
 
-def gen_samples(n_samples, dimensions):
+def gen_samples(n_samples, dimensions, generator):
     """Generates n_samples samples, which represent total sum of the variables
     within a dimension.
 
+    :param generator:
     :param n_samples: Number of samples to produce
     :param dimensions: Involved dimensions
     :return: DataFrame containing these samples with columns named after
     dimension labels
     """
-    sampler = qmc.LatinHypercube(d=len(dimensions))
+    sampler = qmc.LatinHypercube(d=len(dimensions), seed=generator)
     samples = sampler.random(n=n_samples)
 
     lower_bounds = np.array([dim.borders[0] for dim in dimensions])
@@ -339,7 +337,7 @@ def gen_samples(n_samples, dimensions):
     return df_samples
 
 
-def sensitivity(cases_df, dimensions, divs_per_cell):
+def sensitivity(cases_df, dimensions, divs_per_cell, generator):
     """This Sensitivity analysis is done by gathering cases and their
     evaluated outputs, then train a Random Forest, getting the importance of
     each variable in the decision. Each variable's division count is
@@ -347,6 +345,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell):
     the number of subdivisions for the most influential variable and halve its
     importance.
 
+    :param generator:
     :param cases_df: Involved cases
     :param dimensions: Involved dimensions
     :param divs_per_cell: Number of resultant cells from each recursive call
@@ -366,7 +365,9 @@ def sensitivity(cases_df, dimensions, divs_per_cell):
 
     scaler = StandardScaler()
     x_scaled = scaler.fit_transform(x)
-    model = RandomForestClassifier()
+
+    random_state = generator.integers (0,2**32 - 1)
+    model = RandomForestClassifier(random_state=random_state)
     model.fit(x_scaled, y)
 
     importances = model.feature_importances_
@@ -429,12 +430,9 @@ def gen_grid(dims):
         dimensions = []
         for j in range(len(dims)):
             dimensions.append(
-                Dimension(variables=dims[j].variables,
-                          n_cases=dims[j].n_cases,
-                          divs=dims[j].divs,
-                          borders=(lower[j], upper[j]),
-                          label=dims[j].label,
-                          tolerance=dims[j].tolerance)
+                Dimension(variables=dims[j].variables, n_cases=dims[j].n_cases,
+                          divs=dims[j].divs, borders=(lower[j], upper[j]),
+                          label=dims[j].label, tolerance=dims[j].tolerance)
             )
         grid.append(Cell(dimensions))
     return grid

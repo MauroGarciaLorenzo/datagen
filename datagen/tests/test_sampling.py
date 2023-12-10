@@ -55,7 +55,7 @@ class Test(TestCase):
 
     def test_gen_samples(self):
         n_samples = 100
-        df_samples = gen_samples(n_samples, self.dims)
+        df_samples = gen_samples(n_samples, self.dims, None)
 
         for dim in self.dims:
             self.assertTrue(all(df_samples[dim.label] >= dim.borders[0]))
@@ -163,11 +163,14 @@ class Test(TestCase):
         parab_cases_df["Stability"] = parab_cases_df.apply(parab_func, axis=1)
         dim0_cases_df["Stability"] = dim0_cases_df.apply(dim0_func, axis=1)
 
-        dims_linear = sensitivity(linear_cases_df, dims, divs_per_cell=2)
+        dims_linear = sensitivity(linear_cases_df, dims, divs_per_cell=2,
+                                  generator=None)
         dims_linear_divs = [dim.divs for dim in dims_linear]
-        dims_parab = sensitivity(parab_cases_df, dims, divs_per_cell=2)
+        dims_parab = sensitivity(parab_cases_df, dims, divs_per_cell=2,
+                                 generator=None)
         dims_parab_divs = [dim.divs for dim in dims_parab]
-        dims_dim0 = sensitivity(dim0_cases_df, dims, divs_per_cell=2)
+        dims_dim0 = sensitivity(dim0_cases_df, dims, divs_per_cell=2,
+                                generator=None)
         dims_dim0_divs = [dim.divs for dim in dims_dim0]
 
         self.assertEqual(dims_linear_divs, [1, 1, 2])

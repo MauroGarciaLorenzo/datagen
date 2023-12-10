@@ -24,7 +24,6 @@ various cases based on given samples, considering their tolerance and
 maintaining the integrity of the sum of variables.
 """
 
-import random
 import numpy as np
 
 
@@ -64,7 +63,7 @@ class Dimension:
     def __repr__(self):
         return self.__str__()
 
-    def get_cases_normal(self, sample, iter_limit_factor=1000):
+    def get_cases_normal(self, sample, generator, iter_limit_factor=1000):
         """
         Generate `n_cases` number of random cases for the given sample.
 
@@ -75,6 +74,7 @@ class Dimension:
         The standard deviation of each variable is selected so that there is a
         probability of 99 % of a new point lying inside the variable range.
 
+        :param generator:
         :param sample: A random input value representing the dimension, with
             the requirement that the different variables of the dimension
             must collectively sum up to it.
@@ -107,7 +107,7 @@ class Dimension:
                              f"{self.variables}")
 
         while len(cases) < self.n_cases and iters < iter_limit:
-            case = np.random.normal(scaled_avgs, stds)
+            case = generator.normal(scaled_avgs, stds)
             lower_bounds = self.variables[:, 0]
             upper_bounds = self.variables[:, 1]
             case = np.clip(case, lower_bounds, upper_bounds)
@@ -130,7 +130,7 @@ class Dimension:
 
         return cases
 
-    def get_cases_extreme(self, sample, iter_limit=5000,
+    def get_cases_extreme(self, sample, generator, iter_limit=5000,
                           iter_limit_variables=500):
         """This case generator aims to reach more variance between cases within
         a sample. Here, we assign random values to de variables in the range
@@ -141,6 +141,7 @@ class Dimension:
         between this value and the maximum possible value (explained above)
         until error is less than defined (dimension tolerance).
 
+        :param generator:
         :param sample: Target sum
         :param iter_limit: Maximum number of iterations. Useful to avoid
             infinite loops
@@ -171,13 +172,13 @@ class Dimension:
             while (not np.isclose(total_sum, sample) and
                    iters_variables < iter_limit):
                 indexes = list(range(len(self.variables)))
-                random.shuffle(indexes)
+                generator.shuffle(indexes)
 
                 iters_variables += 1
                 for i in indexes:
                     if np.isclose(total_sum, sample):
                         break
-                    new_var = random.uniform(case[i],
+                    new_var = generator.uniform(case[i],
                                              self.variables[i, 1])
                     new_var = np.clip(new_var, case[i],
                                       case[i] + sample - total_sum)
@@ -193,6 +194,6 @@ class Dimension:
         if iters_cases >= iter_limit:
             print("Warning: Iterations count exceeded. "
                   "Retrying with normal sampling")
-            return self.get_cases_normal(sample)
+            return self.get_cases_normal(sample, generator)
 
         return cases

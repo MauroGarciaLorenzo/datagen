@@ -1,11 +1,10 @@
-import random
-import time
+import math
 
 
 # file where objective function is declared (dummy test)
 def dummy(case):
-    # time.sleep(10)
-    return random.randint(0, 1)
+    time.sleep(10)
+    return round(math.sin(sum(case)) * 0.5 + 0.5)
 
 
 def dummy_linear(case):

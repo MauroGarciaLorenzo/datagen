@@ -41,8 +41,8 @@ class Test(TestCase):
         percentages_normal = []
         percentages_extreme = []
         for sample in samples:
-            cases_normal = dim.get_cases_normal(sample)
-            cases_extreme = dim.get_cases_extreme(sample)
+            cases_normal = dim.get_cases_normal(sample, None)
+            cases_extreme = dim.get_cases_extreme(sample, None)
 
             print(f"Sample: {sample}")
             print("get_cases_normal:")

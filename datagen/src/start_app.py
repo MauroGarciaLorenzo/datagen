@@ -16,7 +16,7 @@
 goal is to explore the various cells (or combinations of dimensions) and
 produce both a record of execution logs and a DataFrame containing specific
 cases and their associated stability."""
-
+import numpy as np
 import pandas as pd
 
 from .sampling import explore_cell
@@ -31,7 +31,7 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def start(dimensions, n_samples, rel_tolerance, func, max_depth,
+def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
           use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
@@ -44,6 +44,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth,
         -cases_df: dataframe containing each case and associated stability
                 taken during the execution.
 
+    :param seed:
     :param divs_per_cell:
     :param dimensions: List of dimensions involved
     :param n_samples: Number of different values for each dimension
@@ -72,14 +73,13 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth,
         ax.set_xlim(left=x_lims[0], right=x_lims[1])
         ax.set_ylim(bottom=y_lims[0], top=y_lims[1])
 
+    generator = np.random.default_rng(seed)
     execution_logs, cases_df, dims_df = (
-        explore_cell(ax=ax, cases_heritage_df=None,
-                     depth=0, dims_heritage_df=pd.DataFrame(),
-                     func=func, n_samples=n_samples,
-                     use_sensitivity=use_sensitivity,
-                     max_depth=max_depth, entropy=None,
-                     divs_per_cell=divs_per_cell, dimensions=dimensions
-                     ))
+        explore_cell(func=func, n_samples=n_samples, entropy=None, depth=0,
+                     ax=ax, dimensions=dimensions, cases_heritage_df=None,
+                     dims_heritage_df=pd.DataFrame(),
+                     use_sensitivity=use_sensitivity, max_depth=max_depth,
+                     divs_per_cell=divs_per_cell, generator=generator))
     execution_logs = compss_wait_on(execution_logs)
     cases_df = compss_wait_on(cases_df)
     dims_df = compss_wait_on(dims_df)

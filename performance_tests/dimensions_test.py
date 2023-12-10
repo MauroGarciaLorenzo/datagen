@@ -13,8 +13,8 @@ def main():
      ax, divs_per_cell, plot_boxplot) = setUp_basic()
     cases_df, dims_df, execution_logs = start(dimensions, n_samples,
                                               rel_tolerance, dummy, max_depth,
-                                              use_sensitivity, ax,
-                                              divs_per_cell=2)
+                                              use_sensitivity=use_sensitivity,
+                                              ax=ax, divs_per_cell=2)
 
     result_dir = "results/dimensions"
 

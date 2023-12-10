@@ -38,7 +38,7 @@ class Test(TestCase):
                     self.assertRaises(
                         ValueError, dim.get_cases_extreme, sample)
                 else:
-                    cases = dim.get_cases_extreme(sample)
+                    cases = dim.get_cases_extreme(sample, None)
                     for idx in range(len(cases)):
                         self.assertAlmostEqual(sum(cases[idx]), sample,
                                                places=2)
@@ -56,7 +56,7 @@ class Test(TestCase):
                     self.assertRaises(
                         ValueError, dim.get_cases_extreme, sample)
                 else:
-                    cases = dim.get_cases_extreme(sample)
+                    cases = dim.get_cases_extreme(sample, None)
                     for idx in range(len(cases)):
                         for var in range(len(cases[idx])):
                             self.assertTrue(dim.variables[var, 0] <=

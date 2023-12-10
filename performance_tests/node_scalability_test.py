@@ -10,11 +10,11 @@ from pycompss.api.task import task
 @task()
 def main(result_dir=None, *args):
     (dimensions, n_samples, rel_tolerance, dummy, max_depth, use_sensitivity,
-     ax, divs_per_cell, plot_boxplot) = setUp_basic()
+     ax, divs_per_cell, plot_boxplot) = setUp_complex()
     cases_df, dims_df, execution_logs = start(dimensions, n_samples,
                                               rel_tolerance, dummy, max_depth,
-                                              use_sensitivity, ax,
-                                              divs_per_cell=2)
+                                              use_sensitivity=use_sensitivity,
+                                              ax=ax, divs_per_cell=2, seed=1)
     if result_dir != None:
         os.makedirs(result_dir, exist_ok=True)
 
