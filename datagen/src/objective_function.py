@@ -1,4 +1,5 @@
 import math
+import time
 
 
 # file where objective function is declared (dummy test)
