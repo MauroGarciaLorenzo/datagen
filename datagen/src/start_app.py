@@ -16,11 +16,12 @@
 goal is to explore the various cells (or combinations of dimensions) and
 produce both a record of execution logs and a DataFrame containing specific
 cases and their associated stability."""
-
+import numpy as np
 import pandas as pd
 
-from .sampling import gen_grid, explore_grid
-from .viz import print_results
+from .sampling import explore_cell
+from .viz import print_results, boxplot
+from .utils import clean_dir, save_results
 
 try:
     from pycompss.api.task import task
@@ -30,7 +31,8 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def start(dimensions, n_samples, rel_tolerance, ax, func):
+def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
+          use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False):
     """In this method we work with dimensions (main axes), which represent a
     list of variables. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -42,6 +44,8 @@ def start(dimensions, n_samples, rel_tolerance, ax, func):
         -cases_df: dataframe containing each case and associated stability
                 taken during the execution.
 
+    :param seed:
+    :param divs_per_cell:
     :param dimensions: List of dimensions involved
     :param n_samples: Number of different values for each dimension
     :param rel_tolerance: Fraction of the dimension's range that will be used
@@ -49,15 +53,44 @@ def start(dimensions, n_samples, rel_tolerance, ax, func):
         e.g., if rel_tolerance = 0.1 the dimension's tolerance will be 10 % of
         its range
     :param ax: Plottable object
+    :param use_sensitivity: Boolean indicating whether sensitivity analysis is
+    used or not
     :param func: Objective function
+    :param max_depth: Maximum depth for a cell to be subdivided
+    :param plot_boxplot: Indicates whether a boxplot representing all variables
+    should be plotted
     """
+    clean_dir("results")
+    if ax is not None and len(dimensions) == 2:
+        clean_dir("results/figures")
+
     for dim in dimensions:
         dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
-    grid = gen_grid(dimensions)
-    cases_df, execution_logs = explore_grid(ax, cases_df=None, grid=grid,
-                                            depth=0, dims_df=pd.DataFrame(),
-                                            func=func, n_samples=n_samples)
+
+    if ax is not None and len(dimensions) == 2:
+        x_lims = (dimensions[0].borders[0], dimensions[0].borders[1])
+        y_lims = (dimensions[1].borders[0], dimensions[1].borders[1])
+        ax.set_xlim(left=x_lims[0], right=x_lims[1])
+        ax.set_ylim(bottom=y_lims[0], top=y_lims[1])
+
+    generator = np.random.default_rng(seed)
+    execution_logs, cases_df, dims_df = (
+        explore_cell(func=func, n_samples=n_samples, entropy=None, depth=0,
+                     ax=ax, dimensions=dimensions, cases_heritage_df=None,
+                     dims_heritage_df=pd.DataFrame(),
+                     use_sensitivity=use_sensitivity, max_depth=max_depth,
+                     divs_per_cell=divs_per_cell, generator=generator))
+    execution_logs = compss_wait_on(execution_logs)
+    cases_df = compss_wait_on(cases_df)
+    dims_df = compss_wait_on(dims_df)
+
+    if plot_boxplot:
+        boxplot(cases_df)
     print_results(execution_logs, cases_df)
+    save_results(cases_df, dims_df, execution_logs)
+    if cases_df.min().min() < 0:
+        print("Warning. Negative numbers in dataframe.")
     print("")
-    return cases_df, execution_logs
+
+    return cases_df, dims_df, execution_logs
 

@@ -164,3 +164,8 @@ cython_debug/
 logs/
 *.jpg
 *.png
+*.csv
+*.txt
+*.out
+*.err
+.enqueue_compss

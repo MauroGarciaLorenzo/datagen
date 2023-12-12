@@ -1,0 +1,2 @@
+# Older pandas version for issues detected in Windows users
+pandas==1.5.3

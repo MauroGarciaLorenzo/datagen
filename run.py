@@ -1,5 +1,6 @@
 
 import numpy as np
+from matplotlib import pyplot as plt
 
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
@@ -37,23 +38,32 @@ def main():
     the relative tolerance (indicates the portion of the size of the original
     dimension). For example, if we have a dimension of size 10 and relative
     tolerance is 0.5, the smallest cell in this dimension will have size 5.
-    Lastly, user should provide the objective function.
+    Lastly, user should provide the objective function. As optional parameters,
+    the user can define:
+        -use_sensitivity: a boolean indicating whether sensitivity analysis is
+        used or not.
+        -ax: plot axes in case it is desired to show stability points and cells
+        divisions (dimensions length must be 2). Plots saved in
+        "datagen/results/figures".
+        -plot_boxplot: a boolean indicating whether boxplots for each variable
+        must be obtained or not. Plots saved in "datagen/results/figures".
     """
-    p_sg = np.array([(0, 2), (0, 1.5), (0, 1.5)])
-    p_cig = np.array([(0, 1), (0, 1.5), (0, 1.5), (0, 2)])
-    tau_f_g_for = np.array([(0, 2)])
-    tau_v_g_for = np.array([(0, 2)])
-    tau_p_g_for = np.array([(0, 2)])
-    tau_q_g_for = np.array([(0, 2)])
-    n_samples = 2
+
+    p_sg = [(0, 2), (0, 1.5), (0, 1.5)]
+    p_cig = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
+    tau_f_g_for = [(0., 2)]
+    tau_v_g_for = [(0., 2)]
+    tau_p_g_for = [(0., 2)]
+    tau_q_g_for = [(0., 2)]
+    n_samples = 3
     n_cases = 3
-    rel_tolerance = 0.1
-    # max_depth = 5
-    # ax = plt.figure().add_subplot(projection='3d')
+
+    rel_tolerance = 0.01
+    max_depth = 3
     dimensions = [
         Dimension(variables=p_sg, n_cases=n_cases, divs=2, borders=(0, 5),
                   label="p_sg"),
-        Dimension(variables=p_cig, n_cases=n_cases, divs=2, borders=(0, 6),
+        Dimension(variables=p_cig, n_cases=n_cases, divs=1, borders=(0, 6),
                   label="p_cig"),
         Dimension(variables=tau_f_g_for, n_cases=n_cases, divs=1,
                   borders=(0, 2), label="tau_f_g_for"),
@@ -65,10 +75,11 @@ def main():
                   borders=(0, 2), label="tau_q_g_for")
     ]
 
-    ax = None
-    cases_df, execution_logs = start(dimensions, n_samples, rel_tolerance, ax,
-                                     dummy)
-
+    fig, ax = plt.subplots()
+    use_sensitivity = True
+    cases_df, dims_df, execution_logs = \
+        start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
+              use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=1)
 
 if __name__ == "__main__":
     main()
