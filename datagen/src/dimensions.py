@@ -48,7 +48,7 @@ class Dimension:
                 sample)
         -label: dimension identifier
     """
-    def __init__(self, variables, n_cases, divs, borders, label,
+    def __init__(self, variables, n_cases, divs, borders, label,cosphi,
                  tolerance=None):
         self.variables = np.array(variables, dtype='float')
         self.n_cases = n_cases
@@ -56,9 +56,11 @@ class Dimension:
         self.borders = borders
         self.label = label
         self.tolerance = tolerance
+        self.cosphi = cosphi
 
     def __str__(self):
-        return f'Dimension("{self.label}", borders={self.borders})'
+#        return f'Dimension("{self.label}", borders={self.borders})'
+        return f'Dimension(borders={self.borders})'
 
     def __repr__(self):
         return self.__str__()
@@ -160,7 +162,7 @@ class Dimension:
 
         if not (max_val >= sample >= min_val):
             raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {self.label}, with variables borders "
+                             f"dimension , with variables borders " #{self.label}
                              f"{self.variables}")
 
         while len(cases) < self.n_cases and iters_cases < iter_limit:

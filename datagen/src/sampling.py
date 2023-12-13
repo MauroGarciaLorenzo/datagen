@@ -76,10 +76,12 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     """
     # Generate samples (n_samples for each dimension)
     samples_df = gen_samples(n_samples, dimensions, generator)
+    
+    samples_df['p_gfor']=samples_df['p_cig']*samples_df['perc_gfor']
 
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
-
+    
     # Eval each case
     stabilities = [eval_stability(case, func) for case in cases_df.values]
     stabilities = compss_wait_on(stabilities)
@@ -163,106 +165,204 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     return cases_df, dims_df, children_total_params
 
 
-def generate_columns(dim):
+def generate_columns(label,dim):
     """Assigns names for every variable in a dimension.
 
     :param dim: Involved dimension
     :return: Names of de variables
     """
-    return [f"{dim.label}_Var{v}" for v in range(len(dim.variables))]
+    return [f"{label}_Var{v}" for v in range(len(dim.variables))]
+
+# def process_p_gfor_dimension(total_cases, total_dims, generator):
+#     """ Assigns values to g_for and g_fol dimensions.
+
+#     p_cig samples values must be distributed between g_for and g_fol assigning
+#     a random value between 0 and 1 as a one-to-one percentage, resulting in
+#     g_for plus g_fol equalling p_cig. g_for variables are calculated as usual,
+#     while g_fol variables are complimentary to g_for to sum g_fol:
+#         g_fol_i = p_cig_i - g_for_i
+
+#     :param generator:
+#     :param samples_df: Involved samples
+#     :param p_cig: p_cig dimension
+#     :return: Cases obtained and samples extended (one sample for each case)
+#     """
+#     cases = []
+#     dims = []
+    
+#     cases_p_cig_df=total_cases['p_cig']    
+#     n_rows = len(cases_p_cig_df)
+    
+#     grid_forming_perc= total_dims['perc_gfor']
+
+#     g_for_sample = np.array(total_dims["p_cig"]) *np.array( grid_forming_perc)
+    
+    
+    
+#     for _, sample in samples_df.iterrows():
+#         # Obtain p_cig cases
+#         cases_p_cig_df = pd.DataFrame(
+#             p_cig.get_cases_extreme(sample[p_cig.label], generator),
+#             columns=generate_columns(p_cig)).dropna()
+#         n_rows = len(cases_p_cig_df)
+#         dims_p_cig_df = pd.DataFrame(
+#             np.repeat(sample[p_cig.label], n_rows), columns=[p_cig.label])
+
+#         # Obtain the complimentary g_for and g_fol percentages
+#         grid_forming_perc = generator.random()
+#         g_for_sample = sample["p_cig"] * grid_forming_perc
+#         g_fol_sample = sample["p_cig"] * (1 - grid_forming_perc)
+
+#         # Obtain g_for and g_fol cases
+#         cases_g_for = []
+#         cases_g_fol = []
+#         dims_g_for = []
+#         dims_g_fol = []
+#         for i in range(len(cases_p_cig_df)):
+#             # Compose g_for dimension
+#             # Pick bounds of each variable. The min value is p_cig dimension's
+#             # min bound, and max is the value sampled for ith p_cig's variable
+#             g_for_variables = np.array([
+#                 (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
+#                 for x in range(len(p_cig.variables))])
+#             g_for = Dimension(variables=g_for_variables, n_cases=1, divs=1,
+#                               borders=(p_cig.borders[0], sample[p_cig.label]),
+#                               label="g_for", tolerance=p_cig.tolerance)
+#             # Create g_for case
+#             case_g_for = (g_for.get_cases_extreme(g_for_sample, generator))[0]
+#             if not np.isnan(case_g_for).any():
+#                 dims_g_for.append(g_for_sample)
+#                 cases_g_for.append(case_g_for)
+#                 dims_g_fol.append(g_fol_sample)
+#                 # Compose g_fol subtracting p_cig from g_for case variables
+#                 cases_g_fol.append(
+#                     [cases_p_cig_df.iloc[i, x] - case_g_for[x]
+#                      for x in range(len(p_cig.variables))])
+
+#         cases_g_for_df = pd.DataFrame(
+#             cases_g_for,
+#             columns=[f"g_for_Var{v}" for v in range(len(p_cig.variables))])
+#         dims_g_for_df = pd.DataFrame(dims_g_for, columns=["g_for"])
+#         cases_g_fol_df = pd.DataFrame(
+#             cases_g_fol,
+#             columns=[f"g_fol_Var{v}" for v in range(len(p_cig.variables))])
+#         dims_g_fol_df = pd.DataFrame(dims_g_fol, columns=["g_fol"])
+
+#         # Error check
+#         check_sum = (cases_g_fol_df.sum(axis=1) + cases_g_for_df.sum(axis=1)
+#                      - cases_p_cig_df.sum(axis=1)).to_numpy()
+#         if not np.isclose(check_sum, 0).all():
+#             raise ValueError("Sum of g_for and g_fol must equal p_cig")
+
+#         # Concat p_cig, g_for and g_fol into a complete case dataframe
+#         sample_cases_df = pd.concat(
+#             [cases_p_cig_df, cases_g_for_df, cases_g_fol_df], axis=1)
+#         sample_dims_df = pd.concat(
+#             [dims_p_cig_df, dims_g_for_df, dims_g_fol_df], axis=1)
+
+#         # Concat samples and cases of p_cig, g_for and g_fol
+#         sample_cases_df = sample_cases_df.dropna().reset_index(drop=True)
+#         sample_dims_df = sample_dims_df.dropna().reset_index(drop=True)
+
+#         cases.append(sample_cases_df)
+#         dims.append(sample_dims_df)
+
+#     cases_df = pd.concat(cases, axis=0, ignore_index=True)
+#     dims_df = pd.concat(dims, axis=0, ignore_index=True)
+#     return cases_df, dims_df
 
 
-def process_p_cig_dimension(samples_df, p_cig, generator):
-    """ Assigns values to g_for and g_fol dimensions.
+# def process_p_cig_dimension(samples_df, p_cig, generator):
+#     """ Assigns values to g_for and g_fol dimensions.
 
-    p_cig samples values must be distributed between g_for and g_fol assigning
-    a random value between 0 and 1 as a one-to-one percentage, resulting in
-    g_for plus g_fol equalling p_cig. g_for variables are calculated as usual,
-    while g_fol variables are complimentary to g_for to sum g_fol:
-        g_fol_i = p_cig_i - g_for_i
+#     p_cig samples values must be distributed between g_for and g_fol assigning
+#     a random value between 0 and 1 as a one-to-one percentage, resulting in
+#     g_for plus g_fol equalling p_cig. g_for variables are calculated as usual,
+#     while g_fol variables are complimentary to g_for to sum g_fol:
+#         g_fol_i = p_cig_i - g_for_i
 
-    :param generator:
-    :param samples_df: Involved samples
-    :param p_cig: p_cig dimension
-    :return: Cases obtained and samples extended (one sample for each case)
-    """
-    cases = []
-    dims = []
+#     :param generator:
+#     :param samples_df: Involved samples
+#     :param p_cig: p_cig dimension
+#     :return: Cases obtained and samples extended (one sample for each case)
+#     """
+#     cases = []
+#     dims = []
 
-    for _, sample in samples_df.iterrows():
-        # Obtain p_cig cases
-        cases_p_cig_df = pd.DataFrame(
-            p_cig.get_cases_extreme(sample[p_cig.label], generator),
-            columns=generate_columns(p_cig)).dropna()
-        n_rows = len(cases_p_cig_df)
-        dims_p_cig_df = pd.DataFrame(
-            np.repeat(sample[p_cig.label], n_rows), columns=[p_cig.label])
+#     for _, sample in samples_df.iterrows():
+#         # Obtain p_cig cases
+#         cases_p_cig_df = pd.DataFrame(
+#             p_cig.get_cases_extreme(sample[p_cig.label], generator),
+#             columns=generate_columns(p_cig)).dropna()
+#         n_rows = len(cases_p_cig_df)
+#         dims_p_cig_df = pd.DataFrame(
+#             np.repeat(sample[p_cig.label], n_rows), columns=[p_cig.label])
 
-        # Obtain the complimentary g_for and g_fol percentages
-        grid_forming_perc = generator.random()
-        g_for_sample = sample["p_cig"] * grid_forming_perc
-        g_fol_sample = sample["p_cig"] * (1 - grid_forming_perc)
+#         # Obtain the complimentary g_for and g_fol percentages
+#         grid_forming_perc = generator.random()
+#         g_for_sample = sample["p_cig"] * grid_forming_perc
+#         g_fol_sample = sample["p_cig"] * (1 - grid_forming_perc)
 
-        # Obtain g_for and g_fol cases
-        cases_g_for = []
-        cases_g_fol = []
-        dims_g_for = []
-        dims_g_fol = []
-        for i in range(len(cases_p_cig_df)):
-            # Compose g_for dimension
-            # Pick bounds of each variable. The min value is p_cig dimension's
-            # min bound, and max is the value sampled for ith p_cig's variable
-            g_for_variables = np.array([
-                (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
-                for x in range(len(p_cig.variables))])
-            g_for = Dimension(variables=g_for_variables, n_cases=1, divs=1,
-                              borders=(p_cig.borders[0], sample[p_cig.label]),
-                              label="g_for", tolerance=p_cig.tolerance)
-            # Create g_for case
-            case_g_for = (g_for.get_cases_extreme(g_for_sample, generator))[0]
-            if not np.isnan(case_g_for).any():
-                dims_g_for.append(g_for_sample)
-                cases_g_for.append(case_g_for)
-                dims_g_fol.append(g_fol_sample)
-                # Compose g_fol subtracting p_cig from g_for case variables
-                cases_g_fol.append(
-                    [cases_p_cig_df.iloc[i, x] - case_g_for[x]
-                     for x in range(len(p_cig.variables))])
+#         # Obtain g_for and g_fol cases
+#         cases_g_for = []
+#         cases_g_fol = []
+#         dims_g_for = []
+#         dims_g_fol = []
+#         for i in range(len(cases_p_cig_df)):
+#             # Compose g_for dimension
+#             # Pick bounds of each variable. The min value is p_cig dimension's
+#             # min bound, and max is the value sampled for ith p_cig's variable
+#             g_for_variables = np.array([
+#                 (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
+#                 for x in range(len(p_cig.variables))])
+#             g_for = Dimension(variables=g_for_variables, n_cases=1, divs=1,
+#                               borders=(p_cig.borders[0], sample[p_cig.label]),
+#                               label="g_for", tolerance=p_cig.tolerance)
+#             # Create g_for case
+#             case_g_for = (g_for.get_cases_extreme(g_for_sample, generator))[0]
+#             if not np.isnan(case_g_for).any():
+#                 dims_g_for.append(g_for_sample)
+#                 cases_g_for.append(case_g_for)
+#                 dims_g_fol.append(g_fol_sample)
+#                 # Compose g_fol subtracting p_cig from g_for case variables
+#                 cases_g_fol.append(
+#                     [cases_p_cig_df.iloc[i, x] - case_g_for[x]
+#                      for x in range(len(p_cig.variables))])
 
-        cases_g_for_df = pd.DataFrame(
-            cases_g_for,
-            columns=[f"g_for_Var{v}" for v in range(len(p_cig.variables))])
-        dims_g_for_df = pd.DataFrame(dims_g_for, columns=["g_for"])
-        cases_g_fol_df = pd.DataFrame(
-            cases_g_fol,
-            columns=[f"g_fol_Var{v}" for v in range(len(p_cig.variables))])
-        dims_g_fol_df = pd.DataFrame(dims_g_fol, columns=["g_fol"])
+#         cases_g_for_df = pd.DataFrame(
+#             cases_g_for,
+#             columns=[f"g_for_Var{v}" for v in range(len(p_cig.variables))])
+#         dims_g_for_df = pd.DataFrame(dims_g_for, columns=["g_for"])
+#         cases_g_fol_df = pd.DataFrame(
+#             cases_g_fol,
+#             columns=[f"g_fol_Var{v}" for v in range(len(p_cig.variables))])
+#         dims_g_fol_df = pd.DataFrame(dims_g_fol, columns=["g_fol"])
 
-        # Error check
-        check_sum = (cases_g_fol_df.sum(axis=1) + cases_g_for_df.sum(axis=1)
-                     - cases_p_cig_df.sum(axis=1)).to_numpy()
-        if not np.isclose(check_sum, 0).all():
-            raise ValueError("Sum of g_for and g_fol must equal p_cig")
+#         # Error check
+#         check_sum = (cases_g_fol_df.sum(axis=1) + cases_g_for_df.sum(axis=1)
+#                      - cases_p_cig_df.sum(axis=1)).to_numpy()
+#         if not np.isclose(check_sum, 0).all():
+#             raise ValueError("Sum of g_for and g_fol must equal p_cig")
 
-        # Concat p_cig, g_for and g_fol into a complete case dataframe
-        sample_cases_df = pd.concat(
-            [cases_p_cig_df, cases_g_for_df, cases_g_fol_df], axis=1)
-        sample_dims_df = pd.concat(
-            [dims_p_cig_df, dims_g_for_df, dims_g_fol_df], axis=1)
+#         # Concat p_cig, g_for and g_fol into a complete case dataframe
+#         sample_cases_df = pd.concat(
+#             [cases_p_cig_df, cases_g_for_df, cases_g_fol_df], axis=1)
+#         sample_dims_df = pd.concat(
+#             [dims_p_cig_df, dims_g_for_df, dims_g_fol_df], axis=1)
 
-        # Concat samples and cases of p_cig, g_for and g_fol
-        sample_cases_df = sample_cases_df.dropna().reset_index(drop=True)
-        sample_dims_df = sample_dims_df.dropna().reset_index(drop=True)
+#         # Concat samples and cases of p_cig, g_for and g_fol
+#         sample_cases_df = sample_cases_df.dropna().reset_index(drop=True)
+#         sample_dims_df = sample_dims_df.dropna().reset_index(drop=True)
 
-        cases.append(sample_cases_df)
-        dims.append(sample_dims_df)
+#         cases.append(sample_cases_df)
+#         dims.append(sample_dims_df)
 
-    cases_df = pd.concat(cases, axis=0, ignore_index=True)
-    dims_df = pd.concat(dims, axis=0, ignore_index=True)
-    return cases_df, dims_df
+#     cases_df = pd.concat(cases, axis=0, ignore_index=True)
+#     dims_df = pd.concat(dims, axis=0, ignore_index=True)
+#     return cases_df, dims_df
 
 
-def process_other_dimensions(samples_df, dim, generator):
+def process_other_dimensions(samples_df, label, dim, generator):
     """
     This method assigns values to the variables within a generic dimension.
 
@@ -274,16 +374,103 @@ def process_other_dimensions(samples_df, dim, generator):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
-        cases = dim.get_cases_extreme(sample[dim.label], generator)
+        cases = dim.get_cases_extreme(sample[label], generator)
         for case in cases:
             if not np.isnan(case).any():
                 total_cases.append(case)
-                total_dim.append(sample[dim.label])
+                total_dim.append(sample[label])
 
-    dims_df = pd.DataFrame(total_dim, columns=[dim.label])
-    cases_df = pd.DataFrame(total_cases, columns=generate_columns(dim))
+    dims_df = pd.DataFrame(total_dim, columns=[label])
+    cases_df = pd.DataFrame(total_cases, columns=generate_columns(label, dim))
     return cases_df, dims_df
 
+def process_perc_gfor_dimensions(samples_df, label, dim):
+    """
+    This method assigns values to the variables within a generic dimension.
+
+    :param generator:
+    :param samples_df: Dataframe containing every sample in this cell
+    :param dim: Involved dimension
+    :return: Cases obtained and samples extended (one sample for each case)
+    """
+    total_dim = []
+    for _, sample in samples_df.iterrows():
+        for i in range(dim.n_cases):
+            total_dim.append(sample[label])
+
+    dims_df = pd.DataFrame(total_dim, columns=[label])
+    return dims_df
+
+def process_p_gfor_dimensions(total_dims, total_cases, label, dimensions, generator):
+    """
+    This method assigns values to the variables within a generic dimension.
+
+    :param generator:
+    :param samples_df: Dataframe containing every sample in this cell
+    :param dim: Involved dimension
+    :return: Cases obtained and samples extended (one sample for each case)
+    """
+    total_cases_gfor = []
+    total_dim = []
+
+    total_dim=pd.DataFrame(np.array(total_dims['p_cig'])*np.array(total_dims['perc_gfor']),columns=[label])
+    j=0
+    for _,sample_case in total_cases['p_cig'].iterrows():
+        p_gfor=[(0,sample_case['p_cig_Var'+str(i)]) for i in range(len(dimensions[label].variables))]
+        
+        # dim.variables=p_gfor
+        dimensions[label]=Dimension(variables=p_gfor, n_cases=1, divs=1, borders=(0,0),label=False,cosphi=dimensions['p_cig'].cosphi)
+        
+        dim=dimensions[label]
+        
+        cases = dim.get_cases_extreme(float(total_dim.iloc[j]), generator)
+        
+        j=j+1
+        
+        for case in cases:
+            if not np.isnan(case).any():
+                total_cases_gfor.append(case)
+
+    dims_df = pd.DataFrame(total_dim, columns=[label])
+    cases_df = pd.DataFrame(total_cases_gfor, columns=generate_columns(label, dim))
+
+    return cases_df, dims_df
+
+
+def process_p_gfol_dimensions(total_cases,total_dims,dimensions,label):
+    """
+    This method assigns values to the p_gfol variables as the difference between p_cig and p_gfor.
+
+    :total_cases: Dictionary with the dataframes collecting the variables values sampled for the other dimensions.
+    :total_dims: Dictionary with the dataframes collecting the dimension values sampled for the other dimensions.
+    :return: Values of the variables p_gfol.
+    """
+    total_cases_gfol = pd.DataFrame()
+    total_dim = []
+    
+    total_dim=np.array(total_dims['p_cig'])-np.array(total_dims['p_gfor'])
+
+    for v in range(len(dimensions['p_cig'].variables)):
+        total_cases_gfol['p_gfol_Var'+str(v)]=np.array(np.array(total_cases['p_cig']['p_cig_Var'+str(v)])-np.array(total_cases['p_gfor']['p_gfor_Var'+str(v)]))
+
+    dims_df = pd.DataFrame(total_dim, columns=[label])
+    cases_df = total_cases_gfol
+    return cases_df, dims_df
+
+def process_p_load_dimension(label,total_dims,dim):
+    
+    total_cases_pload = pd.DataFrame()
+    total_dim=[]
+    
+    total_dim=np.array(total_dims['p_sg'])+np.array(total_dims['p_cig'])
+    for j in range(len(total_dim)):
+        for v in range(len(dim.variables)):
+            total_cases_pload.loc[j,'p_load_Var'+str(v)]=float(total_dim[j]*dim.variables[v])
+    
+    dims_df = pd.DataFrame(total_dim, columns=[label])
+    cases_df = total_cases_pload
+
+    return cases_df, dims_df
 
 def gen_cases(samples_df, dimensions, generator):
     """Produces sum combinations of the samples given. Each sample sum
@@ -295,22 +482,72 @@ def gen_cases(samples_df, dimensions, generator):
     :return cases_df: Samples-driven produced cases dataframe
     :return dims_df: Samples dataframe(one for each case)
     """
-    total_cases = []
-    total_dims = []
+    total_cases = dict()
+    total_dims = dict()
 
-    for dim in dimensions:
-        if dim.label == "p_cig":
-            partial_cases, partial_dims = process_p_cig_dimension(samples_df,
-                                                                  dim, generator)
+    for label in ['p_sg','p_cig','perc_gfor','p_gfor','p_gfol','p_load']:
+        
+        dim=dimensions[label]
+        
+        if label=='perc_gfor':
+            partial_dims=process_perc_gfor_dimensions(samples_df,label,dimensions[label])
+           
+            total_dims[label]=partial_dims
+        
+        elif label=='p_gfor':
+            
+            partial_cases, partial_dims = process_p_gfor_dimensions(total_dims, total_cases,label,
+                                                               dimensions, generator) 
+            
+            
+            for v in range(len(dim.variables)):
+                partial_cases['q'+label[1:]+'_Var'+str(v)]=partial_cases[label+'_Var'+str(v)]*np.sqrt(1-dim.cosphi**2)/dim.cosphi
+           
+        
+            total_cases[label]=partial_cases
+            total_dims[label]=partial_dims
+            
+        elif label=='p_gfol':
+            
+            partial_cases, partial_dims = process_p_gfol_dimensions(total_cases,total_dims,dimensions,label)  
+            
+            
+            for v in range(len(dim.variables)):
+                partial_cases['q'+label[1:]+'_Var'+str(v)]=partial_cases[label+'_Var'+str(v)]*np.sqrt(1-dim.cosphi**2)/dim.cosphi
+           
+        
+            total_cases[label]=partial_cases
+            total_dims[label]=partial_dims
+                    
+        elif label=='p_load':
+          
+            partial_cases,partial_dims=process_p_load_dimension(label,total_dims,dim)
+            
+            
+            for v in range(len(dim.variables)):
+                partial_cases['q'+label[1:]+'_Var'+str(v)]=partial_cases[label+'_Var'+str(v)]*np.sqrt(1-dim.cosphi**2)/dim.cosphi
+           
+           
+            total_cases[label]=partial_cases
+            total_dims[label]=partial_dims
+        
+             
         else:
-            partial_cases, partial_dims = process_other_dimensions(samples_df,
-                                                                   dim, generator)
-        total_cases.append(partial_cases)
-        total_dims.append(partial_dims)
-
+            
+            partial_cases, partial_dims = process_other_dimensions(samples_df, label,
+                                                               dim, generator)            
+        
+            for v in range(len(dim.variables)):
+                partial_cases['q'+label[1:]+'_Var'+str(v)]=partial_cases[label+'_Var'+str(v)]*np.sqrt(1-dim.cosphi**2)/dim.cosphi
+                
+                
+            total_cases[label]=partial_cases
+            total_dims[label]=partial_dims
+                
     total_cases_df = pd.concat(total_cases, axis=1)
     total_dims_df = pd.concat(total_dims, axis=1)
     return total_cases_df, total_dims_df
+   
 
 
 def gen_samples(n_samples, dimensions, generator):
@@ -323,16 +560,19 @@ def gen_samples(n_samples, dimensions, generator):
     :return: DataFrame containing these samples with columns named after
     dimension labels
     """
-    sampler = qmc.LatinHypercube(d=len(dimensions), seed=generator)
+    true_dimensions=dict()
+    true_dimensions={label:dim for label,dim in dimensions.items() if dim.label==True}
+        
+    sampler = qmc.LatinHypercube(d=len(true_dimensions), seed=generator)
     samples = sampler.random(n=n_samples)
 
-    lower_bounds = np.array([dim.borders[0] for dim in dimensions])
-    upper_bounds = np.array([dim.borders[1] for dim in dimensions])
+    lower_bounds = np.array([dim.borders[0] for label, dim in true_dimensions.items()])
+    upper_bounds = np.array([dim.borders[1] for label, dim in true_dimensions.items()])
 
     samples_scaled = lower_bounds + samples * (upper_bounds - lower_bounds)
 
     df_samples = pd.DataFrame(samples_scaled,
-                              columns=[dim.label for dim in dimensions])
+                              columns=[label for label,dim in true_dimensions.items()])
 
     return df_samples
 
@@ -400,6 +640,8 @@ def eval_stability(case, f):
     :param f: Objective function
     :return: Result of the evaluation
     """
+    
+    
     return f(case)
 
 

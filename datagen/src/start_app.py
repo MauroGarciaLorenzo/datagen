@@ -64,12 +64,13 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
     if ax is not None and len(dimensions) == 2:
         clean_dir("results/figures")
 
-    for dim in dimensions:
-        dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
+    for label, dim in dimensions.items():
+        if label!='p_gfor':
+            dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
 
     if ax is not None and len(dimensions) == 2:
-        x_lims = (dimensions[0].borders[0], dimensions[0].borders[1])
-        y_lims = (dimensions[1].borders[0], dimensions[1].borders[1])
+        x_lims = (dimensions['p_sg'].borders[0], dimensions['p_sg'].borders[1])
+        y_lims = (dimensions['p_cig'].borders[0], dimensions['p_cig'].borders[1])
         ax.set_xlim(left=x_lims[0], right=x_lims[1])
         ax.set_ylim(bottom=y_lims[0], top=y_lims[1])
 
