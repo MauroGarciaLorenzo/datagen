@@ -83,7 +83,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
     
     # Eval each case
-    stabilities = [eval_stability(case, func) for case in cases_df.values]
+    stabilities = [eval_stability(case, func) for case in cases_df.iterrows()]
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
 

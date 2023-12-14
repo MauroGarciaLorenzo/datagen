@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 
 
-def get_params(d_grid, data_sg, data_vsc):  
+def get_params(d_grid, sg_data, vsc_data):  
     
     d_grid['T_global'] = global_params(d_grid['T_global'])
-    d_grid['T_SG'] = SG_params(d_grid, data_sg)
-    d_grid['T_VSC'] = VSC_params(d_grid, data_vsc)      
+    d_grid['T_SG'] = SG_params(d_grid, sg_data)
+    d_grid['T_VSC'] = VSC_params(d_grid, vsc_data)      
     return d_grid
 
 
@@ -22,12 +22,12 @@ def global_params(T_global):
 
 
 
-def SG_params(d_grid, excel_sg):
+def SG_params(d_grid, sg_data):#excel_sg
            
     T_SG = d_grid['T_SG']
-    sg_data=pd.read_excel(excel_sg, sheet_name='UserCase')
+    # sg_data=pd.read_excel(excel_sg, sheet_name='UserCase')
     for i in range(len(T_SG)):
-        T_SG.loc[i,list(sg_data.columns)]=list(sg_data.iloc[0])
+        T_SG.loc[i,list(sg_data['UserCase'].columns)]=list(sg_data['UserCase'].iloc[0])
         
     T_global = d_grid['T_global']    
     
@@ -144,7 +144,8 @@ def SG_params(d_grid, excel_sg):
         T_SG['Ltr'] = T_SG['Xtr'] / (2 * np.pi * T_SG['fb'])
         
          
-        types = pd.ExcelFile(excel_sg).sheet_names
+        # types = pd.ExcelFile(excel_sg).sheet_names
+        types = [sheet_name for sheet_name in sg_data]
         T_SG['exc'] = np.empty(len(T_SG.index), dtype=object)
         T_SG['PSS'] = np.empty(len(T_SG.index), dtype=object)
         T_SG['mech'] = np.empty(len(T_SG.index), dtype=object)
@@ -153,18 +154,20 @@ def SG_params(d_grid, excel_sg):
     
             # Exciter
             if any(['EXCITER-' + row['exciter'] in types for types in types]):
-                T_exciter = pd.read_excel(excel_sg, sheet_name='EXCITER-' + row['exciter'])
-                # T_exciter = T_exciter[T_exciter['number'] == row['number']]
-                # T_exciter = T_exciter.drop(['number', 'bus'], axis=1)
+                T_exciter= sg_data['EXCITER-' + row['exciter']]
+                #T_exciter = pd.read_excel(excel_sg, sheet_name='EXCITER-' + row['exciter'])
+                ## T_exciter = T_exciter[T_exciter['number'] == row['number']]
+                ## T_exciter = T_exciter.drop(['number', 'bus'], axis=1)
             else:
                 exc = {'TR': 0}  # no exciter
             T_SG.at[index, 'exc'] = T_exciter
         
             # PSS
             if any(['PSS-' + row['pss'] in types for types in types]):
-                T_pss = pd.read_excel(excel_sg, sheet_name='PSS-' + row['pss'])
-                # T_pss = T_pss[T_pss['number'] == row['number']]
-                # T_pss = T_pss.drop(['number', 'bus'], axis=1)
+                T_pss=sg_data['PSS-' + row['pss']]
+                # T_pss = pd.read_excel(excel_sg, sheet_name='PSS-' + row['pss'])
+                # # T_pss = T_pss[T_pss['number'] == row['number']]
+                # # T_pss = T_pss.drop(['number', 'bus'], axis=1)
                 T_pss.at[0,'hasPSS'] = 1
             else:
                 T_pss = pd.DataFrame({'hasPSS': [0]})
@@ -172,9 +175,10 @@ def SG_params(d_grid, excel_sg):
         
             # Governor and turbine
             if any(['GOVTURB-' + row['govturb'] in types for types in types]):
-                T_govturb = pd.read_excel(excel_sg, sheet_name='GOVTURB-' + row['govturb'])
-                # T_govturb = T_govturb[T_govturb['number'] == row['number']]
-                # T_govturb = T_govturb.drop(['number', 'bus'], axis=1)
+                T_govturb = sg_data['GOVTURB-' + row['govturb']]
+                # T_govturb = pd.read_excel(excel_sg, sheet_name='GOVTURB-' + row['govturb'])
+                # # T_govturb = T_govturb[T_govturb['number'] == row['number']]
+                # # T_govturb = T_govturb.drop(['number', 'bus'], axis=1)
             else:
                 T_govturb = pd.DataFrame({'R': [0]})  # no governor-turbine
             T_SG.at[index, 'mech'] = T_govturb
@@ -182,7 +186,7 @@ def SG_params(d_grid, excel_sg):
     return T_SG
 
 
-def VSC_params(d_grid, excel_vsc):
+def VSC_params(d_grid, vsc_data): #excel_vsc
     
     T_VSC = d_grid['T_VSC']
     T_global = d_grid['T_global']    
@@ -218,10 +222,11 @@ def VSC_params(d_grid, excel_vsc):
                                 
         for idx, row in T_VSC.iterrows():
             mode = row['mode']
-            T_data = pd.read_excel(excel_vsc, sheet_name='User'+mode)
+            T_data = vsc_data['User'+mode]
+            #T_data = pd.read_excel(excel_vsc, sheet_name='User'+mode)
             
-            # T_data = T_data[T_data['number'] == row['number']]
-            # T_data = T_data.drop(['number', 'bus'], axis=1)
+            ## T_data = T_data[T_data['number'] == row['number']]
+            ## T_data = T_data.drop(['number', 'bus'], axis=1)
             
             T_data = T_data.to_dict(orient="records")[0]
             

@@ -2,115 +2,81 @@ import pandas as pd
 import numpy as np
 import random
 
-def generated_operating_point(d_op,d_raw_data, GridCal_grid,n_reg=1,loads_power_factor=0.95, generators_power_factor=0.95, all_gfor=False):
+def generated_operating_point(case,d_raw_data, d_op): #GridCal_grid
     
-    d_raw_data = assign_loads_to_d_raw_data(d_raw_data, d_op, n_reg, loads_power_factor,Pd)
-    
-    Pg=np.sum(Pd)
-
-    n_gen=len(d_raw_data['generator'])    
-    
-    d_raw_data=assign_gens_to_d_raw_data(d_raw_data, d_op, n_gen, generators_power_factor, Pg)
-    
-    d_raw_data = assign_P_by_CIG_and_SG(d_raw_data, d_op, n_gen)
-    
-    d_raw_data, d_op = assign_Snom_GFOL_GFOR(d_raw_data, d_op, GridCal_grid, n_gen, all_gfor)
+    d_raw_data=assign_loads_to_d_raw_data(d_raw_data,case['p_load'])
+        
+    d_raw_data=assign_gens_to_d_raw_data(d_raw_data, case['p_sg'],case['p_cig'])
+        
+    d_raw_data, d_op = assign_GFOL_GFOR(d_raw_data, d_op, case['p_gfor'], case['p_gfol'], case['p_cig'])
     
     d_raw_data = alphas_P(d_raw_data)
     
     return d_raw_data, d_op
 
-    
 
-def random_demand(Pd_min,Pd_max,n_reg):
-    pi=random.uniform(0, 1)
+def assign_loads_to_d_raw_data(d_raw_data,case_load):
     
-    Pd=[]
-
-    for p in range(0,n_reg):
-        Pd.append(pi*(Pd_max[p]-Pd_min[p])+Pd_min[p])
+    case_load_index=case_load.index
+    active_power=[p for p in case_load_index if p.startswith('p')]
+    reactive_power=[q for q in case_load_index if q.startswith('q')]
     
-    return Pd
+    d_raw_data['load']['PL']= np.array(case_load[active_power])
+    d_raw_data['load']['QL']= np.array(case_load[reactive_power])
+    
+    d_raw_data['load']['P']=d_raw_data['load']['PL']/100
+    d_raw_data['load']['Q']=d_raw_data['load']['QL']/100
+   
+    return d_raw_data
 
-def assign_loads_to_d_raw_data(d_raw_data,d_op,n_reg,loads_power_factor,Pd):
-    for r in range(1,n_reg+1):
-        pf=np.array(d_op['Loads'].query('Region == @r')['Load_Participation_Factor'])
-        d_raw_data['load'].loc[d_raw_data['load'].query('Region == @r').index,'PL']=Pd[r-1]*pf
-        
-        d_raw_data['load']['P']=d_raw_data['load']['PL']/100
-        
-    d_raw_data['load']['QL']=d_raw_data['load']['PL']*np.sqrt(1-loads_power_factor**2)/loads_power_factor
-    d_raw_data['load']['Q']=d_raw_data['load']['P']*np.sqrt(1-loads_power_factor**2)/loads_power_factor
+def assign_gens_to_d_raw_data(d_raw_data,case_sg,case_cig):
+    case_sg_index=case_sg.index
+    case_cig_index=case_cig.index
+    
+    active_power_sg=[p for p in case_sg_index if p.startswith('p')]
+    reactive_power_sg=[q for q in case_sg_index if q.startswith('q')]
+    
+    active_power_cig=[p for p in case_cig_index if p.startswith('p')]
+    reactive_power_cig=[q for q in case_cig_index if q.startswith('q')]
+   
+    d_raw_data['generator']['PG']=np.array(case_sg[active_power_sg])+np.array(case_cig[active_power_cig])
+    d_raw_data['generator']['QG']=np.array(case_sg[reactive_power_sg])+np.array(case_cig[reactive_power_cig])
+    
+    d_raw_data['generator']['P_CIG']=np.array(case_cig[active_power_cig])
+    d_raw_data['generator']['P_SG']=np.array(case_sg[active_power_sg])
     
     return d_raw_data
 
-def assign_gens_to_d_raw_data(d_raw_data,d_op,n_gen,generators_power_factor,Pg):
-    gamma= np.random.dirichlet(np.ones(n_gen))
-    Pg_i=Pg*gamma
-    Pg_tot_i=np.array(d_op['Generators']['Pmax'])
-    ind_all=np.arange(0,n_gen)
-    while any(Pg_tot_i<Pg_i):
-        ind=np.where(Pg_tot_i<Pg_i)[0]
-        P_exc=0
-        for i in ind:
-            P_delta=Pg_i[i]-Pg_tot_i[i]
-            P_exc=P_exc+P_delta
-            Pg_i[i]=Pg_tot_i[i]
-        ind_non_exc=list(set(ind_all)-set(ind))
-        Pg_i[ind_non_exc]=Pg_i[ind_non_exc]+P_exc/len(ind_non_exc)
-        ind_all=list(set(ind_all)-set(ind))
-    d_raw_data['generator']['PG']=Pg_i
-    d_raw_data['generator']['QG']=Pg_i*np.sqrt(1-generators_power_factor**2)/generators_power_factor
-       
-    return d_raw_data
 
-def assign_P_by_CIG_and_SG(d_raw_data, d_op, n_gen):
-    alpha=np.random.random((n_gen,1)) # percentage of P injected by CIG
-    
-    alpha_max=np.ones([n_gen,1])
-    alpha_max[d_op['Generators'].query('Pmax_CIG == 0').index]=0
-    alpha_max[np.where(d_op['Generators']['Pmax_CIG']>d_raw_data['generator']['PG']),0]=d_raw_data['generator'].loc[np.where(d_op['Generators']['Pmax_CIG']>d_raw_data['generator']['PG']),'PG']/d_op['Generators'].loc[np.where(d_op['Generators']['Pmax_CIG']>d_raw_data['generator']['PG']),'Pmax_CIG']
-    
-    alpha=alpha_max[:,0]*alpha[:,0]
-        
-    d_raw_data['generator'][['P_CIG']]=d_op['Generators'][['Pmax_CIG']]*alpha.reshape(-1,1)
-    d_raw_data['generator']['P_SG']=d_raw_data['generator']['PG']-d_raw_data['generator']['P_CIG']
-    # print(any(d_raw_data['generator']['P_CIG']>d_op['Generators']['Pmax_CIG']))
-    # print(any(d_raw_data['generator']['P_SG']>d_op['Generators']['Pmax_SG']))
-    # print(any(d_raw_data['generator']['P_SG']<0))
-    
-    if any(d_raw_data['generator']['P_SG']>d_op['Generators']['Pmax_SG']):
-        excess_sg=d_raw_data['generator']['P_SG']>d_op['Generators']['Pmax_SG']
-        ind=excess_sg[excess_sg].index
-        delta=d_raw_data['generator'].loc[ind,'P_SG']-d_op['Generators'].loc[ind,'Pmax_SG']
-        d_raw_data['generator'].loc[ind,'P_CIG']=d_raw_data['generator'].loc[ind,'P_CIG']+delta
-        d_raw_data['generator'].loc[ind,'P_SG']=d_raw_data['generator'].loc[ind,'P_SG']-delta
-        
-    # print(any(d_raw_data['generator']['P_SG']>d_op['Generators']['Pmax_SG']))
-    
-    return d_raw_data
-
-def assign_Snom_GFOL_GFOR(d_raw_data, d_op, GridCal_grid, n_gen, all_gfor):
+def assign_GFOL_GFOR(d_raw_data, d_op, case_gfor, case_gfol, case_cig): #GridCal_grid
                     
-    buses=GridCal_grid.get_buses()
-    for bus in buses:
-        if bus.determine_bus_type()._value_ == 3 :
+    # buses=GridCal_grid.get_buses()
+    # for bus in buses:
+    #     if bus.determine_bus_type()._value_ == 3 :
             
-            slack_bus_name=bus._name
-            break
+    #         slack_bus_name=bus._name
+    #         break
     
-    if all_gfor:    
-        beta=np.ones([n_gen,1])
-    else:
-        beta=np.random.random((n_gen,1))
-        ind_slack=d_op['Generators'].query('BusName == @slack_bus_name').index[0]
-        beta[ind_slack]=1
+    case_gfor_index=case_gfor.index
+    case_gfol_index=case_gfol.index
+    case_cig_index=case_cig.index
+
+    active_power_gfor=[p for p in case_gfor_index if p.startswith('p')]
+    reactive_power_gfor=[q for q in case_gfor_index if q.startswith('q')]
     
-    d_raw_data['generator']['P_GFOR']=d_raw_data['generator']['P_CIG']*beta.ravel()
-    d_op['Generators']['Snom_GFOR']= d_op['Generators']['Pmax_CIG']*beta.ravel()/0.8
+    active_power_gfol=[p for p in case_gfol_index if p.startswith('p')]
+    reactive_power_gfol=[q for q in case_gfol_index if q.startswith('q')]
+
+    active_power_cig=[p for p in case_cig_index if p.startswith('p')]
+
+    d_raw_data['generator']['P_GFOR']= np.array(case_gfor[active_power_gfor])
+    d_op['Generators']['Snom_GFOR']= d_op['Generators']['Snom_CIG']*np.array(case_gfor[active_power_gfor])/np.array(case_cig[active_power_cig])
     
-    d_raw_data['generator']['P_GFOL']=d_raw_data['generator']['P_CIG']-d_raw_data['generator']['P_GFOR']
-    d_op['Generators']['Snom_GFOL']= d_op['Generators']['Pmax_CIG']*(1-beta.ravel())/0.8
+    no_cig=np.where(np.array(case_cig[active_power_cig])==0)
+    d_op['Generators']['Snom_GFOR'].iloc[no_cig]=0
+    
+    d_raw_data['generator']['P_GFOL']=np.array(case_gfol[active_power_gfol])
+    d_op['Generators']['Snom_GFOL']= d_op['Generators']['Snom_CIG']-d_op['Generators']['Snom_GFOR']
     
     return d_raw_data, d_op
 

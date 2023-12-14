@@ -1,6 +1,6 @@
 import pandas as pd
  
-def read_data(excel_sys):
+def read_sys_data(excel_sys):
     
     
     """
@@ -113,3 +113,23 @@ def tempTables(grid):
     grid['T_MMC_Vdc_GFll'] = grid['T_MMC'].copy()
     grid['T_STATCOM'] = grid['T_VSC'].copy()        
     return grid
+
+#%%
+
+def read_data(file_path):
+    # Create an empty dictionary to store DataFrames
+    d_op = {}
+
+    # Read the Excel file with multiple sheets
+    xl = pd.ExcelFile(file_path)
+
+    # Loop through each sheet in the Excel file
+    for sheet_name in xl.sheet_names:
+        # Read each sheet as a DataFrame
+        df = xl.parse(sheet_name)
+        
+        # Store the DataFrame in the dictionary with sheet name as key
+        d_op[sheet_name] = df
+
+    return d_op
+

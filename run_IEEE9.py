@@ -3,7 +3,8 @@ from matplotlib import pyplot as plt
 
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
-from datagen.src.objective_function import dummy
+# from datagen.src.objective_function import dummy
+from datagen.src.objective_function import small_signal_stability
 
 try:
     from pycompss.api.task import task
@@ -13,7 +14,7 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 from os import path, getcwd
-from tool.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
+from tool.preprocess import preprocess_data, read_data, process_raw, parameters, admittance_matrix
 from tool.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
 from tool.state_space import generate_NET, build_ss, generate_elements
 from tool.opal import process_opal
@@ -79,7 +80,25 @@ GridCal_grid = GridCal_powerflow.create_model(path_raw, raw_file)
 
 #%% READ OPERATION EXCEL FILE
 
-d_op = read_op_data_excel.read_operation_data_excel(excel_op)
+d_op = read_data.read_data(excel_op)
+
+# %% READ EXCEL FILE
+
+# Read data of grid elements from Excel file
+d_grid, d_grid_0 = read_data.read_sys_data(excel_sys)
+
+# TO BE DELETED
+d_grid = read_data.tempTables(d_grid) 
+
+# # Read simulation configuration parameters from Excel file
+# sim_config = read_data.get_simParam(excel_sys)
+
+#%% READ EXEC FILES WITH SG AND VSC CONTROLLERS PARAMETERS
+
+d_sg = read_data.read_data(excel_sg)
+
+d_vsc = read_data.read_data(excel_vsc)
+
 #%%
 #@task()
 #def main():
@@ -172,6 +191,7 @@ dimensions = {'p_sg':
 #               borders=(0, 2), label="tau_q_g_for")
 # ]
 
+#%%
 fig, ax = plt.subplots()
 use_sensitivity = True
 cases_df, dims_df, execution_logs = \
