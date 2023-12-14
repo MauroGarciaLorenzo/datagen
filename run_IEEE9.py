@@ -3,8 +3,8 @@ from matplotlib import pyplot as plt
 
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
-# from datagen.src.objective_function import dummy
-from datagen.src.objective_function import small_signal_stability
+from datagen.src.objective_function import dummy
+# from datagen.src.objective_function import small_signal_stability
 
 try:
     from pycompss.api.task import task
@@ -190,10 +190,10 @@ dimensions = {'p_sg':
 #     Dimension(variables=tau_q_g_for, n_cases=n_cases, divs=1,
 #               borders=(0, 2), label="tau_q_g_for")
 # ]
-
-#%%
 fig, ax = plt.subplots()
 use_sensitivity = True
+#%%
+
 cases_df, dims_df, execution_logs = \
     start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
           use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=1)
