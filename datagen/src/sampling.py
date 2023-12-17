@@ -74,9 +74,9 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :return dims_df: Concatenation of inherited dims and those produced by
     the cell
     """
+    print("New cell", flush=True)
     # Generate samples (n_samples for each dimension)
     samples_df = gen_samples(n_samples, dimensions, generator)
-
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
