@@ -14,14 +14,14 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 from os import path, getcwd
-from tool.preprocess import preprocess_data, read_data, process_raw, parameters, admittance_matrix
-from tool.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
-from tool.state_space import generate_NET, build_ss, generate_elements
-from tool.opal import process_opal
-from tool.analysis import small_signal
-from tool.preprocess.utils import *
-from tool.random_operating_point import random_OP
-from tool.modify_GridCal_grid import assign_StaticGen_to_grid,assign_PQ_Loads_to_grid
+from StabilityAnalysis.preprocess import preprocess_data, read_data, process_raw, parameters, admittance_matrix
+from StabilityAnalysis.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
+from StabilityAnalysis.state_space import generate_NET, build_ss, generate_elements
+from StabilityAnalysis.opal import process_opal
+from StabilityAnalysis.analysis import small_signal
+from StabilityAnalysis.preprocess.utils import *
+from StabilityAnalysis.random_operating_point import random_OP
+from StabilityAnalysis.modify_GridCal_grid import assign_StaticGen_to_grid,assign_PQ_Loads_to_grid
 from GridCalEngine.Core.DataStructures import numerical_circuit
 
 # %% SET FILE NAMES AND PATHS

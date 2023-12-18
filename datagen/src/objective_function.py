@@ -1,9 +1,9 @@
 import math
 import time
-from .tool.operating_point_from_datagenerator import datagen_OP
-from .tool.modify_GridCal_grid import assign_StaticGen_to_grid,assign_PQ_Loads_to_grid
-from .tool.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
-from .tool.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
+from StabilityAnalysis.operating_point_from_datagenerator import datagen_OP
+from StabilityAnalysis.modify_GridCal_grid import assign_StaticGen_to_grid,assign_PQ_Loads_to_grid
+from StabilityAnalysis.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
+from StabilityAnalysis.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
 
 # file where objective function is declared (dummy test)
 def dummy(case):
