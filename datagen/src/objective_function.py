@@ -1,18 +1,12 @@
 import math
 import time
-<<<<<<< Updated upstream
-from StabilityAnalysis.operating_point_from_datagenerator import datagen_OP
-from StabilityAnalysis.modify_GridCal_grid import assign_StaticGen_to_grid,assign_PQ_Loads_to_grid
-from StabilityAnalysis.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
-from StabilityAnalysis.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
-=======
-from .tool.operating_point_from_datagenerator import datagen_OP
-from .tool.modify_GridCal_grid import assign_StaticGen_to_grid,assign_PQ_Loads_to_grid
-from .tool.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
-from .tool.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
-from tool.state_space import generate_NET, build_ss, generate_elements
-from tool.analysis import small_signal
->>>>>>> Stashed changes
+
+from stability_analysis.operating_point_from_datagenerator import datagen_OP
+from stability_analysis.modify_GridCal_grid import assign_StaticGen_to_grid,assign_PQ_Loads_to_grid
+from stability_analysis.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
+from stability_analysis.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
+from stability_analysis.state_space import generate_NET, build_ss, generate_elements
+from stability_analysis.analysis import small_signal
 
 # file where objective function is declared (dummy test)
 def dummy(case):

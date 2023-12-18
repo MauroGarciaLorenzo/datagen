@@ -2,4 +2,4 @@
 pandas==1.5.3
 GridCalEngine
 control
-StabilityAnalysis
+stability_analysis
