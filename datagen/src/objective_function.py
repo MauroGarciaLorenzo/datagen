@@ -10,9 +10,9 @@ def dummy(case):
 
 def matmul(case):
     t0 = time.time()
-    while(time.time() - t0 < 10):
-        m0 = np.random.randint(0, 101, size=(10000, 10000))
-        m1 = np.random.randint(0, 101, size=(10000, 10000))
+    while(time.time() - t0 < 0.0000):
+        m0 = np.random.randint(0, 101, size=(1000, 1000))
+        m1 = np.random.randint(0, 101, size=(1000, 1000))
         x = np.dot(m0, m1)
     return round(math.sin(sum(case)) * 0.5 + 0.5)
 
