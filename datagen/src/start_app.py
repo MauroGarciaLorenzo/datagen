@@ -64,14 +64,15 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
     if ax is not None and len(dimensions) == 2:
         clean_dir("results/figures")
 
-    for dim in dimensions:
+    for label, dim in dimensions.items():
         dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
 
     if ax is not None and len(dimensions) == 2:
-        x_lims = (dimensions[0].borders[0], dimensions[0].borders[1])
-        y_lims = (dimensions[1].borders[0], dimensions[1].borders[1])
-        ax.set_xlim(left=x_lims[0], right=x_lims[1])
-        ax.set_ylim(bottom=y_lims[0], top=y_lims[1])
+        lims = []
+        for _,dimension in dimensions.items():
+            lims.append((dimension.borders[0], dimension.borders[1]))
+        ax.set_xlim(left=lims[0][0], right=lims[0][1])
+        ax.set_ylim(bottom=lims[1][0], top=lims[1][1])
 
     generator = np.random.default_rng(seed)
     execution_logs, cases_df, dims_df = (

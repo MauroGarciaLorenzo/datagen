@@ -62,10 +62,11 @@ def plot_stabilities(ax, cases_df, dims_df):
 def plot_divs(ax, children_grid):
     time.sleep(1)
     for cell in children_grid:
-        dim0 = (cell.dimensions[0].borders[0], cell.dimensions[0].borders[1])
-        dim1 = (cell.dimensions[1].borders[0], cell.dimensions[1].borders[1])
-        cell = patches.Rectangle((dim0[0], dim1[0]), dim0[1] - dim0[0],
-                                 dim1[1] - dim1[0], linewidth=1,
+        dims = []
+        for _, dim in cell.dimensions.items():
+            dims.append((dim.borders[0], dim.borders[1]))
+        cell = patches.Rectangle((dims[0][0], dims[1][0]), dims[0][1] - dims[0][0],
+                                 dims[1][1] - dims[1][0], linewidth=1,
                                  edgecolor='black', facecolor='none')
         ax.add_patch(cell)
     dir_path = "results/figures"

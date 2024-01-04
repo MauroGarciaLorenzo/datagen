@@ -17,9 +17,9 @@ def unique(sequence):
 
 def gen_df_for_dims(dims, n_rows=100):
     dim_set = {}
-    for dim in dims:
+    for label, dim in dims.items():
         for i, var in enumerate(dim.variables):
-            col_name = f"{dim.is_true_dimension}_Var{i}"
+            col_name = f"{label}_Var{i}"
             dim_set[col_name] = np.random.uniform(var[0], var[1], n_rows)
     cases_df = pd.DataFrame(dim_set)
     return cases_df

@@ -16,16 +16,16 @@ class Test(TestCase):
         variables = [(0, 10), (0, 15), (10, 20), (0, 25)]
 
         self.dim1 = Dimension(variables, n_cases=3, divs=1, borders=(10, 70),
-                              is_true_dimension="Dim1")
+                              is_true_dimension=True)
         self.dim2 = Dimension(variables, n_cases=3, divs=2, borders=(10, 70),
-                              is_true_dimension="Dim2")
+                              is_true_dimension=True)
         self.dim3 = Dimension(variables, n_cases=3, divs=2, borders=(10, 70),
-                              is_true_dimension="Dim3")
+                              is_true_dimension=True)
 
-        self.dims = [self.dim1, self.dim2, self.dim3]
+        self.dims = {"Dim1": self.dim1, "Dim2":self.dim2, "Dim3":self.dim3}
 
         self.children_grid = gen_grid(self.dims)
-
+        self.generator = np.random.default_rng(1)
         self.dims_df = pd.DataFrame({
             "Dim1": [10, 35, 70],
             "Dim2": [15, 39, 20],
@@ -49,17 +49,17 @@ class Test(TestCase):
         })
 
     def test_generate_columns(self):
-        cols = generate_columns(self.dim1)
+        cols = generate_columns("Dim1", self.dim1)
         self.assertTrue(cols,
                         ["Dim1_Var0", "Dim1_Var1", "Dim1_Var2", "Dim1_Var3"])
 
     def test_gen_samples(self):
         n_samples = 100
-        df_samples = gen_samples(n_samples, self.dims, None)
+        df_samples = gen_samples(n_samples, self.dims, self.generator)
 
-        for dim in self.dims:
-            self.assertTrue(all(df_samples[dim.is_true_dimension] >= dim.borders[0]))
-            self.assertTrue(all(df_samples[dim.is_true_dimension] <= dim.borders[1]))
+        for label, dim in self.dims.items():
+            self.assertTrue(all(df_samples[label] >= dim.borders[0]))
+            self.assertTrue(all(df_samples[label] <= dim.borders[1]))
 
     def test_gen_grid(self):
         """
@@ -78,7 +78,7 @@ class Test(TestCase):
         borders = []
         for cell in grid:
             new_cell_borders = []
-            for dim in cell.dimensions:
+            for _, dim in cell.dimensions.items():
                 new_cell_borders.append(dim.borders)
             borders.append(new_cell_borders)
         self.assertEqual(borders, expected_borders)
@@ -142,14 +142,14 @@ class Test(TestCase):
     def test_sensitivity(self):
         variables = [(0, 10), (0, 10), (0, 10), (0, 10)]
         dim1 = Dimension(variables, n_cases=3, divs=1, borders=(0, 70),
-                         is_true_dimension="Dim1")
+                         is_true_dimension=True)
         dim2 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
-                         is_true_dimension="Dim2")
+                         is_true_dimension=True)
         dim3 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
-                         is_true_dimension="Dim3")
-        dims = [dim1, dim2, dim3]
+                         is_true_dimension=True)
+        dims = {"Dim1":dim1, "Dim2":dim2, "Dim3":dim3}
         
-        for dim in dims:
+        for _, dim in dims.items():
             dim.tolerance = (dim.borders[1] - dim.borders[0]) * 0.1
 
         cases_df = gen_df_for_dims(dims, 1000)
@@ -164,14 +164,14 @@ class Test(TestCase):
         dim0_cases_df["Stability"] = dim0_cases_df.apply(dim0_func, axis=1)
 
         dims_linear = sensitivity(linear_cases_df, dims, divs_per_cell=2,
-                                  generator=None)
-        dims_linear_divs = [dim.divs for dim in dims_linear]
+                                  generator=self.generator)
+        dims_linear_divs = [dim.divs for _,dim in dims_linear.items()]
         dims_parab = sensitivity(parab_cases_df, dims, divs_per_cell=2,
-                                 generator=None)
-        dims_parab_divs = [dim.divs for dim in dims_parab]
+                                 generator=self.generator)
+        dims_parab_divs = [dim.divs for _, dim in dims_parab.items()]
         dims_dim0 = sensitivity(dim0_cases_df, dims, divs_per_cell=2,
-                                generator=None)
-        dims_dim0_divs = [dim.divs for dim in dims_dim0]
+                                generator=self.generator)
+        dims_dim0_divs = [dim.divs for _,dim in dims_dim0.items()]
 
         self.assertEqual(dims_linear_divs, [1, 1, 2])
         self.assertEqual(dims_parab_divs, [1, 2, 1])

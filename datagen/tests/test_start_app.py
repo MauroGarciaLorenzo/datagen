@@ -21,20 +21,31 @@ class Test(TestCase):
         self.rel_tolerance = 0.01
         self.max_depth = 5
         self.func = dummy
-        self.dimensions = [
-            Dimension(variables=p_sg, n_cases=self.n_cases, divs=2,
-                      borders=(10, 25.3), is_true_dimension="p_sg"),
-            Dimension(variables=p_cig, n_cases=self.n_cases, divs=1,
-                      borders=(0, 6), is_true_dimension="p_cig"),
-            Dimension(variables=tau_f_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), is_true_dimension="tau_f_g_for"),
-            Dimension(variables=tau_v_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), is_true_dimension="tau_v_g_for"),
-            Dimension(variables=tau_p_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), is_true_dimension="tau_p_g_for"),
-            Dimension(variables=tau_q_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), is_true_dimension="tau_q_g_for")
-        ]
+        self.dimensions = {
+            "p_sg":
+                Dimension(variables=p_sg, n_cases=self.n_cases, divs=2,
+                      borders=(10, 25.3), is_true_dimension=True),
+            "p_cig":
+                Dimension(variables=p_cig, n_cases=self.n_cases, divs=1,
+                          borders=(0, 6), is_true_dimension=True),
+            "tau_f_g_for":
+                Dimension(variables=tau_f_g_for, n_cases=self.n_cases, divs=1,
+                          borders=(0, 2), is_true_dimension=True),
+            "tau_v_g_for":
+                Dimension(variables=tau_v_g_for, n_cases=self.n_cases, divs=1,
+                          borders=(0, 2), is_true_dimension=True),
+            "tau_p_g_for":
+                Dimension(variables=tau_p_g_for, n_cases=self.n_cases, divs=1,
+                          borders=(0, 2), is_true_dimension=True),
+            "tau_q_g_for":
+                Dimension(variables=tau_q_g_for, n_cases=self.n_cases, divs=1,
+                          borders=(0, 2), is_true_dimension=True)
+        }
+
+    """
+                
+                
+                """
 
     def test_start(self):
         cases_df, dims_df, execution_logs = \
@@ -65,11 +76,11 @@ class Test(TestCase):
             for label, value in row.items():
                 if label == "g_for" or label == "g_fol":
                     dim = next(
-                        (d for d in self.dimensions
-                         if d.is_true_dimension == "p_cig"), None)
+                        (d for l, d in self.dimensions.items()
+                         if l == "p_cig"), None)
                 else:
-                    dim = next((d for d in self.dimensions
-                                if d.is_true_dimension == label), None)
+                    dim = next((d for l,d in self.dimensions.items()
+                                if l == label), None)
                 if not dim.borders[0] <= value <= dim.borders[1]:
                     pass
                 self.assertTrue(dim.borders[0] <= value <= dim.borders[1])
@@ -84,11 +95,11 @@ class Test(TestCase):
                     var_idx = int(label.rsplit('_Var')[1])
                     if dim_label == "g_for" or dim_label == "g_fol":
                         dim = next(
-                            (d for d in self.dimensions
-                             if d.is_true_dimension == "p_cig"), None)
+                            (d for l,d in self.dimensions.items()
+                             if l == "p_cig"), None)
                     else:
-                        dim = next((d for d in self.dimensions
-                                    if d.is_true_dimension == dim_label), None)
+                        dim = next((d for l,d in self.dimensions.items()
+                                    if l == dim_label), None)
 
                     self.assertTrue(dim.variables[var_idx][0] <= value <=
                                     dim.variables[var_idx][1])

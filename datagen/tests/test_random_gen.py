@@ -24,25 +24,27 @@ class Test(TestCase):
         Generate samples with get_cases_normal and get_cases_extreme to
         visualize how well-distributed data is.
         """
+
         variables = np.array([(0, 10), (0, 15), (5, 20), (0, 25)])
         n_cases = 30
         divs = None
         lower, upper = 0, 70
-        label = "Test"
+        is_true_dimension = True
         tolerance = 0.1
 
-        dim = Dimension(variables, n_cases, divs, (lower, upper), label)
+        dim = Dimension(variables, n_cases, divs, (lower, upper),
+                        is_true_dimension)
         dim.tolerance = tolerance
 
         samples = np.linspace(lower + 10, upper, 10).tolist()
-
+        generator = np.random.default_rng(1)
         avg_distances_normal = []
         avg_distances_extreme = []
         percentages_normal = []
         percentages_extreme = []
         for sample in samples:
-            cases_normal = dim.get_cases_normal(sample, None)
-            cases_extreme = dim.get_cases_extreme(sample, None)
+            cases_normal = dim.get_cases_normal("Test", sample, generator)
+            cases_extreme = dim.get_cases_extreme("Test", sample, generator)
 
             print(f"Sample: {sample}")
             print("get_cases_normal:")
