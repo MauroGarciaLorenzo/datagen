@@ -16,11 +16,11 @@ class Test(TestCase):
         variables = [(0, 10), (0, 15), (10, 20), (0, 25)]
 
         self.dim1 = Dimension(variables, n_cases=3, divs=1, borders=(10, 70),
-                              label="Dim1")
+                              is_true_dimension="Dim1")
         self.dim2 = Dimension(variables, n_cases=3, divs=2, borders=(10, 70),
-                              label="Dim2")
+                              is_true_dimension="Dim2")
         self.dim3 = Dimension(variables, n_cases=3, divs=2, borders=(10, 70),
-                              label="Dim3")
+                              is_true_dimension="Dim3")
 
         self.dims = [self.dim1, self.dim2, self.dim3]
 
@@ -58,8 +58,8 @@ class Test(TestCase):
         df_samples = gen_samples(n_samples, self.dims, None)
 
         for dim in self.dims:
-            self.assertTrue(all(df_samples[dim.label] >= dim.borders[0]))
-            self.assertTrue(all(df_samples[dim.label] <= dim.borders[1]))
+            self.assertTrue(all(df_samples[dim.is_true_dimension] >= dim.borders[0]))
+            self.assertTrue(all(df_samples[dim.is_true_dimension] <= dim.borders[1]))
 
     def test_gen_grid(self):
         """
@@ -142,11 +142,11 @@ class Test(TestCase):
     def test_sensitivity(self):
         variables = [(0, 10), (0, 10), (0, 10), (0, 10)]
         dim1 = Dimension(variables, n_cases=3, divs=1, borders=(0, 70),
-                         label="Dim1")
+                         is_true_dimension="Dim1")
         dim2 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
-                         label="Dim2")
+                         is_true_dimension="Dim2")
         dim3 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
-                         label="Dim3")
+                         is_true_dimension="Dim3")
         dims = [dim1, dim2, dim3]
         
         for dim in dims:

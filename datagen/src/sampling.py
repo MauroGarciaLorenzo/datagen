@@ -169,7 +169,7 @@ def generate_columns(dim):
     :param dim: Involved dimension
     :return: Names of de variables
     """
-    return [f"{dim.label}_Var{v}" for v in range(len(dim.variables))]
+    return [f"{dim.is_true_dimension}_Var{v}" for v in range(len(dim.variables))]
 
 
 def process_p_cig_dimension(samples_df, p_cig, generator):
@@ -192,11 +192,11 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
     for _, sample in samples_df.iterrows():
         # Obtain p_cig cases
         cases_p_cig_df = pd.DataFrame(
-            p_cig.get_cases_extreme(sample[p_cig.label], generator),
+            p_cig.get_cases_extreme(sample[p_cig.is_true_dimension], generator),
             columns=generate_columns(p_cig)).dropna()
         n_rows = len(cases_p_cig_df)
         dims_p_cig_df = pd.DataFrame(
-            np.repeat(sample[p_cig.label], n_rows), columns=[p_cig.label])
+            np.repeat(sample[p_cig.is_true_dimension], n_rows), columns=[p_cig.is_true_dimension])
 
         # Obtain the complimentary g_for and g_fol percentages
         grid_forming_perc = generator.random()
@@ -216,8 +216,8 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
                 (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
                 for x in range(len(p_cig.variables))])
             g_for = Dimension(variables=g_for_variables, n_cases=1, divs=1,
-                              borders=(p_cig.borders[0], sample[p_cig.label]),
-                              label="g_for", tolerance=p_cig.tolerance)
+                              borders=(p_cig.borders[0], sample[p_cig.is_true_dimension]),
+                              is_true_dimension="g_for", tolerance=p_cig.tolerance)
             # Create g_for case
             case_g_for = (g_for.get_cases_extreme(g_for_sample, generator))[0]
             if not np.isnan(case_g_for).any():
@@ -274,13 +274,13 @@ def process_other_dimensions(samples_df, dim, generator):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
-        cases = dim.get_cases_extreme(sample[dim.label], generator)
+        cases = dim.get_cases_extreme(sample[dim.is_true_dimension], generator)
         for case in cases:
             if not np.isnan(case).any():
                 total_cases.append(case)
-                total_dim.append(sample[dim.label])
+                total_dim.append(sample[dim.is_true_dimension])
 
-    dims_df = pd.DataFrame(total_dim, columns=[dim.label])
+    dims_df = pd.DataFrame(total_dim, columns=[dim.is_true_dimension])
     cases_df = pd.DataFrame(total_cases, columns=generate_columns(dim))
     return cases_df, dims_df
 
@@ -299,7 +299,7 @@ def gen_cases(samples_df, dimensions, generator):
     total_dims = []
 
     for dim in dimensions:
-        if dim.label == "p_cig":
+        if dim.is_true_dimension == "p_cig":
             partial_cases, partial_dims = process_p_cig_dimension(samples_df,
                                                                   dim, generator)
         else:
@@ -332,7 +332,7 @@ def gen_samples(n_samples, dimensions, generator):
     samples_scaled = lower_bounds + samples * (upper_bounds - lower_bounds)
 
     df_samples = pd.DataFrame(samples_scaled,
-                              columns=[dim.label for dim in dimensions])
+                              columns=[dim.is_true_dimension for dim in dimensions])
 
     return df_samples
 
@@ -432,7 +432,7 @@ def gen_grid(dims):
             dimensions.append(
                 Dimension(variables=dims[j].variables, n_cases=dims[j].n_cases,
                           divs=dims[j].divs, borders=(lower[j], upper[j]),
-                          label=dims[j].label, tolerance=dims[j].tolerance)
+                          is_true_dimension=dims[j].is_true_dimension, tolerance=dims[j].tolerance)
             )
         grid.append(Cell(dimensions))
     return grid

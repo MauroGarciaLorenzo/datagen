@@ -16,9 +16,9 @@ def setUp_basic():
 
     dimensions = [
         Dimension(variables=variables_d0, n_cases=n_cases, divs=2,
-                  borders=(0, 5), label="Dim_0"),
+                  borders=(0, 5), is_true_dimension="Dim_0"),
         Dimension(variables=variables_d1, n_cases=n_cases, divs=1,
-                  borders=(0, 6), label="Dim_1")]
+                  borders=(0, 6), is_true_dimension="Dim_1")]
 
     return (dimensions, n_samples, rel_tolerance, dummy, max_depth,
             use_sensitivity, ax, divs_per_cell, plot_boxplot)
@@ -42,17 +42,17 @@ def setUp_complex():
 
     dimensions = [
         Dimension(variables=p_sg, n_cases=n_cases, divs=2, borders=(0, 5),
-                  label="p_sg"),
+                  is_true_dimension="p_sg"),
         Dimension(variables=p_cig, n_cases=n_cases, divs=1, borders=(0, 6),
-                  label="p_cig"),
+                  is_true_dimension="p_cig"),
         Dimension(variables=tau_f_g_for, n_cases=n_cases, divs=1,
-                  borders=(0, 2), label="tau_f_g_for"),
+                  borders=(0, 2), is_true_dimension="tau_f_g_for"),
         Dimension(variables=tau_v_g_for, n_cases=n_cases, divs=1,
-                  borders=(0, 2), label="tau_v_g_for"),
+                  borders=(0, 2), is_true_dimension="tau_v_g_for"),
         Dimension(variables=tau_p_g_for, n_cases=n_cases, divs=1,
-                  borders=(0, 2), label="tau_p_g_for"),
+                  borders=(0, 2), is_true_dimension="tau_p_g_for"),
         Dimension(variables=tau_q_g_for, n_cases=n_cases, divs=1,
-                  borders=(0, 2), label="tau_q_g_for")
+                  borders=(0, 2), is_true_dimension="tau_q_g_for")
     ]
 
     return (dimensions, n_samples, rel_tolerance, matmul, max_depth,

@@ -23,17 +23,17 @@ class Test(TestCase):
         self.func = dummy
         self.dimensions = [
             Dimension(variables=p_sg, n_cases=self.n_cases, divs=2,
-                      borders=(10, 25.3), label="p_sg"),
+                      borders=(10, 25.3), is_true_dimension="p_sg"),
             Dimension(variables=p_cig, n_cases=self.n_cases, divs=1,
-                      borders=(0, 6), label="p_cig"),
+                      borders=(0, 6), is_true_dimension="p_cig"),
             Dimension(variables=tau_f_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), label="tau_f_g_for"),
+                      borders=(0, 2), is_true_dimension="tau_f_g_for"),
             Dimension(variables=tau_v_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), label="tau_v_g_for"),
+                      borders=(0, 2), is_true_dimension="tau_v_g_for"),
             Dimension(variables=tau_p_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), label="tau_p_g_for"),
+                      borders=(0, 2), is_true_dimension="tau_p_g_for"),
             Dimension(variables=tau_q_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), label="tau_q_g_for")
+                      borders=(0, 2), is_true_dimension="tau_q_g_for")
         ]
 
     def test_start(self):
@@ -66,10 +66,10 @@ class Test(TestCase):
                 if label == "g_for" or label == "g_fol":
                     dim = next(
                         (d for d in self.dimensions
-                         if d.label == "p_cig"), None)
+                         if d.is_true_dimension == "p_cig"), None)
                 else:
                     dim = next((d for d in self.dimensions
-                                if d.label == label), None)
+                                if d.is_true_dimension == label), None)
                 if not dim.borders[0] <= value <= dim.borders[1]:
                     pass
                 self.assertTrue(dim.borders[0] <= value <= dim.borders[1])
@@ -85,10 +85,10 @@ class Test(TestCase):
                     if dim_label == "g_for" or dim_label == "g_fol":
                         dim = next(
                             (d for d in self.dimensions
-                             if d.label == "p_cig"), None)
+                             if d.is_true_dimension == "p_cig"), None)
                     else:
                         dim = next((d for d in self.dimensions
-                                    if d.label == dim_label), None)
+                                    if d.is_true_dimension == dim_label), None)
 
                     self.assertTrue(dim.variables[var_idx][0] <= value <=
                                     dim.variables[var_idx][1])

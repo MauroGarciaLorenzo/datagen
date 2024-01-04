@@ -46,19 +46,19 @@ class Dimension:
                 order of the number of cells
         -borders: bounds of the dimension (maximum and minimum values of a
                 sample)
-        -label: dimension identifier
+        -is_true_dimension: dimension identifier
     """
-    def __init__(self, variables, n_cases, divs, borders, label,
+    def __init__(self, variables, n_cases, divs, borders, is_true_dimension,
                  tolerance=None):
         self.variables = np.array(variables, dtype='float')
         self.n_cases = n_cases
         self.divs = divs
         self.borders = borders
-        self.label = label
+        self.is_true_dimension = is_true_dimension
         self.tolerance = tolerance
 
     def __str__(self):
-        return f'Dimension("{self.label}", borders={self.borders})'
+        return f'Dimension("{self.is_true_dimension}", borders={self.borders})'
 
     def __repr__(self):
         return self.__str__()
@@ -103,7 +103,7 @@ class Dimension:
 
         if not (max_val >= sample >= min_val):
             raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {self.label}, with variables borders "
+                             f"dimension {self.is_true_dimension}, with variables borders "
                              f"{self.variables}")
 
         while len(cases) < self.n_cases and iters < iter_limit:
@@ -116,14 +116,14 @@ class Dimension:
                 cases.append(case)
             else:
                 print(f"get_cases_normal: Iteration {iters + 1}")
-                print(f"Warning: (label {self.label}) Case sum {case_sum} out "
+                print(f"Warning: (is_true_dimension {self.is_true_dimension}) Case sum {case_sum} out "
                       f"of dimension borders {self.borders} in {case} for "
                       f"sample {sample}. Retrying...")
             iters += 1
-        print(f"Dim {self.label}: get_cases_normal run {iters} iterations.")
+        print(f"Dim {self.is_true_dimension}: get_cases_normal run {iters} iterations.")
 
         while len(cases) < self.n_cases:
-            print(f"Warning: Dim {self.label} - get_cases_normal exhausted "
+            print(f"Warning: Dim {self.is_true_dimension} - get_cases_normal exhausted "
                   f"iterations: {iters} iterations.")
             print("Adding NaN cases")
             cases.append([np.nan] * len(self.variables))
@@ -160,7 +160,7 @@ class Dimension:
 
         if not (max_val >= sample >= min_val):
             raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {self.label}, with variables borders "
+                             f"dimension {self.is_true_dimension}, with variables borders "
                              f"{self.variables}")
 
         while len(cases) < self.n_cases and iters_cases < iter_limit:
