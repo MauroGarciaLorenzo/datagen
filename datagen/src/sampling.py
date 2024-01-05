@@ -300,13 +300,20 @@ def gen_cases(samples_df, dimensions, generator):
     total_dims = []
 
     for label, dim in dimensions.items():
-        if label == "p_cig":
-            partial_cases, partial_dims = process_p_cig_dimension(samples_df,
-                                                                  dim, generator)
-        else:
-            partial_cases, partial_dims = process_other_dimensions(samples_df,
-                                                                   label, dim,
-                                                                   generator)
+        if label != "p_load":
+            if label == "p_cig":
+                partial_cases, partial_dims = process_p_cig_dimension(samples_df,
+                                                                      dim, generator)
+            else:
+                partial_cases, partial_dims = process_other_dimensions(samples_df,
+                                                                       label, dim,
+                                                                       generator)
+            total_cases.append(partial_cases)
+            total_dims.append(partial_dims)
+    if "p_load" in dimensions:
+        partial_cases, partial_dims = (process_other_dimensions
+                                       (samples_df,"p_load",
+                                        dimensions["p_load"], generator))
         total_cases.append(partial_cases)
         total_dims.append(partial_dims)
 
