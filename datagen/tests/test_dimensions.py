@@ -38,7 +38,7 @@ class Test(TestCase):
     def test_get_cases_extreme(self):
         for label, dim in self.dims.items():
             for sample in self.samples:
-                variables_sum = dim.variables.sum(axis=0)
+                variables_sum = dim.variable_borders.sum(axis=0)
                 if not variables_sum[0] <= sample <= variables_sum[1]:
                     self.assertRaises(
                         ValueError, dim.get_cases_extreme, label, sample, self.generator)
@@ -48,16 +48,16 @@ class Test(TestCase):
                         self.assertAlmostEqual(sum(cases[idx]), sample,
                                                places=2)
                         for var in range(len(cases[idx])):
-                            self.assertTrue(dim.variables[var, 0] <=
+                            self.assertTrue(dim.variable_borders[var, 0] <=
                                             cases[idx][var] <=
-                                            dim.variables[var, 1])
+                                            dim.variable_borders[var, 1])
                             self.assertIsNotNone(cases[idx][var])
 
     def test_get_cases_normal(self):
 
         for label, dim in self.dims.items():
             for sample in self.samples:
-                variables_sum = dim.variables.sum(axis=0)
+                variables_sum = dim.variable_borders.sum(axis=0)
                 if not variables_sum[0] <= sample <= variables_sum[1]:
                     self.assertRaises(
                         ValueError, dim.get_cases_extreme, label, sample, self.generator)
@@ -65,8 +65,8 @@ class Test(TestCase):
                     cases = dim.get_cases_extreme(label, sample, self.generator)
                     for idx in range(len(cases)):
                         for var in range(len(cases[idx])):
-                            self.assertTrue(dim.variables[var, 0] <=
+                            self.assertTrue(dim.variable_borders[var, 0] <=
                                             cases[idx][var] <=
-                                            dim.variables[var, 1])
+                                            dim.variable_borders[var, 1])
                             self.assertIsNotNone(cases[idx][var])
 

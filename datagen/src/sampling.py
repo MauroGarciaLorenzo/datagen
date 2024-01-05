@@ -167,9 +167,9 @@ def generate_columns(label, dim):
     """Assigns names for every variable in a dimension.
 
     :param dim: Involved dimension
-    :return: Names of de variables
+    :return: Names of de variable_borders
     """
-    return [f"{label}_Var{v}" for v in range(len(dim.variables))]
+    return [f"{label}_Var{v}" for v in range(len(dim.variable_borders))]
 
 
 def process_p_cig_dimension(samples_df, p_cig, generator):
@@ -177,8 +177,8 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
 
     p_cig samples values must be distributed between g_for and g_fol assigning
     a random value between 0 and 1 as a one-to-one percentage, resulting in
-    g_for plus g_fol equalling p_cig. g_for variables are calculated as usual,
-    while g_fol variables are complimentary to g_for to sum g_fol:
+    g_for plus g_fol equalling p_cig. g_for variable_borders are calculated as usual,
+    while g_fol variable_borders are complimentary to g_for to sum g_fol:
         g_fol_i = p_cig_i - g_for_i
 
     :param generator:
@@ -213,8 +213,8 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
             # Pick bounds of each variable. The min value is p_cig dimension's
             # min bound, and max is the value sampled for ith p_cig's variable
             g_for_variables = np.array([
-                (p_cig.variables[x, 0], cases_p_cig_df.iloc[i, x])
-                for x in range(len(p_cig.variables))])
+                (p_cig.variable_borders[x, 0], cases_p_cig_df.iloc[i, x])
+                for x in range(len(p_cig.variable_borders))])
             g_for = Dimension(variables=g_for_variables, n_cases=1, divs=1,
                               borders=(p_cig.borders[0], sample["p_cig"]),
                               is_true_dimension=False, tolerance=p_cig.tolerance)
@@ -225,18 +225,18 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
                 dims_g_for.append(g_for_sample)
                 cases_g_for.append(case_g_for)
                 dims_g_fol.append(g_fol_sample)
-                # Compose g_fol subtracting p_cig from g_for case variables
+                # Compose g_fol subtracting p_cig from g_for case variable_borders
                 cases_g_fol.append(
                     [cases_p_cig_df.iloc[i, x] - case_g_for[x]
-                     for x in range(len(p_cig.variables))])
+                     for x in range(len(p_cig.variable_borders))])
 
         cases_g_for_df = pd.DataFrame(
             cases_g_for,
-            columns=[f"g_for_Var{v}" for v in range(len(p_cig.variables))])
+            columns=[f"g_for_Var{v}" for v in range(len(p_cig.variable_borders))])
         dims_g_for_df = pd.DataFrame(dims_g_for, columns=["g_for"])
         cases_g_fol_df = pd.DataFrame(
             cases_g_fol,
-            columns=[f"g_fol_Var{v}" for v in range(len(p_cig.variables))])
+            columns=[f"g_fol_Var{v}" for v in range(len(p_cig.variable_borders))])
         dims_g_fol_df = pd.DataFrame(dims_g_fol, columns=["g_fol"])
 
         # Error check
@@ -265,7 +265,7 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
 
 def process_other_dimensions(samples_df, label, dim, generator):
     """
-    This method assigns values to the variables within a generic dimension.
+    This method assigns values to the variable_borders within a generic dimension.
 
     :param generator:
     :param samples_df: Dataframe containing every sample in this cell
@@ -323,7 +323,7 @@ def gen_cases(samples_df, dimensions, generator):
 
 
 def gen_samples(n_samples, dimensions, generator):
-    """Generates n_samples samples, which represent total sum of the variables
+    """Generates n_samples samples, which represent total sum of the variable_borders
     within a dimension.
 
     :param generator:
@@ -438,7 +438,7 @@ def gen_grid(dims):
         ]
         dimensions = {}
         for j, (label, dim) in enumerate(dims.items()):
-            dimensions[label] = Dimension(variables=dim.variables,
+            dimensions[label] = Dimension(variables=dim.variable_borders,
                                           n_cases=dim.n_cases, divs=dim.divs,
                                           borders=(lower[j], upper[j]),
                                           is_true_dimension=dim.is_true_dimension,

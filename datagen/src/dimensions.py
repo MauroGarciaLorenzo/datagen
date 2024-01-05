@@ -18,10 +18,10 @@
 Dimension objects.
 
     -Dimension: Describes a particular dimension of a specific
-cell. Each dimension is made up of variables that can represent different
+cell. Each dimension is made up of variable_borders that can represent different
 things, like power supplied by a generator. The Dimension class can produce
 various cases based on given samples, considering their tolerance and
-maintaining the integrity of the sum of variables.
+maintaining the integrity of the sum of variable_borders.
 """
 
 import numpy as np
@@ -37,11 +37,11 @@ class Dimension:
 
     An object from this class represents a concrete dimension of a specific
     cell in our problem. It is defined by:
-        -variables: list of variables represented by tuples containing its
+        -variable_borders: list of variable_borders represented by tuples containing its
                 lower and upper borders.
         -n_cases: number of cases taken for each sample (each sample represents
                 the total sum of a dimension). A case is a combination of
-                variables where all summed together equals the sample.
+                variable_borders where all summed together equals the sample.
         -divs: number of divisions in that dimension. It will be the growth
                 order of the number of cells
         -borders: bounds of the dimension (maximum and minimum values of a
@@ -51,7 +51,7 @@ class Dimension:
     """
     def __init__(self, n_cases, divs, borders, is_true_dimension,
                  tolerance=None, values=None, variables=None):
-        self.variables = np.array(variables, dtype='float')
+        self.variable_borders = np.array(variables, dtype='float')
         self.n_cases = n_cases
         self.divs = divs
         self.borders = borders
@@ -78,7 +78,7 @@ class Dimension:
 
         :param generator:
         :param sample: A random input value representing the dimension, with
-            the requirement that the different variables of the dimension
+            the requirement that the different variable_borders of the dimension
             must collectively sum up to it.
         :param iter_limit_factor: Factor to multiply for the maximum number of
             iterations
@@ -86,32 +86,32 @@ class Dimension:
         """
         cases = []
         # Perform scaling
-        var_avg = ((self.variables[:, 1] - self.variables[:, 0]) / 2
-                   + self.variables[:, 0])
+        var_avg = ((self.variable_borders[:, 1] - self.variable_borders[:, 0]) / 2
+                   + self.variable_borders[:, 0])
         avg_sum = var_avg.sum()
         alpha = sample / avg_sum
         scaled_avgs = var_avg * alpha
         stds = []
         # Perform scaling
-        for i in range(len(self.variables)):
-            d_min = min(abs(self.variables[i][0] - scaled_avgs[i]),
-                        abs(self.variables[i][1] - scaled_avgs[i]))
+        for i in range(len(self.variable_borders)):
+            d_min = min(abs(self.variable_borders[i][0] - scaled_avgs[i]),
+                        abs(self.variable_borders[i][1] - scaled_avgs[i]))
             # Initialize standard deviations
             stds.append(d_min / 3)
         iters = 0
-        iter_limit = len(self.variables) * self.n_cases * iter_limit_factor
-        max_val = sum([v[1] for v in self.variables])
-        min_val = sum([v[0] for v in self.variables])
+        iter_limit = len(self.variable_borders) * self.n_cases * iter_limit_factor
+        max_val = sum([v[1] for v in self.variable_borders])
+        min_val = sum([v[0] for v in self.variable_borders])
 
         if not (max_val >= sample >= min_val):
             raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {label}, with variables borders "
-                             f"{self.variables}")
+                             f"dimension {label}, with variable_borders borders "
+                             f"{self.variable_borders}")
 
         while len(cases) < self.n_cases and iters < iter_limit:
             case = generator.normal(scaled_avgs, stds)
-            lower_bounds = self.variables[:, 0]
-            upper_bounds = self.variables[:, 1]
+            lower_bounds = self.variable_borders[:, 0]
+            upper_bounds = self.variable_borders[:, 1]
             case = np.clip(case, lower_bounds, upper_bounds)
             case_sum = case.sum()
             if self.borders[0] < case_sum < self.borders[1]:
@@ -128,14 +128,14 @@ class Dimension:
             print(f"Warning: Dim {label} - get_cases_normal exhausted "
                   f"iterations: {iters} iterations.")
             print("Adding NaN cases")
-            cases.append([np.nan] * len(self.variables))
+            cases.append([np.nan] * len(self.variable_borders))
 
         return cases
 
     def get_cases_extreme(self, label, sample, generator, iter_limit=5000,
                           iter_limit_variables=500):
         """This case generator aims to reach more variance between cases within
-        a sample. Here, we assign random values to de variables in the range
+        a sample. Here, we assign random values to de variable_borders in the range
         lower bound of this variable - minimum between upper bound of the
         variable and remaining sum, so that we never exceed sample.
 
@@ -148,32 +148,32 @@ class Dimension:
         :param iter_limit: Maximum number of iterations. Useful to avoid
             infinite loops
         :param iter_limit_variables: Maximum number of iterations to go over
-            all variables again and distribute the remaining sum
-        :return: Combinations of n_cases variables that, when summed together,
+            all variable_borders again and distribute the remaining sum
+        :return: Combinations of n_cases variable_borders that, when summed together,
             equal sample. If the combination cannot not be found with the
             defined iter_limit, this case will be filled with NaN values.
         """
-        # Distribute remaining sum within variables
-        # Shuffle variables
+        # Distribute remaining sum within variable_borders
+        # Shuffle variable_borders
         cases = []
         iters_cases = 0
-        max_val = sum([v[1] for v in self.variables])
-        min_val = sum([v[0] for v in self.variables])
+        max_val = sum([v[1] for v in self.variable_borders])
+        min_val = sum([v[0] for v in self.variable_borders])
 
         if not (max_val >= sample >= min_val):
             raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {label}, with variables borders "
-                             f"{self.variables}")
+                             f"dimension {label}, with variable_borders borders "
+                             f"{self.variable_borders}")
 
         while len(cases) < self.n_cases and iters_cases < iter_limit:
             iters_cases += 1
-            initial_case = self.variables[:, 0]
+            initial_case = self.variable_borders[:, 0]
             case = initial_case.copy()
             total_sum = sum(case)
             iters_variables = 0
             while (not np.isclose(total_sum, sample) and
                    iters_variables < iter_limit):
-                indexes = list(range(len(self.variables)))
+                indexes = list(range(len(self.variable_borders)))
                 generator.shuffle(indexes)
 
                 iters_variables += 1
@@ -181,7 +181,7 @@ class Dimension:
                     if np.isclose(total_sum, sample):
                         break
                     new_var = generator.uniform(case[i],
-                                             self.variables[i, 1])
+                                                self.variable_borders[i, 1])
                     new_var = np.clip(new_var, case[i],
                                       case[i] + sample - total_sum)
                     case[i] = new_var

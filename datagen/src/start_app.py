@@ -34,7 +34,7 @@ except ImportError:
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
           use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False):
     """In this method we work with dimensions (main axes), which represent a
-    list of variables. For example, the value of each variable of a concrete
+    list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
     value linked to that dimension should be the total sum of energy produced.
 
@@ -57,7 +57,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
     used or not
     :param func: Objective function
     :param max_depth: Maximum depth for a cell to be subdivided
-    :param plot_boxplot: Indicates whether a boxplot representing all variables
+    :param plot_boxplot: Indicates whether a boxplot representing all variable_borders
     should be plotted
     """
     clean_dir("results")

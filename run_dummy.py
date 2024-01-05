@@ -16,16 +16,16 @@ except ImportError:
 def main():
     """
     In this method we work with dimensions (main axes), which represent a
-    list of variables. For example, the value of each variable of a concrete
+    list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
     value linked to that dimension should be the total sum of energy produced.
 
     For each dimension it must be declared:
-        -variables: list of variables represented by tuples containing its
+        -variable_borders: list of variable_borders represented by tuples containing its
                 lower and upper borders.
         -n_cases: number of cases taken for each sample (each sample represents
                 the total sum of a dimension). A case is a combination of
-                variables where all summed together equals the sample.
+                variable_borders where all summed together equals the sample.
         -divs: number of divisions in that dimension. It will be the growth
                 order of the number of cells
         -lower: lower bound of the dimension (minimum value of a sample)

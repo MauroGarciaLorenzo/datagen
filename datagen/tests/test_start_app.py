@@ -60,7 +60,7 @@ class Test(TestCase):
         self.assertEqual(cases_df.shape[1], 22)
         self.assertEqual(dims_df.shape[1], 9)
 
-        # assert that the sum of the variables of a concrete dimension in
+        # assert that the sum of the variable_borders of a concrete dimension in
         # cases_df almost equals the value in dims_df
         dim_labels = list(set(col.rsplit('_Var')[0]
                           for col in cases_df.columns if '_Var' in col))
@@ -105,5 +105,5 @@ class Test(TestCase):
                         dim = next((d for l,d in self.dimensions.items()
                                     if l == dim_label), None)
 
-                    self.assertTrue(dim.variables[var_idx][0] <= value <=
-                                    dim.variables[var_idx][1])
+                    self.assertTrue(dim.variable_borders[var_idx][0] <= value <=
+                                    dim.variable_borders[var_idx][1])

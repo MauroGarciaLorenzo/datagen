@@ -107,7 +107,7 @@ def print_grid(grid):
         print("------", "casilla", i, "------")
         print("samples casilla", grid[i].n_samples)
         for j in grid[i].dimensions:
-            print("        variables:", j.variables)
+            print("        variable_borders:", j.variable_borders)
             print("        cases", j.n_cases)
             print("        divisiones", j.divs)
             print("        limites", j.borders)

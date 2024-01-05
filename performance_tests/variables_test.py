@@ -16,7 +16,7 @@ def main():
                                               use_sensitivity=use_sensitivity,
                                               ax=ax, divs_per_cell=2)
 
-    result_dir = "results/variables"
+    result_dir = "results/variable_borders"
 
     for file in os.listdir(result_dir):
         file_path = os.path.join(result_dir, file)
