@@ -51,6 +51,7 @@ def main():
 
     p_sg = [(0, 2), (0, 1.5), (0, 1.5)]
     p_cig = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
+    perc_g_for = [(0,1)]
     tau_f_g_for = [(0., 2)]
     tau_v_g_for = [(0., 2)]
     tau_p_g_for = [(0., 2)]
@@ -67,6 +68,9 @@ def main():
         "p_cig":
             Dimension(variables=p_cig, n_cases=n_cases, divs=1, borders=(0, 6),
                       is_true_dimension=True),
+        "perc_g_for":
+            Dimension(variables=perc_g_for, n_cases=n_cases, divs=1, borders=(0,1),
+                      is_true_dimension=True)
     }
     """
     Dimension(variables=tau_f_g_for, n_cases=n_cases, divs=1,
@@ -83,7 +87,7 @@ def main():
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
         start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
-              use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=1)
+              use_sensitivity=use_sensitivity, ax=None, divs_per_cell=2, seed=10)
 
 if __name__ == "__main__":
     main()

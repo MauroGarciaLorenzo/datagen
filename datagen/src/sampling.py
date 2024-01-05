@@ -199,9 +199,9 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
             np.repeat(sample["p_cig"], n_rows), columns=["p_cig"])
 
         # Obtain the complimentary g_for and g_fol percentages
-        grid_forming_perc = generator.random()
+        grid_forming_perc = sample["perc_g_for"]
         g_for_sample = sample["p_cig"] * grid_forming_perc
-        g_fol_sample = sample["p_cig"] * (1 - grid_forming_perc)
+        g_fol_sample = sample["p_cig"] - g_for_sample
 
         # Obtain g_for and g_fol cases
         cases_g_for = []
@@ -502,14 +502,14 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
             # Check if every dimension in row is within cell borders
             cell_borders = [dims.borders
                             for _,dims in cell.dimensions.items()]
-            belongs = all(cell_borders[t][0] <= row[t] <= cell_borders[t][1]
+            belongs = all(cell_borders[t][0] <= row.iloc[t] <= cell_borders[t][1]
                           for t in range(len(cell.dimensions)))
             if belongs:
                 cases.append(cases_heritage_df.iloc[[idx], :])
                 dims.append(dims_heritage_df.iloc[[idx], :])
 
         if cases and dims:
-            stabilities = [int(case["Stability"]) for case in cases]
+            stabilities = [int(case["Stability"].iloc[0]) for case in cases]
             entropy, _ = eval_entropy(stabilities, None)
             cases_df = pd.concat(cases, axis=0, ignore_index=True)
             dims_df = pd.concat(dims, axis=0, ignore_index=True)

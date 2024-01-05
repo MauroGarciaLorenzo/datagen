@@ -9,6 +9,7 @@ class Test(TestCase):
     def setUp(self):
         p_sg = [(0, 0.1), (0, 0.1), (0, 0.1), (10, 25)]
         p_cig = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
+        perc_g_for = [(0,1)]
         tau_f_g_for = [(0., 2)]
         tau_v_g_for = [(0., 2)]
         tau_p_g_for = [(0., 2)]
@@ -28,6 +29,9 @@ class Test(TestCase):
             "p_cig":
                 Dimension(variables=p_cig, n_cases=self.n_cases, divs=1,
                           borders=(0, 6), is_true_dimension=True),
+            "perc_g_for":
+                Dimension(variables=perc_g_for, n_cases=self.n_cases, divs=1,
+                          borders=(0,1), is_true_dimension=True),
             "tau_f_g_for":
                 Dimension(variables=tau_f_g_for, n_cases=self.n_cases, divs=1,
                           borders=(0, 2), is_true_dimension=True),
@@ -53,8 +57,8 @@ class Test(TestCase):
                   self.func, self.max_depth,
                   use_sensitivity=self.use_sensitivity, ax=self.ax)
         # assert that cases_df must have 21 columns and dims_df 8
-        self.assertEqual(cases_df.shape[1], 21)
-        self.assertEqual(dims_df.shape[1], 8)
+        self.assertEqual(cases_df.shape[1], 22)
+        self.assertEqual(dims_df.shape[1], 9)
 
         # assert that the sum of the variables of a concrete dimension in
         # cases_df almost equals the value in dims_df
