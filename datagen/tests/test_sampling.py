@@ -15,12 +15,12 @@ class Test(TestCase):
         """
         variables = [(0, 10), (0, 15), (10, 20), (0, 25)]
 
-        self.dim1 = Dimension(variables, n_cases=3, divs=1, borders=(10, 70),
-                              is_true_dimension=True)
-        self.dim2 = Dimension(variables, n_cases=3, divs=2, borders=(10, 70),
-                              is_true_dimension=True)
-        self.dim3 = Dimension(variables, n_cases=3, divs=2, borders=(10, 70),
-                              is_true_dimension=True)
+        self.dim1 = Dimension(variables=variables, n_cases=3, divs=1,
+                              borders=(10, 70), is_true_dimension=True)
+        self.dim2 = Dimension(variables=variables, n_cases=3, divs=2,
+                              borders=(10, 70), is_true_dimension=True)
+        self.dim3 = Dimension(variables=variables, n_cases=3, divs=2,
+                              borders=(10, 70), is_true_dimension=True)
 
         self.dims = {"Dim1": self.dim1, "Dim2":self.dim2, "Dim3":self.dim3}
 
@@ -141,11 +141,11 @@ class Test(TestCase):
 
     def test_sensitivity(self):
         variables = [(0, 10), (0, 10), (0, 10), (0, 10)]
-        dim1 = Dimension(variables, n_cases=3, divs=1, borders=(0, 70),
+        dim1 = Dimension(variables=variables, n_cases=3, divs=1, borders=(0, 70),
                          is_true_dimension=True)
-        dim2 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
+        dim2 = Dimension(variables=variables, n_cases=3, divs=2, borders=(0, 70),
                          is_true_dimension=True)
-        dim3 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
+        dim3 = Dimension(variables=variables, n_cases=3, divs=2, borders=(0, 70),
                          is_true_dimension=True)
         dims = {"Dim1":dim1, "Dim2":dim2, "Dim3":dim3}
         

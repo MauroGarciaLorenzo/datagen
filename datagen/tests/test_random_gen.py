@@ -32,8 +32,9 @@ class Test(TestCase):
         is_true_dimension = True
         tolerance = 0.1
 
-        dim = Dimension(variables, n_cases, divs, (lower, upper),
-                        is_true_dimension)
+        dim = Dimension(variables=variables, n_cases=n_cases, divs=divs,
+                         borders=(lower, upper),
+                         is_true_dimension=is_true_dimension)
         dim.tolerance = tolerance
 
         samples = np.linspace(lower + 10, upper, 10).tolist()

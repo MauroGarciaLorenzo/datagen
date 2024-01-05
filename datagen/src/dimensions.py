@@ -47,15 +47,17 @@ class Dimension:
         -borders: bounds of the dimension (maximum and minimum values of a
                 sample)
         -is_true_dimension: dimension identifier
+        -values: values linked to that dimension(e.g load participation factor)
     """
-    def __init__(self, variables, n_cases, divs, borders, is_true_dimension,
-                 tolerance=None):
+    def __init__(self, n_cases, divs, borders, is_true_dimension,
+                 tolerance=None, values=None, variables=None):
         self.variables = np.array(variables, dtype='float')
         self.n_cases = n_cases
         self.divs = divs
         self.borders = borders
         self.is_true_dimension = is_true_dimension
         self.tolerance = tolerance
+        self.values = values
 
     """    def __str__(self):
         return f'Dimension("{self.is_true_dimension}", borders={self.borders})'

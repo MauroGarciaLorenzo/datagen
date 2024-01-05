@@ -16,7 +16,9 @@ class Test(TestCase):
         lower, upper = 0, 70
         is_true_dimension = True
         tolerance = 0.1
-        dim1 = Dimension(variables, n_cases, divs, (lower, upper), is_true_dimension)
+        dim1 = Dimension(variables=variables, n_cases=n_cases, divs=divs,
+                         borders=(lower, upper),
+                         is_true_dimension=is_true_dimension)
         dim1.tolerance = tolerance
 
         variables = np.array([(0, 0.1), (0, 0.1), (0, 0.1), (10, 25)])
@@ -25,7 +27,9 @@ class Test(TestCase):
         lower, upper = 10, 25.3
         is_true_dimension = False
         tolerance = 0.1
-        dim2 = Dimension(variables, n_cases, divs, (lower, upper), is_true_dimension)
+        dim2 = Dimension(variables=variables, n_cases=n_cases, divs=divs,
+                         borders=(lower, upper),
+                         is_true_dimension=is_true_dimension)
         dim2.tolerance = tolerance
         self.samples = np.random.uniform(0, 70, 300)
         self.generator = np.random.default_rng(1)
