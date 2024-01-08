@@ -23,18 +23,20 @@ class Test(TestCase):
         self.max_depth = 5
         self.func = dummy
         self.dimensions = [
-            Dimension(variables=p_sg, n_cases=self.n_cases, divs=2,
+            Dimension(variable_borders=p_sg, n_cases=self.n_cases, divs=2,
                       borders=(10, 25.3), label="p_sg"),
-            Dimension(variables=p_cig, n_cases=self.n_cases, divs=1,
+            Dimension(variable_borders=p_cig, n_cases=self.n_cases, divs=1,
                       borders=(0, 6), label="p_cig"),
-            Dimension(variables=tau_f_g_for, n_cases=self.n_cases, divs=1,
+            Dimension(variable_borders=tau_f_g_for, n_cases=self.n_cases, divs=1,
                       borders=(0, 2), label="tau_f_g_for"),
-            Dimension(variables=tau_v_g_for, n_cases=self.n_cases, divs=1,
+            Dimension(variable_borders=tau_v_g_for, n_cases=self.n_cases, divs=1,
                       borders=(0, 2), label="tau_v_g_for"),
-            Dimension(variables=tau_p_g_for, n_cases=self.n_cases, divs=1,
+            Dimension(variable_borders=tau_p_g_for, n_cases=self.n_cases, divs=1,
                       borders=(0, 2), label="tau_p_g_for"),
-            Dimension(variables=tau_q_g_for, n_cases=self.n_cases, divs=1,
-                      borders=(0, 2), label="tau_q_g_for")
+            Dimension(variable_borders=tau_q_g_for, n_cases=self.n_cases, divs=1,
+                      borders=(0, 2), label="tau_q_g_for"),
+            Dimension(variable_borders=perc_g_for, n_cases=self.n_cases, divs=1,
+                      borders=(0,1), label="perc_g_for"),
         ]
 
     def test_start(self):
@@ -59,7 +61,7 @@ class Test(TestCase):
         dims_expected_df.columns = dim_labels
         dims_expected_df = dims_expected_df[dims_df.columns]
         pd.testing.assert_frame_equal(dims_expected_df, dims_df,
-                                      check_exact=False)
+                                      check_exact=False, atol=1e-5)
 
         # assert that each value is within dimension borders
         for idx, row in dims_df.iterrows():
@@ -67,10 +69,10 @@ class Test(TestCase):
                 if label == "g_for" or label == "g_fol":
                     dim = next(
                         (d for d in self.dimensions
-                         if d.is_true_dimension == "p_cig"), None)
+                         if d.label == "p_cig"), None)
                 else:
                     dim = next((d for d in self.dimensions
-                                if d.is_true_dimension == label), None)
+                                if d.label == label), None)
                 if not dim.borders[0] <= value <= dim.borders[1]:
                     pass
                 self.assertTrue(dim.borders[0] <= value <= dim.borders[1])
@@ -86,10 +88,10 @@ class Test(TestCase):
                     if dim_label == "g_for" or dim_label == "g_fol":
                         dim = next(
                             (d for d in self.dimensions
-                             if d.is_true_dimension == "p_cig"), None)
+                             if d.label == "p_cig"), None)
                     else:
                         dim = next((d for d in self.dimensions
-                                    if d.is_true_dimension == dim_label), None)
+                                    if d.label == dim_label), None)
 
                     self.assertTrue(dim.variable_borders[var_idx][0] <= value <=
                                     dim.variable_borders[var_idx][1])

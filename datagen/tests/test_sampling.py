@@ -15,11 +15,11 @@ class Test(TestCase):
         """
         variables = [(0, 10), (0, 15), (10, 20), (0, 25)]
 
-        self.dim1 = Dimension(variables=variables, n_cases=3, divs=1,
+        self.dim1 = Dimension(variable_borders=variables, n_cases=3, divs=1,
                               borders=(10, 70), label="Dim1")
-        self.dim2 = Dimension(variables=variables, n_cases=3, divs=2,
+        self.dim2 = Dimension(variable_borders=variables, n_cases=3, divs=2,
                               borders=(10, 70), label="Dim2")
-        self.dim3 = Dimension(variables=variables, n_cases=3, divs=2,
+        self.dim3 = Dimension(variable_borders=variables, n_cases=3, divs=2,
                               borders=(10, 70), label="Dim3")
 
         self.dims = [self.dim1, self.dim2, self.dim3]
@@ -31,6 +31,8 @@ class Test(TestCase):
             "Dim2": [15, 39, 20],
             "Dim3": [39, 30, 60]
         })
+
+        self.generator = np.random.default_rng(1)
 
         self.cases_heritage_df = pd.DataFrame({
             "Dim1_Var0": [0, 6, 10],
@@ -55,11 +57,11 @@ class Test(TestCase):
 
     def test_gen_samples(self):
         n_samples = 100
-        df_samples = gen_samples(n_samples, self.dims, None)
+        df_samples = gen_samples(n_samples, self.dims, self.generator)
 
         for dim in self.dims:
-            self.assertTrue(all(df_samples[dim.is_true_dimension] >= dim.borders[0]))
-            self.assertTrue(all(df_samples[dim.is_true_dimension] <= dim.borders[1]))
+            self.assertTrue(all(df_samples[dim.label] >= dim.borders[0]))
+            self.assertTrue(all(df_samples[dim.label] <= dim.borders[1]))
 
     def test_gen_grid(self):
         """
@@ -141,11 +143,11 @@ class Test(TestCase):
 
     def test_sensitivity(self):
         variables = [(0, 10), (0, 10), (0, 10), (0, 10)]
-        dim1 = Dimension(variables = variables, n_cases=3, divs=1, borders=(0, 70),
+        dim1 = Dimension(variable_borders= variables, n_cases=3, divs=1, borders=(0, 70),
                          label="Dim1")
-        dim2 = Dimension(variables = variables, n_cases=3, divs=2, borders=(0, 70),
+        dim2 = Dimension(variable_borders= variables, n_cases=3, divs=2, borders=(0, 70),
                          label="Dim2")
-        dim3 = Dimension(variables = variables, n_cases=3, divs=2, borders=(0, 70),
+        dim3 = Dimension(variable_borders= variables, n_cases=3, divs=2, borders=(0, 70),
                          label="Dim3")
         dims = [dim1, dim2, dim3]
         
@@ -164,13 +166,13 @@ class Test(TestCase):
         dim0_cases_df["Stability"] = dim0_cases_df.apply(dim0_func, axis=1)
 
         dims_linear = sensitivity(linear_cases_df, dims, divs_per_cell=2,
-                                  generator=None)
+                                  generator=self.generator)
         dims_linear_divs = [dim.divs for dim in dims_linear]
         dims_parab = sensitivity(parab_cases_df, dims, divs_per_cell=2,
-                                 generator=None)
+                                 generator=self.generator)
         dims_parab_divs = [dim.divs for dim in dims_parab]
         dims_dim0 = sensitivity(dim0_cases_df, dims, divs_per_cell=2,
-                                generator=None)
+                                generator=self.generator)
         dims_dim0_divs = [dim.divs for dim in dims_dim0]
 
         self.assertEqual(dims_linear_divs, [1, 1, 2])

@@ -123,7 +123,8 @@ For each dimension it must be declared:
             order of the number of cells
     -lower: lower bound of the dimension (minimum value of a sample)
     -upper: upper bound of the dimension (maximum value of a sample)
-    -is_true_dimension: dimension identifier
+    -label: dimension identifier
+    -is_true_dimension: indicates whether the dimension is true (sampleable) or not.
 
 Apart from that, it can also be specified the number of samples and
 the relative tolerance (indicates the portion of the size of the original
@@ -170,29 +171,29 @@ rel_tolerance = 0.01
 max_depth = 3
 dimensions = dict()
 dimensions = {'p_sg':
-                  Dimension(variables=p_sg, n_cases=n_cases, divs=2, borders=(
+                  Dimension(variable_borders=p_sg, n_cases=n_cases, divs=2, borders=(
                   d_op['Generators']['Pmin'].sum(),
                   d_op['Generators']['Pmax_SG'].sum()),
                             is_true_dimension=True, cosphi=generators_power_factor),
               'p_cig':
-                  Dimension(variables=p_cig, n_cases=n_cases, divs=1, borders=(
+                  Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1, borders=(
                   d_op['Generators']['Pmin'].sum(),
                   d_op['Generators']['Pmax_CIG'].sum()),
                             is_true_dimension=True, cosphi=generators_power_factor),
               'perc_gfor':
-                  Dimension(variables=[], n_cases=n_cases, divs=1,
+                  Dimension(variable_borders=[], n_cases=n_cases, divs=1,
                             borders=(0, 1),
                             is_true_dimension=True, cosphi=None),
               'p_gfor':
-                  Dimension(variables=p_cig, n_cases=n_cases, divs=1,
+                  Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1,
                             borders=(0, 0),
                             is_true_dimension=False, cosphi=generators_power_factor),
               'p_gfol':
-                  Dimension(variables=p_cig, n_cases=n_cases, divs=1,
+                  Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1,
                             borders=(0, 0),
                             is_true_dimension=False, cosphi=generators_power_factor),
               'p_load':
-                  Dimension(variables=p_loads, n_cases=n_cases, divs=1,
+                  Dimension(variable_borders=p_loads, n_cases=n_cases, divs=1,
                             borders=(0, 0),
                             is_true_dimension=False, cosphi=loads_power_factor),
               }

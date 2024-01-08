@@ -24,6 +24,7 @@ class Test(TestCase):
         Generate samples with get_cases_normal and get_cases_extreme to
         visualize how well-distributed data is.
         """
+        generator = np.random.default_rng(1)
         variables = np.array([(0, 10), (0, 15), (5, 20), (0, 25)])
         n_cases = 30
         divs = None
@@ -31,9 +32,9 @@ class Test(TestCase):
         label = "Test"
         tolerance = 0.1
 
-        dim = Dimension(variables=variables, n_cases=n_cases, divs=divs,
-                         borders=(lower, upper),
-                         label=label)
+        dim = Dimension(variable_borders=variables, n_cases=n_cases, divs=divs,
+                        borders=(lower, upper),
+                        label=label)
         dim.tolerance = tolerance
 
         samples = np.linspace(lower + 10, upper, 10).tolist()
@@ -43,8 +44,8 @@ class Test(TestCase):
         percentages_normal = []
         percentages_extreme = []
         for sample in samples:
-            cases_normal = dim.get_cases_normal(sample, None)
-            cases_extreme = dim.get_cases_extreme(sample, None)
+            cases_normal = dim.get_cases_normal(sample, generator)
+            cases_extreme = dim.get_cases_extreme(sample, generator)
 
             print(f"Sample: {sample}")
             print("get_cases_normal:")
@@ -68,9 +69,9 @@ class Test(TestCase):
 
             # Calculate percentage of sampled content with respect bounds
             perc_normal = (cases_normal - variables[:, 0]) / (
-                           variables[:, 1] - variables[:, 0])
+                    variables[:, 1] - variables[:, 0])
             perc_extreme = (cases_extreme - variables[:, 0]) / (
-                           variables[:, 1] - variables[:, 0])
+                    variables[:, 1] - variables[:, 0])
             percentages_normal.append(perc_normal)
             percentages_extreme.append(perc_extreme)
         percentages_normal = np.concatenate(percentages_normal)

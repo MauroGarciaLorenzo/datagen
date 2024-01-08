@@ -30,7 +30,8 @@ def main():
                 order of the number of cells
         -lower: lower bound of the dimension (minimum value of a sample)
         -upper: upper bound of the dimension (maximum value of a sample)
-        -is_true_dimension: dimension identifier
+        -label: dimension identifier
+        -is_true_dimension: indicates whether the dimension is true (sampleable) or not.
 
     Apart from that, it can also be specified the number of samples and
     the relative tolerance (indicates the portion of the size of the original
@@ -55,10 +56,10 @@ def main():
     max_depth = 3
     fig, ax = plt.subplots()
     dimensions = [
-        Dimension(variables=variables_d0, n_cases=n_cases, divs=2,
-                  borders=(0, 5), is_true_dimension="Dim_0"),
-        Dimension(variables=variables_d1, n_cases=n_cases, divs=1,
-                  borders=(1, 6), is_true_dimension="Dim_1")
+        Dimension(variable_borders=variables_d0, n_cases=n_cases, divs=2,
+                  borders=(0, 5), label="Dim_0"),
+        Dimension(variable_borders=variables_d1, n_cases=n_cases, divs=1,
+                  borders=(1, 6), label="Dim_1")
     ]
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \

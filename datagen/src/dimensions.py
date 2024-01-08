@@ -46,12 +46,13 @@ class Dimension:
                 order of the number of cells
         -borders: bounds of the dimension (maximum and minimum values of a
                 sample)
-        -is_true_dimension: dimension identifier
+        -label: dimension identifier
+        -is_true_dimension: indicates whether the dimension is true (sampleable) or not.
         -values: values linked to that dimension(e.g load participation factor)
     """
     def __init__(self, label, n_cases, divs, borders, is_true_dimension=True,
-                 tolerance=None, values=None, variables=None):
-        self.variable_borders = np.array(variables, dtype='float')
+                 tolerance=None, values=None, variable_borders=None):
+        self.variable_borders = np.array(variable_borders, dtype='float')
         self.n_cases = n_cases
         self.divs = divs
         self.borders = borders
@@ -61,7 +62,7 @@ class Dimension:
         self.label = label
 
     def __str__(self):
-        return f'Dimension("{self.is_true_dimension}", borders={self.borders})'
+        return f'Dimension("{self.label}", borders={self.borders})'
 
     def __repr__(self):
         return self.__str__()
@@ -119,14 +120,14 @@ class Dimension:
                 cases.append(case)
             else:
                 print(f"get_cases_normal: Iteration {iters + 1}")
-                print(f"Warning: (is_true_dimension {self.is_true_dimension}) Case sum {case_sum} out "
+                print(f"Warning: (label {self.label}) Case sum {case_sum} out "
                       f"of dimension borders {self.borders} in {case} for "
                       f"sample {sample}. Retrying...")
             iters += 1
-        print(f"Dim {self.is_true_dimension}: get_cases_normal run {iters} iterations.")
+        print(f"Dim {self.label}: get_cases_normal run {iters} iterations.")
 
         while len(cases) < self.n_cases:
-            print(f"Warning: Dim {self.is_true_dimension} - get_cases_normal exhausted "
+            print(f"Warning: Dim {self.label} - get_cases_normal exhausted "
                   f"iterations: {iters} iterations.")
             print("Adding NaN cases")
             cases.append([np.nan] * len(self.variable_borders))

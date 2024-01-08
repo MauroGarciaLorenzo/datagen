@@ -169,7 +169,7 @@ def generate_columns(dim):
     :param dim: Involved dimension
     :return: Names of de variable_borders
     """
-    return [f"{self.label}_Var{v}" for v in range(len(dim.variable_borders))]
+    return [f"{dim.label}_Var{v}" for v in range(len(dim.variable_borders))]
 
 
 def process_p_cig_dimension(samples_df, p_cig, generator):
@@ -192,11 +192,11 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
     for _, sample in samples_df.iterrows():
         # Obtain p_cig cases
         cases_p_cig_df = pd.DataFrame(
-            p_cig.get_cases_extreme(sample[p_cig.is_true_dimension], generator),
+            p_cig.get_cases_extreme(sample[p_cig.label], generator),
             columns=generate_columns(p_cig)).dropna()
         n_rows = len(cases_p_cig_df)
         dims_p_cig_df = pd.DataFrame(
-            np.repeat(sample[p_cig.is_true_dimension], n_rows), columns=[p_cig.is_true_dimension])
+            np.repeat(sample[p_cig.label], n_rows), columns=[p_cig.label])
 
         # Obtain the complimentary g_for and g_fol percentages
         grid_forming_perc = sample["perc_g_for"]
@@ -215,9 +215,9 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
             g_for_variables = np.array([
                 (p_cig.variable_borders[x, 0], cases_p_cig_df.iloc[i, x])
                 for x in range(len(p_cig.variable_borders))])
-            g_for = Dimension(variables=g_for_variables, n_cases=1, divs=1,
-                              borders=(p_cig.borders[0], sample[p_cig.is_true_dimension]),
-                              is_true_dimension="g_for", tolerance=p_cig.tolerance)
+            g_for = Dimension(variable_borders=g_for_variables, n_cases=1, divs=1,
+                              borders=(p_cig.borders[0], sample[p_cig.label]),
+                              label="g_for", tolerance=p_cig.tolerance)
             # Create g_for case
             case_g_for = (g_for.get_cases_extreme(g_for_sample, generator))[0]
             if not np.isnan(case_g_for).any():
@@ -274,13 +274,13 @@ def process_other_dimensions(samples_df, dim, generator):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
-        cases = dim.get_cases_extreme(sample[dim.is_true_dimension], generator)
+        cases = dim.get_cases_extreme(sample[dim.label], generator)
         for case in cases:
             if not np.isnan(case).any():
                 total_cases.append(case)
-                total_dim.append(sample[dim.is_true_dimension])
+                total_dim.append(sample[dim.label])
 
-    dims_df = pd.DataFrame(total_dim, columns=[dim.is_true_dimension])
+    dims_df = pd.DataFrame(total_dim, columns=[dim.label])
     cases_df = pd.DataFrame(total_cases, columns=generate_columns(dim))
     return cases_df, dims_df
 
@@ -332,7 +332,7 @@ def gen_samples(n_samples, dimensions, generator):
     samples_scaled = lower_bounds + samples * (upper_bounds - lower_bounds)
 
     df_samples = pd.DataFrame(samples_scaled,
-                              columns=[dim.is_true_dimension for dim in dimensions])
+                              columns=[dim.label for dim in dimensions])
 
     return df_samples
 
@@ -430,7 +430,7 @@ def gen_grid(dims):
         dimensions = []
         for j in range(len(dims)):
             dimensions.append(
-                Dimension(variables=dims[j].variables, n_cases=dims[j].n_cases,
+                Dimension(variable_borders=dims[j].variable_borders, n_cases=dims[j].n_cases,
                           divs=dims[j].divs, borders=(lower[j], upper[j]),
                           label=dims[j].label, tolerance=dims[j].tolerance)
             )
@@ -500,7 +500,7 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
             # Check if every dimension in row is within cell borders
             cell_borders = [cell.dimensions[t].borders
                             for t in range(len(cell.dimensions))]
-            belongs = all(cell_borders[t][0] <= row[t] <= cell_borders[t][1]
+            belongs = all(cell_borders[t][0] <= row.iloc[t] <= cell_borders[t][1]
                           for t in range(len(cell.dimensions)))
             if belongs:
                 cases.append(cases_heritage_df.iloc[[idx], :])

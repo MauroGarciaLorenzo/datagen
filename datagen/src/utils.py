@@ -36,10 +36,10 @@ def get_dimension(label, dimensions):
     if label == "g_for" or label == "g_fol":
         dim = next(
             (d for d in dimensions
-             if d.is_true_dimension == "p_cig"), None)
+             if d.label == "p_cig"), None)
     else:
         dim = next((d for d in dimensions
-                    if d.is_true_dimension == label), None)
+                    if d.label == label), None)
     return dim
 
 

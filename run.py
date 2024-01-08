@@ -32,7 +32,8 @@ def main():
                 order of the number of cells
         -lower: lower bound of the dimension (minimum value of a sample)
         -upper: upper bound of the dimension (maximum value of a sample)
-        -is_true_dimension: dimension identifier
+        -label: dimension identifier
+        -is_true_dimension: indicates whether the dimension is true (sampleable) or not.
 
     Apart from that, it can also be specified the number of samples and
     the relative tolerance (indicates the portion of the size of the original
@@ -61,26 +62,23 @@ def main():
 
     rel_tolerance = 0.01
     max_depth = 3
-    dimensions = {
-        "psg":
-            Dimension(variables=p_sg, n_cases=n_cases, divs=2, borders=(0, 5),
-                      is_true_dimension=True),
-        "p_cig":
-            Dimension(variables=p_cig, n_cases=n_cases, divs=1, borders=(0, 6),
-                      is_true_dimension=True),
-        "perc_g_for":
-            Dimension(variables=perc_g_for, n_cases=n_cases, divs=1, borders=(0,1),
-                      is_true_dimension=True)
-    }
+    dimensions = [
+            Dimension(variable_borders=p_sg, n_cases=n_cases, divs=2, borders=(0, 5),
+                      is_true_dimension=True, label="psg"),
+            Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1, borders=(0, 6),
+                      is_true_dimension=True, label="p_cig"),
+            Dimension(variable_borders=perc_g_for, n_cases=n_cases, divs=1, borders=(0, 1),
+                      is_true_dimension=True, label="perc_g_for")
+    ]
     """
     Dimension(variable_borders=tau_f_g_for, n_cases=n_cases, divs=1,
-                  borders=(0, 2), is_true_dimension="tau_f_g_for"),
+                  borders=(0, 2), label="tau_f_g_for"),
     Dimension(variable_borders=tau_v_g_for, n_cases=n_cases, divs=1,
-              borders=(0, 2), is_true_dimension="tau_v_g_for"),
+              borders=(0, 2), label="tau_v_g_for"),
     Dimension(variable_borders=tau_p_g_for, n_cases=n_cases, divs=1,
-              borders=(0, 2), is_true_dimension="tau_p_g_for"),
+              borders=(0, 2), label="tau_p_g_for"),
     Dimension(variable_borders=tau_q_g_for, n_cases=n_cases, divs=1,
-              borders=(0, 2), is_true_dimension="tau_q_g_for")
+              borders=(0, 2), label="tau_q_g_for")
     """
 
     fig, ax = plt.subplots()
