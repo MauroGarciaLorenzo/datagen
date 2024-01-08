@@ -49,7 +49,7 @@ class Dimension:
         -is_true_dimension: dimension identifier
         -values: values linked to that dimension(e.g load participation factor)
     """
-    def __init__(self, n_cases, divs, borders, is_true_dimension,
+    def __init__(self, label, n_cases, divs, borders, is_true_dimension=True,
                  tolerance=None, values=None, variables=None):
         self.variable_borders = np.array(variables, dtype='float')
         self.n_cases = n_cases
@@ -58,14 +58,15 @@ class Dimension:
         self.is_true_dimension = is_true_dimension
         self.tolerance = tolerance
         self.values = values
+        self.label = label
 
-    """    def __str__(self):
+    def __str__(self):
         return f'Dimension("{self.is_true_dimension}", borders={self.borders})'
 
     def __repr__(self):
-        return self.__str__()"""
+        return self.__str__()
 
-    def get_cases_normal(self, label, sample, generator, iter_limit_factor=1000):
+    def get_cases_normal(self, sample, generator, iter_limit_factor=1000):
         """
         Generate `n_cases` number of random cases for the given sample.
 
@@ -105,7 +106,7 @@ class Dimension:
 
         if not (max_val >= sample >= min_val):
             raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {label}, with variable_borders borders "
+                             f"dimension {self.label}, with variable_borders borders "
                              f"{self.variable_borders}")
 
         while len(cases) < self.n_cases and iters < iter_limit:
@@ -118,21 +119,21 @@ class Dimension:
                 cases.append(case)
             else:
                 print(f"get_cases_normal: Iteration {iters + 1}")
-                print(f"Warning: (label {label}) Case sum {case_sum} out "
+                print(f"Warning: (is_true_dimension {self.is_true_dimension}) Case sum {case_sum} out "
                       f"of dimension borders {self.borders} in {case} for "
                       f"sample {sample}. Retrying...")
             iters += 1
-        print(f"Dim {label}: get_cases_normal run {iters} iterations.")
+        print(f"Dim {self.is_true_dimension}: get_cases_normal run {iters} iterations.")
 
         while len(cases) < self.n_cases:
-            print(f"Warning: Dim {label} - get_cases_normal exhausted "
+            print(f"Warning: Dim {self.is_true_dimension} - get_cases_normal exhausted "
                   f"iterations: {iters} iterations.")
             print("Adding NaN cases")
             cases.append([np.nan] * len(self.variable_borders))
 
         return cases
 
-    def get_cases_extreme(self, label, sample, generator, iter_limit=5000,
+    def get_cases_extreme(self, sample, generator, iter_limit=5000,
                           iter_limit_variables=500):
         """This case generator aims to reach more variance between cases within
         a sample. Here, we assign random values to de variable_borders in the range
@@ -162,7 +163,7 @@ class Dimension:
 
         if not (max_val >= sample >= min_val):
             raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {label}, with variable_borders borders "
+                             f"dimension {self.label}, with variable_borders borders "
                              f"{self.variable_borders}")
 
         while len(cases) < self.n_cases and iters_cases < iter_limit:
@@ -196,6 +197,6 @@ class Dimension:
         if iters_cases >= iter_limit:
             print("Warning: Iterations count exceeded. "
                   "Retrying with normal sampling")
-            return self.get_cases_normal(label, sample, generator)
+            return self.get_cases_normal(sample, generator)
 
         return cases

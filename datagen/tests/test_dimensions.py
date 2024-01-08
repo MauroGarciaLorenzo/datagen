@@ -14,36 +14,35 @@ class Test(TestCase):
         n_cases = 10
         divs = None
         lower, upper = 0, 70
-        is_true_dimension = True
+        label = "Test"
         tolerance = 0.1
         dim1 = Dimension(variables=variables, n_cases=n_cases, divs=divs,
                          borders=(lower, upper),
-                         is_true_dimension=is_true_dimension)
+                         label=label)
         dim1.tolerance = tolerance
 
         variables = np.array([(0, 0.1), (0, 0.1), (0, 0.1), (10, 25)])
         n_cases = 10
         divs = None
         lower, upper = 10, 25.3
-        is_true_dimension = False
+        label = "Test"
         tolerance = 0.1
         dim2 = Dimension(variables=variables, n_cases=n_cases, divs=divs,
                          borders=(lower, upper),
-                         is_true_dimension=is_true_dimension)
+                         label=label)
         dim2.tolerance = tolerance
         self.samples = np.random.uniform(0, 70, 300)
-        self.generator = np.random.default_rng(1)
-        self.dims = {"dim1":dim1, "dim":dim2}
+        self.dims = [dim1, dim2]
 
     def test_get_cases_extreme(self):
-        for label, dim in self.dims.items():
+        for dim in self.dims:
             for sample in self.samples:
                 variables_sum = dim.variable_borders.sum(axis=0)
                 if not variables_sum[0] <= sample <= variables_sum[1]:
                     self.assertRaises(
-                        ValueError, dim.get_cases_extreme, label, sample, self.generator)
+                        ValueError, dim.get_cases_extreme, sample)
                 else:
-                    cases = dim.get_cases_extreme(label, sample, self.generator)
+                    cases = dim.get_cases_extreme(sample, None)
                     for idx in range(len(cases)):
                         self.assertAlmostEqual(sum(cases[idx]), sample,
                                                places=2)
@@ -54,15 +53,14 @@ class Test(TestCase):
                             self.assertIsNotNone(cases[idx][var])
 
     def test_get_cases_normal(self):
-
-        for label, dim in self.dims.items():
+        for dim in self.dims:
             for sample in self.samples:
                 variables_sum = dim.variable_borders.sum(axis=0)
                 if not variables_sum[0] <= sample <= variables_sum[1]:
                     self.assertRaises(
-                        ValueError, dim.get_cases_extreme, label, sample, self.generator)
+                        ValueError, dim.get_cases_extreme, sample)
                 else:
-                    cases = dim.get_cases_extreme(label, sample, self.generator)
+                    cases = dim.get_cases_extreme(sample, None)
                     for idx in range(len(cases)):
                         for var in range(len(cases[idx])):
                             self.assertTrue(dim.variable_borders[var, 0] <=

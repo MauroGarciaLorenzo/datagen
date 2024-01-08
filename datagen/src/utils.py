@@ -35,11 +35,11 @@ def clean_dir(directory):
 def get_dimension(label, dimensions):
     if label == "g_for" or label == "g_fol":
         dim = next(
-            (d for l,d in dimensions.items()
-             if l == "p_cig"), None)
+            (d for d in dimensions
+             if d.is_true_dimension == "p_cig"), None)
     else:
-        dim = next((d for l,d in dimensions.items()
-                    if l == label), None)
+        dim = next((d for d in dimensions
+                    if d.is_true_dimension == label), None)
     return dim
 
 
@@ -50,8 +50,8 @@ def check_dims(dimensions):
     :param dimensions: Cell dimensions
     :return: True if tolerance is bigger than this difference, false otherwise
     """
-    for _,dim in dimensions.items():
-        if (dim.borders[1] - dim.borders[0]) < dim.tolerance:
+    for d in dimensions:
+        if (d.borders[1] - d.borders[0]) < d.tolerance:
             return False
     return True
 
