@@ -33,7 +33,7 @@ def main():
         -lower: lower bound of the dimension (minimum value of a sample)
         -upper: upper bound of the dimension (maximum value of a sample)
         -label: dimension identifier
-        -is_true_dimension: indicates whether the dimension is true (sampleable) or not.
+        -independent_dimension: indicates whether the dimension is true (sampleable) or not.
 
     Apart from that, it can also be specified the number of samples and
     the relative tolerance (indicates the portion of the size of the original
@@ -64,11 +64,13 @@ def main():
     max_depth = 3
     dimensions = [
             Dimension(variable_borders=p_sg, n_cases=n_cases, divs=2, borders=(0, 5),
-                      is_true_dimension=True, label="psg"),
+                      independent_dimension=True, label="p_sg"),
             Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1, borders=(0, 6),
-                      is_true_dimension=True, label="p_cig"),
+                      independent_dimension=True, label="p_cig"),
             Dimension(variable_borders=perc_g_for, n_cases=n_cases, divs=1, borders=(0, 1),
-                      is_true_dimension=True, label="perc_g_for")
+                      independent_dimension=True, label="perc_g_for"),
+            Dimension(values=[0.5, 0.1, 0.4], n_cases=n_cases, divs=1,
+                      independent_dimension=False, label="p_load")
     ]
     """
     Dimension(variable_borders=tau_f_g_for, n_cases=n_cases, divs=1,

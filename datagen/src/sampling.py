@@ -19,6 +19,8 @@ determine their stability. Parallel execution is used to evaluate the
 stability of each case.
 """
 import random
+
+import numpy
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -59,19 +61,19 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :param ax: Plottable object
     :param dimensions: Cell dimensions
     :param cases_heritage_df: Inherited cases dataframe
-    :param dims_heritage_df: Inherited dims dataframe
+    :param dims_heritage_df: Inherited independent_dims dataframe
     :param use_sensitivity: Boolean indicating whether sensitivity analysis is
     used or not
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
-    :param dims_heritage_df: Inherited dims dataframe
+    :param dims_heritage_df: Inherited independent_dims dataframe
     :param divs_per_cell: Number of resultant cells from each recursive call
     :param generator: Numpy generator for random values
     :return children_total: List of children dimensions, entropy,
     delta_entropy and depth
     :return cases_df: Concatenation of inherited cases and those produced by
     the cell
-    :return dims_df: Concatenation of inherited dims and those produced by
+    :return dims_df: Concatenation of inherited independent_dims and those produced by
     the cell
     """
     print("New cell", flush=True)
@@ -137,7 +139,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     exceeded)
     :param divs_per_cell: Number of resultant cells from each recursive call
     :param generator: Numpy generator for random values
-    :return: Children dims, cases and parameters
+    :return: Children independent_dims, cases and parameters
     """
     total_cases_df, total_dims_df, total_entropies = get_children_parameters(
         grid, dims_df, cases_df)
@@ -169,8 +171,15 @@ def generate_columns(dim):
     :param dim: Involved dimension
     :return: Names of de variable_borders
     """
-    return [f"{dim.label}_Var{v}" for v in range(len(dim.variable_borders))]
-
+    if (isinstance(dim.variable_borders, numpy.ndarray) and
+            not np.all(np.isnan(dim.variable_borders))):
+        return [f"{dim.label}_Var{v}" for v in
+                range(len(dim.variable_borders))]
+    else:
+        if dim.values:
+            return [f"{dim.label}_Var{v}" for v in range(len(dim.values))]
+        else:
+            return None
 
 def process_p_cig_dimension(samples_df, p_cig, generator):
     """ Assigns values to g_for and g_fol dimensions.
@@ -262,6 +271,23 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
     return cases_df, dims_df
 
 
+def process_p_load_dimension(samples_df, dim):
+    total_cases = []
+    total_dim = []
+    for _, sample in samples_df.iterrows():
+        new_sample = sample["p_sg"] + sample["p_cig"]
+        cases = [[new_sample * value for value in dim.values]
+                 for _ in range(dim.n_cases)]
+        for case in cases:
+            if not np.isnan(case).any():
+                total_cases.append(case)
+                total_dim.append(new_sample)
+
+    dims_df = pd.DataFrame(total_dim, columns=[dim.label])
+    cases_df = pd.DataFrame(total_cases, columns=generate_columns(dim))
+    return cases_df, dims_df
+
+
 def process_other_dimensions(samples_df, dim, generator):
     """
     This method assigns values to the variable_borders within a generic dimension.
@@ -302,6 +328,9 @@ def gen_cases(samples_df, dimensions, generator):
         if dim.label == "p_cig":
             partial_cases, partial_dims = process_p_cig_dimension(samples_df,
                                                                   dim, generator)
+        elif dim.label == "p_load":
+            partial_cases, partial_dims = process_p_load_dimension(samples_df,
+                                                                   dim)
         else:
             partial_cases, partial_dims = process_other_dimensions(samples_df,
                                                                    dim, generator)
@@ -323,16 +352,17 @@ def gen_samples(n_samples, dimensions, generator):
     :return: DataFrame containing these samples with columns named after
     dimension labels
     """
-    sampler = qmc.LatinHypercube(d=len(dimensions), seed=generator)
+    indepedent_dims = [dim for dim in dimensions if dim.independent_dimension]
+    sampler = qmc.LatinHypercube(d=len(indepedent_dims), seed=generator)
     samples = sampler.random(n=n_samples)
 
-    lower_bounds = np.array([dim.borders[0] for dim in dimensions])
-    upper_bounds = np.array([dim.borders[1] for dim in dimensions])
+    lower_bounds = np.array([dim.borders[0] for dim in indepedent_dims])
+    upper_bounds = np.array([dim.borders[1] for dim in indepedent_dims])
 
     samples_scaled = lower_bounds + samples * (upper_bounds - lower_bounds)
 
     df_samples = pd.DataFrame(samples_scaled,
-                              columns=[dim.label for dim in dimensions])
+                              columns=[dim.label for dim in indepedent_dims])
 
     return df_samples
 
@@ -351,13 +381,12 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
     :param divs_per_cell: Number of resultant cells from each recursive call
     :return: Divisions for each dimension
     """
-    labels = unique(col.rsplit('_Var')[0]
-                    for col in cases_df.columns if '_Var' in col)
+    labels = [dim.label for dim in dimensions if dim.independent_dimension]
     dims_df = pd.DataFrame()
     for label in labels:
-        matching_columns = (
-            cases_df.filter(regex=r'^' + label + r'_*', axis=1).sum(axis=1))
-        dims_df[label] = matching_columns
+            matching_columns = (
+                cases_df.filter(regex=r'^' + label + r'_*', axis=1).sum(axis=1))
+            dims_df[label] = matching_columns
     dims_df.columns = labels
     x = np.array(dims_df)
     y = np.array(cases_df["Stability"])
@@ -403,19 +432,21 @@ def eval_stability(case, f):
     return f(case)
 
 
-def gen_grid(dims):
+def gen_grid(dimensions):
     """
     Generate grid. Every cell is made out of a list of the Dimension objects
     involved in the problem, with the only difference that the lower and upper
     bounds change for each cell.
 
-    :param dims: Involved dimensions
+    :param dimensions: Involved dimensions
     :return: Grid
     """
-    n_dims = len(dims)
-    ini = tuple(dim.borders[0] for dim in dims)
-    fin = tuple(dim.borders[1] for dim in dims)
-    div = tuple(dim.divs for dim in dims)
+    independent_dims = [dim for dim in dimensions if dim.independent_dimension]
+    dependent_dims = [dim for dim in dimensions if not dim.independent_dimension]
+    n_dims = len(independent_dims)
+    ini = tuple(dim.borders[0] for dim in independent_dims)
+    fin = tuple(dim.borders[1] for dim in independent_dims)
+    div = tuple(dim.divs for dim in independent_dims)
     total_div = np.prod(div)
     grid = []
     for i in range(total_div):
@@ -427,14 +458,15 @@ def gen_grid(dims):
             ini[j] + (fin[j] - ini[j]) / div[j] * (div_indices[j] + 1)
             for j in range(n_dims)
         ]
-        dimensions = []
-        for j in range(len(dims)):
-            dimensions.append(
-                Dimension(variable_borders=dims[j].variable_borders, n_cases=dims[j].n_cases,
-                          divs=dims[j].divs, borders=(lower[j], upper[j]),
-                          label=dims[j].label, tolerance=dims[j].tolerance)
+        dims = []
+        for j in range(len(independent_dims)):
+            dims.append(
+                Dimension(variable_borders=independent_dims[j].variable_borders, n_cases=independent_dims[j].n_cases,
+                          divs=independent_dims[j].divs, borders=(lower[j], upper[j]),
+                          label=independent_dims[j].label, tolerance=independent_dims[j].tolerance)
             )
-        grid.append(Cell(dimensions))
+        dims.extend(dependent_dims)
+        grid.append(Cell(dims))
     return grid
 
 
@@ -495,13 +527,15 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
             if 'g_for' in row.index and 'g_fol' in row.index:
                 if not isinstance(row, pd.Series):
                     raise TypeError("Row is not a pd.Series object")
-                row = row.drop(labels=['g_for', 'g_fol'])
+                row = row.drop(labels=['g_for', 'g_fol', 'p_load'])
 
             # Check if every dimension in row is within cell borders
-            cell_borders = [cell.dimensions[t].borders
-                            for t in range(len(cell.dimensions))]
+            cell_independent_dims = [dim for dim in cell.dimensions
+                               if dim.independent_dimension]
+            cell_borders = [cell_independent_dims[t].borders
+                            for t in range(len(cell_independent_dims))]
             belongs = all(cell_borders[t][0] <= row.iloc[t] <= cell_borders[t][1]
-                          for t in range(len(cell.dimensions)))
+                          for t in range(len(cell_independent_dims)))
             if belongs:
                 cases.append(cases_heritage_df.iloc[[idx], :])
                 dims.append(dims_heritage_df.iloc[[idx], :])

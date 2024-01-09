@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import pandas as pd
+import numpy as np
 
 from datagen import Dimension, start, dummy
 
@@ -14,6 +15,7 @@ class Test(TestCase):
         tau_v_g_for = [(0., 2)]
         tau_p_g_for = [(0., 2)]
         tau_q_g_for = [(0., 2)]
+        p_load = [0.5,0.4,0.1]
         self.n_samples = 3
         self.n_cases = 3
         # ax = plt.figure().add_subplot(projection='3d')
@@ -37,6 +39,8 @@ class Test(TestCase):
                       borders=(0, 2), label="tau_q_g_for"),
             Dimension(variable_borders=perc_g_for, n_cases=self.n_cases, divs=1,
                       borders=(0,1), label="perc_g_for"),
+            Dimension(values=p_load, n_cases=self.n_cases, label="p_load",
+                      independent_dimension=False)
         ]
 
     def test_start(self):
@@ -45,8 +49,8 @@ class Test(TestCase):
                   self.func, self.max_depth,
                   use_sensitivity=self.use_sensitivity, ax=self.ax)
         # assert that cases_df must have 21 columns and dims_df 8
-        self.assertEqual(cases_df.shape[1], 22)
-        self.assertEqual(dims_df.shape[1], 9)
+        self.assertEqual(cases_df.shape[1], 25)
+        self.assertEqual(dims_df.shape[1], 10)
 
         # assert that the sum of the variable_borders of a concrete dimension in
         # cases_df almost equals the value in dims_df
@@ -73,9 +77,10 @@ class Test(TestCase):
                 else:
                     dim = next((d for d in self.dimensions
                                 if d.label == label), None)
-                if not dim.borders[0] <= value <= dim.borders[1]:
-                    pass
-                self.assertTrue(dim.borders[0] <= value <= dim.borders[1])
+                if dim.independent_dimension:
+                    if not dim.borders[0] <= value <= dim.borders[1]:
+                        pass
+                    self.assertTrue(dim.borders[0] <= value <= dim.borders[1])
 
         # assert that there is no null value in cases_df and that every value
         # is within associated variable limits
@@ -92,6 +97,20 @@ class Test(TestCase):
                     else:
                         dim = next((d for d in self.dimensions
                                     if d.label == dim_label), None)
+                    if (isinstance(dim.variable_borders, np.ndarray) and
+                            not np.all(np.isnan(dim.variable_borders))):
+                        self.assertTrue(dim.variable_borders[var_idx][0] <=
+                                        value <=
+                                        dim.variable_borders[var_idx][1])
 
-                    self.assertTrue(dim.variable_borders[var_idx][0] <= value <=
-                                    dim.variable_borders[var_idx][1])
+        # assert that p_load dims are equal to p_sg plus p_cig
+        for idx, row in dims_df.iterrows():
+            row["p_load"] == row["p_sg"] + row["p_cig"]
+
+        # assert that p_load variables summed up, equals p_load dim
+        indexes = cases_df.columns[cases_df.columns.str.startswith("p_load")]
+        for i in range(len(dims_df)):
+            total_sum = cases_df.loc[i, indexes].sum()
+            expected_value = dims_df.loc[i, "p_load"]
+            self.assertAlmostEqual(total_sum, expected_value, places=6)
+

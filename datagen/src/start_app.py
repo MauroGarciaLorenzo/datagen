@@ -65,7 +65,8 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
         clean_dir("results/figures")
 
     for dim in dimensions:
-        dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
+        if dim.independent_dimension:
+            dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
 
     if ax is not None and len(dimensions) == 2:
         x_lims = (dimensions[0].borders[0], dimensions[0].borders[1])

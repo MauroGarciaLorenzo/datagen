@@ -124,7 +124,7 @@ For each dimension it must be declared:
     -lower: lower bound of the dimension (minimum value of a sample)
     -upper: upper bound of the dimension (maximum value of a sample)
     -label: dimension identifier
-    -is_true_dimension: indicates whether the dimension is true (sampleable) or not.
+    -independent_dimension: indicates whether the dimension is true (sampleable) or not.
 
 Apart from that, it can also be specified the number of samples and
 the relative tolerance (indicates the portion of the size of the original
@@ -174,38 +174,38 @@ dimensions = {'p_sg':
                   Dimension(variable_borders=p_sg, n_cases=n_cases, divs=2, borders=(
                   d_op['Generators']['Pmin'].sum(),
                   d_op['Generators']['Pmax_SG'].sum()),
-                            is_true_dimension=True, cosphi=generators_power_factor),
+                            independent_dimension=True, cosphi=generators_power_factor),
               'p_cig':
                   Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1, borders=(
                   d_op['Generators']['Pmin'].sum(),
                   d_op['Generators']['Pmax_CIG'].sum()),
-                            is_true_dimension=True, cosphi=generators_power_factor),
+                            independent_dimension=True, cosphi=generators_power_factor),
               'perc_gfor':
                   Dimension(variable_borders=[], n_cases=n_cases, divs=1,
                             borders=(0, 1),
-                            is_true_dimension=True, cosphi=None),
+                            independent_dimension=True, cosphi=None),
               'p_gfor':
                   Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1,
                             borders=(0, 0),
-                            is_true_dimension=False, cosphi=generators_power_factor),
+                            independent_dimension=False, cosphi=generators_power_factor),
               'p_gfol':
                   Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1,
                             borders=(0, 0),
-                            is_true_dimension=False, cosphi=generators_power_factor),
+                            independent_dimension=False, cosphi=generators_power_factor),
               'p_load':
                   Dimension(variable_borders=p_loads, n_cases=n_cases, divs=1,
                             borders=(0, 0),
-                            is_true_dimension=False, cosphi=loads_power_factor),
+                            independent_dimension=False, cosphi=loads_power_factor),
               }
 
 #     Dimension(variable_borders=tau_f_g_for, n_cases=n_cases, divs=1,
-#               borders=(0, 2), is_true_dimension="tau_f_g_for"),
+#               borders=(0, 2), independent_dimension="tau_f_g_for"),
 #     Dimension(variable_borders=tau_v_g_for, n_cases=n_cases, divs=1,
-#               borders=(0, 2), is_true_dimension="tau_v_g_for"),
+#               borders=(0, 2), independent_dimension="tau_v_g_for"),
 #     Dimension(variable_borders=tau_p_g_for, n_cases=n_cases, divs=1,
-#               borders=(0, 2), is_true_dimension="tau_p_g_for"),
+#               borders=(0, 2), independent_dimension="tau_p_g_for"),
 #     Dimension(variable_borders=tau_q_g_for, n_cases=n_cases, divs=1,
-#               borders=(0, 2), is_true_dimension="tau_q_g_for")
+#               borders=(0, 2), independent_dimension="tau_q_g_for")
 # ]
 fig, ax = plt.subplots()
 use_sensitivity = True

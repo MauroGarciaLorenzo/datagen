@@ -51,8 +51,9 @@ def check_dims(dimensions):
     :return: True if tolerance is bigger than this difference, false otherwise
     """
     for d in dimensions:
-        if (d.borders[1] - d.borders[0]) < d.tolerance:
-            return False
+        if d.independent_dimension:
+            if (d.borders[1] - d.borders[0]) < d.tolerance:
+                return False
     return True
 
 

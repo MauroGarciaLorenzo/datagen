@@ -47,16 +47,16 @@ class Dimension:
         -borders: bounds of the dimension (maximum and minimum values of a
                 sample)
         -label: dimension identifier
-        -is_true_dimension: indicates whether the dimension is true (sampleable) or not.
+        -independent_dimension: indicates whether the dimension is true (sampleable) or not.
         -values: values linked to that dimension(e.g load participation factor)
     """
-    def __init__(self, label, n_cases, divs, borders, is_true_dimension=True,
+    def __init__(self, label, n_cases, divs=None, borders=None, independent_dimension=True,
                  tolerance=None, values=None, variable_borders=None):
         self.variable_borders = np.array(variable_borders, dtype='float')
         self.n_cases = n_cases
         self.divs = divs
         self.borders = borders
-        self.is_true_dimension = is_true_dimension
+        self.independent_dimension = independent_dimension
         self.tolerance = tolerance
         self.values = values
         self.label = label

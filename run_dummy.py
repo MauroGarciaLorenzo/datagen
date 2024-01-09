@@ -31,7 +31,7 @@ def main():
         -lower: lower bound of the dimension (minimum value of a sample)
         -upper: upper bound of the dimension (maximum value of a sample)
         -label: dimension identifier
-        -is_true_dimension: indicates whether the dimension is true (sampleable) or not.
+        -independent_dimension: indicates whether the dimension is true (sampleable) or not.
 
     Apart from that, it can also be specified the number of samples and
     the relative tolerance (indicates the portion of the size of the original
