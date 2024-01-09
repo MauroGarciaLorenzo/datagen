@@ -33,8 +33,7 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
           use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          d_raw_data=None, d_op=None, GridCal_grid=None, d_grid=None,
-          d_sg=None, d_vsc=None):
+          **kwargs):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -62,6 +61,13 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
     :param plot_boxplot: Indicates whether a boxplot representing all variable_borders
     should be plotted
     """
+    d_raw_data = kwargs.get("d_raw_data", None)
+    d_op = kwargs.get("d_op", None)
+    GridCal_grid = kwargs.get("GridCal_grid", None)
+    d_grid = kwargs.get("d_grid", None)
+    d_sg = kwargs.get("d_sg", None)
+    d_vsc = kwargs.get("d_vsc", None)
+
     clean_dir("results")
     if ax is not None and len(dimensions) == 2:
         clean_dir("results/figures")

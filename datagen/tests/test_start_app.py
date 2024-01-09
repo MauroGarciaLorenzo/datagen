@@ -110,7 +110,7 @@ class Test(TestCase):
 
         # assert that p_load dims are equal to p_sg plus p_cig
         for idx, row in dims_df.iterrows():
-            self.assertAlmostEqual(row["p_load"],row["p_sg"] + row["p_cig"])
+            self.assertAlmostEqual(row["p_load"], row["p_sg"] + row["p_cig"])
 
         # assert that, for all indices in a DataFrame named dims_df that start
         # with 'p_', there exists an index in dims_df with the same name by
