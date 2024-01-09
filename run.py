@@ -59,18 +59,19 @@ def main():
     tau_q_g_for = [(0., 2)]
     n_samples = 3
     n_cases = 3
+    cosphi = 0.5
 
     rel_tolerance = 0.01
     max_depth = 3
     dimensions = [
             Dimension(variable_borders=p_sg, n_cases=n_cases, divs=2, borders=(0, 5),
-                      independent_dimension=True, label="p_sg"),
+                      independent_dimension=True, label="p_sg", cosphi=cosphi),
             Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1, borders=(0, 6),
-                      independent_dimension=True, label="p_cig"),
+                      independent_dimension=True, label="p_cig", cosphi=cosphi),
             Dimension(variable_borders=perc_g_for, n_cases=n_cases, divs=1, borders=(0, 1),
                       independent_dimension=True, label="perc_g_for"),
             Dimension(values=[0.5, 0.1, 0.4], n_cases=n_cases, divs=1,
-                      independent_dimension=False, label="p_load")
+                      independent_dimension=False, label="p_load", cosphi=cosphi)
     ]
     """
     Dimension(variable_borders=tau_f_g_for, n_cases=n_cases, divs=1,

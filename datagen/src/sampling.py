@@ -28,7 +28,8 @@ from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import qmc
 from sklearn.preprocessing import StandardScaler
 
-from .utils import check_dims, flatten_list, get_dimension
+from .utils import check_dims, flatten_list, get_dimension, \
+    combine_columns_by_prefix
 from .dimensions import Cell, Dimension
 from .viz import plot_divs, plot_stabilities, plot_importances_and_divisions
 from ..tests.utils import unique
@@ -226,7 +227,7 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
                 for x in range(len(p_cig.variable_borders))])
             g_for = Dimension(variable_borders=g_for_variables, n_cases=1, divs=1,
                               borders=(p_cig.borders[0], sample[p_cig.label]),
-                              label="g_for", tolerance=p_cig.tolerance)
+                              label="p_g_for", tolerance=p_cig.tolerance)
             # Create g_for case
             case_g_for = (g_for.get_cases_extreme(g_for_sample, generator))[0]
             if not np.isnan(case_g_for).any():
@@ -240,18 +241,18 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
 
         cases_g_for_df = pd.DataFrame(
             cases_g_for,
-            columns=[f"g_for_Var{v}" for v in range(len(p_cig.variable_borders))])
-        dims_g_for_df = pd.DataFrame(dims_g_for, columns=["g_for"])
+            columns=[f"p_g_for_Var{v}" for v in range(len(p_cig.variable_borders))])
+        dims_g_for_df = pd.DataFrame(dims_g_for, columns=["p_g_for"])
         cases_g_fol_df = pd.DataFrame(
             cases_g_fol,
-            columns=[f"g_fol_Var{v}" for v in range(len(p_cig.variable_borders))])
-        dims_g_fol_df = pd.DataFrame(dims_g_fol, columns=["g_fol"])
+            columns=[f"p_g_fol_Var{v}" for v in range(len(p_cig.variable_borders))])
+        dims_g_fol_df = pd.DataFrame(dims_g_fol, columns=["p_g_fol"])
 
         # Error check
         check_sum = (cases_g_fol_df.sum(axis=1) + cases_g_for_df.sum(axis=1)
                      - cases_p_cig_df.sum(axis=1)).to_numpy()
         if not np.isclose(check_sum, 0).all():
-            raise ValueError("Sum of g_for and g_fol must equal p_cig")
+            raise ValueError("Sum of p_g_for and p_g_fol must equal p_cig")
 
         # Concat p_cig, g_for and g_fol into a complete case dataframe
         sample_cases_df = pd.concat(
@@ -334,6 +335,19 @@ def gen_cases(samples_df, dimensions, generator):
         else:
             partial_cases, partial_dims = process_other_dimensions(samples_df,
                                                                    dim, generator)
+
+        # Add a new column for each p_ column in partial_cases
+        for col in partial_cases.columns:
+            if col.startswith("p_"):
+                new_col_name = col.replace("p_", "q_")
+                multiplier = np.sqrt(1 - dim.cosphi ** 2) / dim.cosphi
+                partial_cases[new_col_name] = partial_cases[col] * multiplier
+
+        sum_columns_by_prefix = partial_cases.T.groupby(
+            lambda x: x.split("_Var")[0]).sum().T
+        q_columns = sum_columns_by_prefix.filter(regex=r'^q_', axis=1)
+        partial_dims = pd.concat([partial_dims, q_columns], axis=1)
+
         total_cases.append(partial_cases)
         total_dims.append(partial_dims)
 
@@ -461,9 +475,14 @@ def gen_grid(dimensions):
         dims = []
         for j in range(len(independent_dims)):
             dims.append(
-                Dimension(variable_borders=independent_dims[j].variable_borders, n_cases=independent_dims[j].n_cases,
-                          divs=independent_dims[j].divs, borders=(lower[j], upper[j]),
-                          label=independent_dims[j].label, tolerance=independent_dims[j].tolerance)
+                Dimension(
+                    variable_borders=independent_dims[j].variable_borders,
+                    n_cases=independent_dims[j].n_cases,
+                    divs=independent_dims[j].divs,
+                    borders=(lower[j], upper[j]),
+                    label=independent_dims[j].label,
+                    tolerance=independent_dims[j].tolerance,
+                    cosphi=independent_dims[j].cosphi)
             )
         dims.extend(dependent_dims)
         grid.append(Cell(dims))
@@ -524,10 +543,13 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
         cases = []
         for idx, row in dims_heritage_df.iterrows():
             # Cell dimensions don't include g_for and g_fol, but dims_df do
-            if 'g_for' in row.index and 'g_fol' in row.index:
+            if 'p_g_for' in row.index and 'p_g_fol' in row.index:
                 if not isinstance(row, pd.Series):
                     raise TypeError("Row is not a pd.Series object")
-                row = row.drop(labels=['g_for', 'g_fol', 'p_load'])
+                columns_to_drop = ['p_g_for', 'p_g_fol', 'p_load']
+                q_columns = row.filter(regex=r'^q_')
+                columns_to_drop.extend(q_columns.index)
+                row = row.drop(labels=columns_to_drop)
 
             # Check if every dimension in row is within cell borders
             cell_independent_dims = [dim for dim in cell.dimensions

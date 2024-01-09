@@ -20,6 +20,21 @@ exploration.
 """
 import os
 
+import pandas as pd
+
+
+def combine_columns_by_prefix(df, sum_columns):
+    """Combine columns in a dataframe by common prefixes."""
+    result_df = pd.DataFrame()
+
+    for col in df.columns:
+        prefix = col.split("_Var")[0]
+        if prefix not in result_df.columns:
+            result_df[prefix] = sum_columns[prefix]
+        else:
+            result_df[prefix] += sum_columns[prefix]
+
+    return result_df
 
 def clean_dir(directory):
     if os.path.exists(directory):

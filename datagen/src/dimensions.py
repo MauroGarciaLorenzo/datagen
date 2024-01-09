@@ -49,9 +49,10 @@ class Dimension:
         -label: dimension identifier
         -independent_dimension: indicates whether the dimension is true (sampleable) or not.
         -values: values linked to that dimension(e.g load participation factor)
+        -cosphi
     """
     def __init__(self, label, n_cases, divs=None, borders=None, independent_dimension=True,
-                 tolerance=None, values=None, variable_borders=None):
+                 tolerance=None, values=None, variable_borders=None, cosphi=None):
         self.variable_borders = np.array(variable_borders, dtype='float')
         self.n_cases = n_cases
         self.divs = divs
@@ -60,6 +61,7 @@ class Dimension:
         self.tolerance = tolerance
         self.values = values
         self.label = label
+        self.cosphi = cosphi
 
     def __str__(self):
         return f'Dimension("{self.label}", borders={self.borders})'
