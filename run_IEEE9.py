@@ -170,33 +170,26 @@ n_cases = 3
 rel_tolerance = 0.01
 max_depth = 3
 dimensions = dict()
-dimensions = {'p_sg':
-                  Dimension(variable_borders=p_sg, n_cases=n_cases, divs=2, borders=(
-                  d_op['Generators']['Pmin'].sum(),
-                  d_op['Generators']['Pmax_SG'].sum()),
-                            independent_dimension=True, cosphi=generators_power_factor),
-              'p_cig':
-                  Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1, borders=(
-                  d_op['Generators']['Pmin'].sum(),
-                  d_op['Generators']['Pmax_CIG'].sum()),
-                            independent_dimension=True, cosphi=generators_power_factor),
-              'perc_gfor':
-                  Dimension(variable_borders=[], n_cases=n_cases, divs=1,
-                            borders=(0, 1),
-                            independent_dimension=True, cosphi=None),
-              'p_gfor':
-                  Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1,
-                            borders=(0, 0),
-                            independent_dimension=False, cosphi=generators_power_factor),
-              'p_gfol':
-                  Dimension(variable_borders=p_cig, n_cases=n_cases, divs=1,
-                            borders=(0, 0),
-                            independent_dimension=False, cosphi=generators_power_factor),
-              'p_load':
-                  Dimension(variable_borders=p_loads, n_cases=n_cases, divs=1,
-                            borders=(0, 0),
-                            independent_dimension=False, cosphi=loads_power_factor),
-              }
+dimensions = [
+      Dimension(label="p_sg", variable_borders=p_sg,
+                n_cases=n_cases, divs=2,
+                borders=(d_op['Generators']['Pmin'].sum(),
+                d_op['Generators']['Pmax_SG'].sum()),
+                independent_dimension=True, cosphi=generators_power_factor),
+      Dimension(label="p_cig", variable_borders=p_cig,
+                n_cases=n_cases, divs=1,
+                borders=(d_op['Generators']['Pmin'].sum(),
+                d_op['Generators']['Pmax_CIG'].sum()),
+                independent_dimension=True,
+                cosphi=generators_power_factor),
+      Dimension(label="perc_g_for", variable_borders=[(0,1)],
+                n_cases=n_cases, divs=1, borders=(0, 1),
+                independent_dimension=True, cosphi=None),
+      Dimension(label="p_load", values=p_loads,
+                n_cases=n_cases, divs=1,
+                independent_dimension=False,
+                cosphi=loads_power_factor)
+              ]
 
 #     Dimension(variable_borders=tau_f_g_for, n_cases=n_cases, divs=1,
 #               borders=(0, 2), independent_dimension="tau_f_g_for"),
@@ -212,8 +205,12 @@ use_sensitivity = True
 # %%
 
 cases_df, dims_df, execution_logs = \
-    start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
-          use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=1)
+    start(dimensions=dimensions, n_samples=n_samples,
+          rel_tolerance=rel_tolerance, func=dummy, max_depth=max_depth,
+          use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=1,
+          d_raw_data=d_raw_data, d_op=d_op, GridCal_grid=GridCal_grid,
+          d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc
+          )
 
 # if __name__ == "__main__":
 #     main()

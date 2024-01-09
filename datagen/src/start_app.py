@@ -32,7 +32,9 @@ except ImportError:
 
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
-          use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False):
+          use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
+          d_raw_data=None, d_op=None, GridCal_grid=None, d_grid=None,
+          d_sg=None, d_vsc=None):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -80,7 +82,10 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
                      ax=ax, dimensions=dimensions, cases_heritage_df=None,
                      dims_heritage_df=pd.DataFrame(),
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
-                     divs_per_cell=divs_per_cell, generator=generator))
+                     divs_per_cell=divs_per_cell, generator=generator,
+                     d_raw_data=d_raw_data, d_op=d_op,
+                     GridCal_grid=GridCal_grid, d_grid=d_grid, d_sg=d_sg,
+                     d_vsc=d_vsc))
     execution_logs = compss_wait_on(execution_logs)
     cases_df = compss_wait_on(cases_df)
     dims_df = compss_wait_on(dims_df)

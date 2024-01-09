@@ -45,7 +45,8 @@ except ImportError:
 @task(returns=3)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
-                 max_depth, divs_per_cell, generator):
+                 max_depth, divs_per_cell, generator, d_raw_data, d_op,
+                 GridCal_grid, d_grid, d_sg, d_vsc):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -84,7 +85,10 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
     # Eval each case
-    stabilities = [eval_stability(case, func) for case in cases_df.values]
+    stabilities = [eval_stability(case=case, f=func, d_raw_data=d_raw_data,
+                                  d_op=d_op, GridCal_grid=GridCal_grid,
+                                  d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc)
+                   for case in cases_df.values]
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
 
@@ -113,14 +117,19 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
             plot_divs(ax, children_grid)
 
         cases_df, dims_df, children_total = (
-            explore_grid(ax, cases_df, children_grid, depth, dims_df, func,
-                         n_samples, use_sensitivity, max_depth, divs_per_cell,
-                         generator))
+            explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
+                         depth=depth, dims_df=dims_df, func=func,
+                         n_samples=n_samples, use_sensitivity=use_sensitivity,
+                         max_depth=max_depth, divs_per_cell=divs_per_cell,
+                         generator=generator, d_raw_data=d_raw_data,
+                         d_op=d_op, GridCal_grid=GridCal_grid,
+                         d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc))
         return children_total, cases_df, dims_df
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
-                 use_sensitivity, max_depth, divs_per_cell, generator):
+                 use_sensitivity, max_depth, divs_per_cell, generator,
+                 d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -150,10 +159,17 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     for children_cell, cases_heritage_df, dims_heritage_df, entropy_children \
             in zip(grid, total_cases_df, total_dims_df, total_entropies):
         dim = children_cell.dimensions
-        child_total_params, cases_children_df, dims_children_df = (
-            explore_cell(func, n_samples, entropy_children, depth + 1, ax, dim,
-                         cases_heritage_df, dims_heritage_df, use_sensitivity,
-                         max_depth, divs_per_cell, generator))
+        child_total_params, cases_children_df, dims_children_df =(
+            explore_cell(func=func, n_samples=n_samples,
+                         entropy=entropy_children, depth=depth + 1,ax=ax,
+                         dimensions=dim, cases_heritage_df=cases_heritage_df,
+                         dims_heritage_df=dims_heritage_df,
+                         use_sensitivity=use_sensitivity,
+                         max_depth=max_depth, divs_per_cell=divs_per_cell,
+                         generator=generator, d_raw_data=d_raw_data,
+                         d_op=d_op, GridCal_grid=GridCal_grid,
+                         d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc))
+
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
         list_dims_children_df.append(dims_children_df)
@@ -436,14 +452,15 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
 
 
 @task(returns=1)
-def eval_stability(case, f):
+def eval_stability(case, f, d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc):
     """Call objective function and return its result.
 
     :param case: Involved cases
     :param f: Objective function
     :return: Result of the evaluation
     """
-    return f(case)
+    #print(d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc)
+    return f(case=case)
 
 
 def gen_grid(dimensions):

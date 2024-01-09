@@ -60,6 +60,12 @@ def main():
     n_samples = 3
     n_cases = 3
     cosphi = 0.5
+    d_raw_data = "d_raw_data"
+    d_op = "d_op"
+    GridCal_grid = "GridCal_grid"
+    d_grid = "d_grid"
+    d_sg= "d_sg"
+    d_vsc = "d_vsc"
 
     rel_tolerance = 0.01
     max_depth = 3
@@ -88,7 +94,10 @@ def main():
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
         start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
-              use_sensitivity=use_sensitivity, ax=None, divs_per_cell=2, seed=10)
+              use_sensitivity=use_sensitivity, ax=None, divs_per_cell=2, seed=10,
+              d_raw_data=d_raw_data,d_op=d_op, GridCal_grid=GridCal_grid,
+              d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc
+              )
 
 if __name__ == "__main__":
     main()
