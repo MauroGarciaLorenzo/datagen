@@ -105,7 +105,7 @@ class Test(TestCase):
 
         # assert that p_load dims are equal to p_sg plus p_cig
         for idx, row in dims_df.iterrows():
-            row["p_load"] == row["p_sg"] + row["p_cig"]
+            self.assertAlmostEqual(row["p_load"],row["p_sg"] + row["p_cig"])
 
         # assert that p_load variables summed up, equals p_load dim
         indexes = cases_df.columns[cases_df.columns.str.startswith("p_load")]
