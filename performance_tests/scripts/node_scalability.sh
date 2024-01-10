@@ -9,6 +9,7 @@ echo "$current_directory"
 export PYTHONPATH="${current_directory}/..":"${current_directory}":"${current_directory}/../.."
 
 num_nodes=1
+job_name=$(date "+%d%H%M")
 
 while [ ${num_nodes} -le 8 ]
 do
@@ -23,6 +24,7 @@ do
   --agents \
   --tracing \
   --debug \
-  node_scalability_test.py "${current_directory}/../results/node_scalability${num_nodes}"
+  --job_name=${job_name} \
+  node_scalability_test.py "${current_directory}/../results/${job_name}node_scalability${num_nodes}"
   num_nodes=$((num_nodes * 2))
 done
