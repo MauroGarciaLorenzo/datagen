@@ -19,9 +19,10 @@ do
   --worker_working_dir=local_disk \
   --master_working_dir=local_disk \
   --lang=python \
-  --exec_time=400 \
+  --exec_time=200 \
   --agents \
   --tracing \
+  --debug \
   node_scalability_test.py "${current_directory}/../results/node_scalability${num_nodes}"
   num_nodes=$((num_nodes * 2))
 done

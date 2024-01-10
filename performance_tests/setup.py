@@ -1,5 +1,5 @@
 from datagen.src.dimensions import Dimension
-from datagen.src.objective_function import matmul
+from datagen.src.objective_function import dummy
 
 
 def setUp_basic():
@@ -55,5 +55,5 @@ def setUp_complex():
                   borders=(0, 2), label="tau_q_g_for")
     ]
 
-    return (dimensions, n_samples, rel_tolerance, matmul, max_depth,
+    return (dimensions, n_samples, rel_tolerance, dummy, max_depth,
             use_sensitivity, ax, divs_per_cell, plot_boxplot)
