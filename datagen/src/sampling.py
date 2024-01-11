@@ -88,7 +88,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     stabilities = [eval_stability(case=case, f=func, d_raw_data=d_raw_data,
                                   d_op=d_op, GridCal_grid=GridCal_grid,
                                   d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc)
-                   for case in cases_df.values]
+                   for _, case in cases_df.iterrows()]
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
 
@@ -460,7 +460,7 @@ def eval_stability(case, f, d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc)
     :return: Result of the evaluation
     """
     #print(d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc)
-    return f(case=case, d_raw_data=d_raw_data,d_op=d_op,
+    return f(case=case, d_raw_data=d_raw_data, d_op=d_op,
              GridCal_grid=GridCal_grid, d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc)
 
 
