@@ -26,7 +26,7 @@ from stability_analysis.opal import process_opal
 from stability_analysis.analysis import small_signal
 from stability_analysis.preprocess.utils import *
 from stability_analysis.random_operating_point import random_OP
-from stability_analysis.modify_GridCal_grid import assign_StaticGen_to_grid, \
+from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
     assign_PQ_Loads_to_grid
 from GridCalEngine.Core.DataStructures import numerical_circuit
 
@@ -200,6 +200,7 @@ dimensions = [
 #     Dimension(variable_borders=tau_q_g_for, n_cases=n_cases, divs=1,
 #               borders=(0, 2), independent_dimension="tau_q_g_for")
 # ]
+
 fig, ax = plt.subplots()
 use_sensitivity = True
 # %%
