@@ -2,6 +2,7 @@ import math
 import time
 import numpy as np
 
+from .utils import get_case_results
 from stability_analysis.operating_point_from_datagenerator import datagen_OP
 from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid,assign_PQ_Loads_to_grid
 from stability_analysis.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
@@ -13,7 +14,7 @@ from stability_analysis.analysis import small_signal
 # file where objective function is declared (dummy test)
 def dummy(case, **kwargs):
     time.sleep(0.0001)
-    return round(math.sin(sum(case)) * 0.5 + 0.5)
+    return round(math.sin(sum(case)) * 0.5 + 0.5), {}
 
 def matmul(case, **kwargs):
     t0 = time.time()
@@ -21,11 +22,11 @@ def matmul(case, **kwargs):
         m0 = np.random.randint(0, 101, size=(1000, 1000))
         m1 = np.random.randint(0, 101, size=(1000, 1000))
         x = np.dot(m0, m1)
-    return round(math.sin(sum(case)) * 0.5 + 0.5)
+    return round(math.sin(sum(case)) * 0.5 + 0.5), {}
 
 def dummy_linear(case, **kwargs):
     total_sum = sum(case)
-    return total_sum/19 > 0.5  # 19 => maximum value among all upper borders
+    return total_sum/19 > 0.5, {}  # 19 => maximum value among all upper borders
 
 
 def small_signal_stability(case, **kwargs):
@@ -107,4 +108,10 @@ def small_signal_stability(case, **kwargs):
     else:
         stability = 1
 
-    return stability, T_EIG, d_grid
+    df_op, df_real, df_imag, df_freq, df_damp = (
+        get_case_results(T_EIG=T_EIG, d_grid=d_grid))
+    output_dataframes = {
+        "df_op":df_op, "df_real":df_real, "df_imag":df_imag,
+        "df_freq":df_freq, "df_damp":df_damp
+    }
+    return stability, output_dataframes

@@ -28,8 +28,7 @@ from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import qmc
 from sklearn.preprocessing import StandardScaler
 
-from .utils import check_dims, flatten_list, get_dimension, \
-    combine_columns_by_prefix
+from .utils import check_dims, flatten_list, get_dimension, concat_dataframes
 from .dimensions import Cell, Dimension
 from .viz import plot_divs, plot_stabilities, plot_importances_and_divisions
 from ..tests.utils import unique
@@ -46,7 +45,7 @@ except ImportError:
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator, d_raw_data, d_op,
-                 GridCal_grid, d_grid, d_sg, d_vsc):
+                 GridCal_grid, d_grid, d_sg, d_vsc, total_dataframes=None):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -84,11 +83,24 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
-    # Eval each case
-    stabilities = [eval_stability(case=case, f=func, d_raw_data=d_raw_data,
-                                  d_op=d_op, GridCal_grid=GridCal_grid,
-                                  d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc)
-                   for _, case in cases_df.iterrows()]
+    stabilities = []
+    for _, case in cases_df.iterrows():
+        case, output_dataframes = eval_stability(case=case, f=func,
+                                                 d_raw_data=d_raw_data,
+                                                 d_op=d_op,
+                                                 GridCal_grid=GridCal_grid,
+                                                 d_grid=d_grid, d_sg=d_sg,
+                                                 d_vsc=d_vsc)
+        output_dataframes = compss_wait_on(output_dataframes)
+        if total_dataframes:
+            for label, df in output_dataframes.items:
+                total_dataframes[label] = (
+                    pd.concat(
+                        [total_dataframes[label], output_dataframes[label]],
+                        axis=0))
+        else:
+            total_dataframes = output_dataframes
+
     stabilities = compss_wait_on(stabilities)
     cases_df["Stability"] = stabilities
 
@@ -107,7 +119,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         print("    Entropy: ", entropy)
         print("    Delta entropy: ", delta_entropy)
         print("    Depth: ", depth)
-        return (dimensions, entropy, delta_entropy, depth), cases_df, dims_df
+        return ((dimensions, entropy, delta_entropy, depth), cases_df, dims_df,
+                total_dataframes)
     else:
         if use_sensitivity:
             dimensions = sensitivity(cases_df, dimensions, divs_per_cell, generator)
@@ -116,20 +129,22 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         if ax is not None and len(dimensions) == 2:
             plot_divs(ax, children_grid)
 
-        cases_df, dims_df, children_total = (
+        cases_df, dims_df, children_total, total_dataframes = (
             explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
                          depth=depth, dims_df=dims_df, func=func,
                          n_samples=n_samples, use_sensitivity=use_sensitivity,
                          max_depth=max_depth, divs_per_cell=divs_per_cell,
                          generator=generator, d_raw_data=d_raw_data,
                          d_op=d_op, GridCal_grid=GridCal_grid,
-                         d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc))
+                         d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc,
+                         dataframes=total_dataframes))
         return children_total, cases_df, dims_df
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
-                 d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc):
+                 d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc,
+                 dataframes):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -151,35 +166,46 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     :param generator: Numpy generator for random values
     :return: Children independent_dims, cases and parameters
     """
-    total_cases_df, total_dims_df, total_entropies = get_children_parameters(
-        grid, dims_df, cases_df)
+    total_cases_df, total_dims_df, total_dataframes, total_entropies = (
+        get_children_parameters(grid, dims_df, cases_df, dataframes))
     children_total_params = []
     list_cases_children_df = []
     list_dims_children_df = []
-    for children_cell, cases_heritage_df, dims_heritage_df, entropy_children \
-            in zip(grid, total_cases_df, total_dims_df, total_entropies):
+    list_dataframes_children = []
+    for (children_cell, cases_heritage_df, dims_heritage_df,
+         heritage_dataframes, entropy_children) \
+            in zip(grid, total_cases_df, total_dims_df, total_dataframes,
+                   total_entropies):
         dim = children_cell.dimensions
-        child_total_params, cases_children_df, dims_children_df =(
+        (child_total_params, cases_children_df, dims_children_df,
+         children_dataframes) =(
             explore_cell(func=func, n_samples=n_samples,
-                         entropy=entropy_children, depth=depth + 1,ax=ax,
+                         entropy=entropy_children, depth=depth + 1, ax=ax,
                          dimensions=dim, cases_heritage_df=cases_heritage_df,
                          dims_heritage_df=dims_heritage_df,
                          use_sensitivity=use_sensitivity,
                          max_depth=max_depth, divs_per_cell=divs_per_cell,
                          generator=generator, d_raw_data=d_raw_data,
                          d_op=d_op, GridCal_grid=GridCal_grid,
-                         d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc))
+                         d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc,
+                         total_dataframes=heritage_dataframes))
 
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
         list_dims_children_df.append(dims_children_df)
+        list_dataframes_children.append(children_dataframes)
+
     children_total_params = compss_wait_on(children_total_params)
     list_cases_children_df = compss_wait_on(list_cases_children_df)
     list_dims_children_df = compss_wait_on(list_dims_children_df)
+    list_dataframes_children = compss_wait_on(list_dataframes_children)
+
     cases_df = pd.concat(list_cases_children_df, ignore_index=True)
     dims_df = pd.concat(list_dims_children_df, ignore_index=True)
     children_total_params = flatten_list(children_total_params)
-    return cases_df, dims_df, children_total_params
+    dataframes = concat_dataframes(list_dataframes_children)
+
+    return cases_df, dims_df, children_total_params, total_dataframes
 
 
 def generate_columns(dim):
@@ -545,7 +571,8 @@ def eval_entropy(stabilities, entropy_parent):
     return entropy, delta_entropy
 
 
-def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
+def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
+                            heritage_dataframes):
     """Obtains dimensions, cases_df, entropy and delta_entropy of each child
 
     :param children_grid: Grid to obtain parameters
@@ -556,9 +583,11 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
     total_cases = []
     total_dims = []
     total_entropies = []
+    total_dataframes = []
     for cell in children_grid:
         dims = []
         cases = []
+        dataframes = {}
         for idx, row in dims_heritage_df.iterrows():
             # Cell dimensions don't include g_for and g_fol, but dims_df do
             if 'p_g_for' in row.index and 'p_g_fol' in row.index:
@@ -579,6 +608,17 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
             if belongs:
                 cases.append(cases_heritage_df.iloc[[idx], :])
                 dims.append(dims_heritage_df.iloc[[idx], :])
+                if heritage_dataframes:
+                    if len(dataframes) != 0:
+                        for label in heritage_dataframes.keys():
+                            dataframes[label] = (
+                                pd.concat([dataframes[label],
+                                           heritage_dataframes[label].iloc[[idx], :]],
+                                          axis=0))
+                    else:
+                        for label in heritage_dataframes.keys():
+                            dataframes[label] = heritage_dataframes[label].iloc[
+                                                [idx], :]
 
         if cases and dims:
             stabilities = [int(case["Stability"].iloc[0]) for case in cases]
@@ -592,9 +632,10 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df):
         total_cases.append(cases_df)
         total_dims.append(dims_df)
         total_entropies.append(entropy)
+        total_dataframes.append(dataframes)
 
     if cases_heritage_df is None:
         cases_heritage_df = pd.DataFrame()
     if sum([len(cases) for cases in total_cases]) != len(cases_heritage_df):
         raise Exception("Not every case was assigned to a child")
-    return total_cases, total_dims, total_entropies
+    return total_cases, total_dims, total_dataframes, total_entropies

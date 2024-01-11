@@ -103,3 +103,48 @@ def save_results(cases_df, dims_df, execution_logs):
             log_file.write(f"Delta Entropy: {log_entry[2]}\n")
             log_file.write(f"Depth: {log_entry[3]}\n")
             log_file.write("\n")
+
+
+def get_case_results(T_EIG, d_grid):
+    df_op = pd.DataFrame()
+
+    T_buses = d_grid['T_buses']
+    for i in T_buses.index:
+        bus = T_buses.loc[i, 'bus']
+        df_op.loc[0, 'V' + str(bus)] = T_buses.loc[i, 'Vm']
+        df_op.loc[0, 'theta' + str(bus)] = T_buses.loc[i, 'theta']
+
+    T_gens = d_grid['T_gen']
+    for i in T_gens.index:
+        col_name = T_gens.loc[i, 'element'] + str(T_gens.loc[i, 'bus'])
+        for var in ['P', 'Q', 'Sn']:
+            df_op.loc[0, var + '_' + col_name] = T_gens.loc[i, var]
+
+    T_load = d_grid['T_load']
+    for i in T_load.index:
+        bus = T_load.loc[i, 'bus']
+        df_op.loc[0, 'PL' + str(bus)] = T_load.loc[i, 'P']
+        df_op.loc[0, 'QL' + str(bus)] = T_load.loc[i, 'Q']
+
+    # add control parameters
+
+    T_EIG = T_EIG.set_index('mode')
+    T_EIG = T_EIG.T
+    df_real = T_EIG.loc[['real']].reset_index(drop=True)
+    df_imag = T_EIG.loc[['imag']].reset_index(drop=True)
+    df_freq = T_EIG.loc[['freq']].reset_index(drop=True)
+    df_damp = T_EIG.loc[['damp']].reset_index(drop=True)
+
+    return df_op, df_real, df_imag, df_freq, df_damp
+
+def concat_dataframes(dict_list):
+    result_dict = {}
+
+    for d in dict_list:
+        for key, value in d.items():
+            if key not in result_dict:
+                result_dict[key] = value
+            else:
+                result_dict[key] = pd.concat([result_dict[key], value])
+
+    return result_dict
