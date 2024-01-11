@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
-from datagen.src.objective_function import dummy
+from datagen.src.objective_function import *
 
 # from datagen.src.objective_function import small_signal_stability
 
@@ -206,7 +206,7 @@ use_sensitivity = True
 
 cases_df, dims_df, execution_logs = \
     start(dimensions=dimensions, n_samples=n_samples,
-          rel_tolerance=rel_tolerance, func=dummy, max_depth=max_depth,
+          rel_tolerance=rel_tolerance, func=small_signal_stability, max_depth=max_depth,
           use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=1,
           d_raw_data=d_raw_data, d_op=d_op, GridCal_grid=GridCal_grid,
           d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc

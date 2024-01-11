@@ -460,7 +460,8 @@ def eval_stability(case, f, d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc)
     :return: Result of the evaluation
     """
     #print(d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc)
-    return f(case=case)
+    return f(case=case, d_raw_data=d_raw_data,d_op=d_op,
+             GridCal_grid=GridCal_grid, d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc)
 
 
 def gen_grid(dimensions):
