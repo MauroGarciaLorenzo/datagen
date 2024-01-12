@@ -4,7 +4,7 @@ import numpy as np
 
 from .utils import get_case_results
 from stability_analysis.operating_point_from_datagenerator import datagen_OP
-from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid,assign_PQ_Loads_to_grid
+from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid,assign_PQ_Loads_to_grid, assign_SlackBus_to_grid
 from stability_analysis.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
 from stability_analysis.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
 from stability_analysis.state_space import generate_NET, build_ss, generate_elements
@@ -39,7 +39,10 @@ def small_signal_stability(case, **kwargs):
 
     d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
                                                             d_op)
-
+    
+    d_raw_data, slack_bus_num = choose_slack_bus(d_raw_data)
+    
+    assign_SlackBus_to_grid.assign_slack_bus(GridCal_grid, slack_bus_num)
     assign_Generators_to_grid.assign_StaticGen(GridCal_grid, d_raw_data, d_op)
     assign_PQ_Loads_to_grid.assign_PQ_load(GridCal_grid, d_raw_data)
 
@@ -66,6 +69,8 @@ def small_signal_stability(case, **kwargs):
 
     # Get parameters of generator units from excel files & compute pu base
     d_grid = parameters.get_params(d_grid, d_sg, d_vsc)
+    
+    # d_grid = update_control(case, d_grid)
 
     # Assign slack bus and slack element
     d_grid = slack_bus.assign_slack(d_grid)
@@ -115,3 +120,37 @@ def small_signal_stability(case, **kwargs):
         "df_freq":df_freq, "df_damp":df_damp
     }
     return stability, output_dataframes
+
+def update_control(case, d_grid):
+    case_index=case.index
+
+    for i in range(0,len(d_grid['T_VSC'])):
+        mode=d_grid['T_VSC'].loc[i,'mode']
+        bus=d_grid['T_VSC'].loc[i,'bus']
+        
+        control_p_mode=[cc for cc in case.index if 'tau' and mode.lower() in cc]
+        control_p_mode_bus=[cc for cc in control_p_mode if str(bus) in cc]
+        
+        control_p_labels=[''.join(filter(lambda x: not x.isdigit(), cc))[:-1].replace(mode.lower(),'')[:-1] for cc in control_p_mode_bus ]
+        
+        for control_p,control_p_bus in zip(control_p_labels,control_p_mode_bus):
+            d_grid['T_VSC'].loc[i,control_p]=case[control_p_bus]
+    
+    return d_grid
+        
+def choose_slack_bus(d_raw_data):
+    T_generators=d_raw_data['generator'].query('P_SG !=0 or P_GFOR!=0')
+    T_generators['deltaP']=T_generators['MBASE']-T_generators['PG']
+    T_generators=T_generators.sort_values(by='deltaP', ascending=False).reset_index(drop=True)
+    slack_bus=T_generators.loc[0,'I']
+    d_raw_data['data_global'].loc[0,'ref_bus']=slack_bus
+
+    if T_generators.loc[0,'P_SG']!=0:
+        d_raw_data['data_global'].loc[0,'ref_element']='SG'
+    elif T_generators.loc[0,'P_GFOR']!=0:
+        d_raw_data['data_global'].loc[0,'ref_element']='GFOR'
+    else:
+        raise RuntimeError('Error: missing generator at slack bus')
+    return d_raw_data, slack_bus
+
+    
