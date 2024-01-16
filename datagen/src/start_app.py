@@ -83,7 +83,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
         ax.set_ylim(bottom=y_lims[0], top=y_lims[1])
 
     generator = np.random.default_rng(seed)
-    execution_logs, cases_df, dims_df = (
+    execution_logs, cases_df, dims_df, output_dataframes = (
         explore_cell(func=func, n_samples=n_samples, entropy=None, depth=0,
                      ax=ax, dimensions=dimensions, cases_heritage_df=None,
                      dims_heritage_df=pd.DataFrame(),
@@ -104,5 +104,5 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
         print("Warning. Negative numbers in dataframe.")
     print("")
 
-    return cases_df, dims_df, execution_logs
+    return cases_df, dims_df, execution_logs, output_dataframes
 

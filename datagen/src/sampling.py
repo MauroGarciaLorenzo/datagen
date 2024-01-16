@@ -39,7 +39,7 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-@task(returns=3)
+@task(returns=4)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator, d_raw_data, d_op,
@@ -137,7 +137,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                          d_op=d_op, GridCal_grid=GridCal_grid,
                          d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc,
                          dataframes=total_dataframes))
-        return children_total, cases_df, dims_df
+        return children_total, cases_df, dims_df, total_dataframes
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
@@ -177,7 +177,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                    total_entropies):
         dim = children_cell.dimensions
         (child_total_params, cases_children_df, dims_children_df,
-         children_dataframes) =(
+         children_dataframes) = (
             explore_cell(func=func, n_samples=n_samples,
                          entropy=entropy_children, depth=depth + 1, ax=ax,
                          dimensions=dim, cases_heritage_df=cases_heritage_df,
@@ -204,7 +204,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     children_total_params = flatten_list(children_total_params)
     dataframes = concat_dataframes(list_dataframes_children)
 
-    return cases_df, dims_df, children_total_params, total_dataframes
+    return cases_df, dims_df, children_total_params, dataframes
 
 
 def generate_columns(dim):
