@@ -330,6 +330,21 @@ def process_p_load_dimension(samples_df, dim):
     cases_df = pd.DataFrame(total_cases, columns=generate_columns(dim))
     return cases_df, dims_df
 
+def process_control_dimension(samples_df, dim):
+    total_cases = []
+    total_dim = []
+    for _, sample in samples_df.iterrows():
+        cases = [[sample[dim.label]]
+                 for _ in range(dim.n_cases)]
+        for case in cases:
+            if not np.isnan(case).any():
+                total_cases.append(case)
+                total_dim.append(case)
+
+    dims_df = pd.DataFrame(total_dim, columns=[dim.label])
+    cases_df = pd.DataFrame(total_cases, columns=[dim.label])
+    return cases_df, dims_df
+
 
 def process_other_dimensions(samples_df, dim, generator):
     """
@@ -373,6 +388,9 @@ def gen_cases(samples_df, dimensions, generator):
                                                                   dim, generator)
         elif dim.label == "p_load":
             partial_cases, partial_dims = process_p_load_dimension(samples_df,
+                                                                   dim)
+        elif dim.label.startswith("tau"):
+            partial_cases, partial_dims = process_control_dimension(samples_df,
                                                                    dim)
         else:
             partial_cases, partial_dims = process_other_dimensions(samples_df,

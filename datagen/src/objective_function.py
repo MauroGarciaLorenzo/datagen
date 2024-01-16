@@ -70,7 +70,7 @@ def small_signal_stability(case, **kwargs):
     # Get parameters of generator units from excel files & compute pu base
     d_grid = parameters.get_params(d_grid, d_sg, d_vsc)
     
-    # d_grid = update_control(case, d_grid)
+    d_grid = update_control(case, d_grid)
 
     # Assign slack bus and slack element
     d_grid = slack_bus.assign_slack(d_grid)

@@ -191,6 +191,28 @@ dimensions = [
                 cosphi=loads_power_factor)
               ]
 
+for d in list(d_op['Generators']['BusNum']):
+    dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.1,0.5),
+                                independent_dimension=True,
+                                cosphi=None))
+    
+    dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.1,0.5),
+                                independent_dimension=True,
+                                cosphi=None))
+    
+    dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.1,0.5),
+                                independent_dimension=True,
+                                cosphi=None))
+    
+    dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.1,0.5),
+                                independent_dimension=True,
+                                cosphi=None))
+    
+
 #     Dimension(variable_borders=tau_f_g_for, n_cases=n_cases, divs=1,
 #               borders=(0, 2), independent_dimension="tau_f_g_for"),
 #     Dimension(variable_borders=tau_v_g_for, n_cases=n_cases, divs=1,
