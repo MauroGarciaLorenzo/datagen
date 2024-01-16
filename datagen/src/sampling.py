@@ -18,8 +18,6 @@ and cases from a given set of dimensions and then evaluate these cases to
 determine their stability. Parallel execution is used to evaluate the
 stability of each case.
 """
-import random
-
 import numpy
 import numpy as np
 import pandas as pd
@@ -85,15 +83,16 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     stabilities = []
     for _, case in cases_df.iterrows():
-        case, output_dataframes = eval_stability(case=case, f=func,
+        stability, output_dataframes = eval_stability(case=case, f=func,
                                                  d_raw_data=d_raw_data,
                                                  d_op=d_op,
                                                  GridCal_grid=GridCal_grid,
                                                  d_grid=d_grid, d_sg=d_sg,
                                                  d_vsc=d_vsc)
+        stabilities.append(stability)
         output_dataframes = compss_wait_on(output_dataframes)
         if total_dataframes:
-            for label, df in output_dataframes.items:
+            for label, df in output_dataframes.items():
                 total_dataframes[label] = (
                     pd.concat(
                         [total_dataframes[label], output_dataframes[label]],
