@@ -57,7 +57,7 @@ def small_signal_stability(case, **kwargs):
     print('Converged:', pf_results.convergence_reports[0].converged_[0])
 
     # Update PF results and operation point of generator elements
-    d_pf = process_powerflow.update_OP(GridCal_grid, pf_results)
+    d_pf = process_powerflow.update_OP(GridCal_grid, pf_results, d_raw_data)
 
     # %% FILL d_grid
 
