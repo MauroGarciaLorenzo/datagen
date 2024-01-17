@@ -96,7 +96,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                 total_dataframes[label] = (
                     pd.concat(
                         [total_dataframes[label], output_dataframes[label]],
-                        axis=0))
+                        axis=0, ignore_index=True))
         else:
             total_dataframes = output_dataframes
 

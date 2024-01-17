@@ -227,10 +227,10 @@ fig, ax = plt.subplots()
 use_sensitivity = True
 # %%
 
-cases_df, dims_df, execution_logs = \
+cases_df, dims_df, execution_logs, output_dataframes = \
     start(dimensions=dimensions, n_samples=n_samples,
           rel_tolerance=rel_tolerance, func=small_signal_stability, max_depth=max_depth,
-          use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=1,
+          use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=5,
           d_raw_data=d_raw_data, d_op=d_op, GridCal_grid=GridCal_grid,
           d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc
           )
