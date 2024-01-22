@@ -149,9 +149,9 @@ the user can define:
 # tau_q_g_for = [(0., 2)]
 
 p_sg = [
-    (d_op['Generators']['Pmin'].iloc[i], d_op['Generators']['Pmax_SG'].iloc[i])
+    (d_op['Generators']['Pmin_SG'].iloc[i], d_op['Generators']['Pmax_SG'].iloc[i])
     for i in range(len(d_op['Generators']))]
-p_cig = [(d_op['Generators']['Pmin'].iloc[i],
+p_cig = [(d_op['Generators']['Pmin_CIG'].iloc[i],
           d_op['Generators']['Pmax_CIG'].iloc[i]) for i in
          range(len(d_op['Generators']))]
 p_loads = list(d_op['Loads']['Load_Participation_Factor'])
@@ -173,12 +173,12 @@ dimensions = dict()
 dimensions = [
       Dimension(label="p_sg", variable_borders=p_sg,
                 n_cases=n_cases, divs=2,
-                borders=(d_op['Generators']['Pmin'].sum(),
+                borders=(d_op['Generators']['Pmin_SG'].sum(),
                 d_op['Generators']['Pmax_SG'].sum()),
                 independent_dimension=True, cosphi=generators_power_factor),
       Dimension(label="p_cig", variable_borders=p_cig,
                 n_cases=n_cases, divs=1,
-                borders=(d_op['Generators']['Pmin'].sum(),
+                borders=(d_op['Generators']['Pmin_CIG'].sum(),
                 d_op['Generators']['Pmax_CIG'].sum()),
                 independent_dimension=True,
                 cosphi=generators_power_factor),

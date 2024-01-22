@@ -263,8 +263,12 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
             # Compose g_for dimension
             # Pick bounds of each variable. The min value is p_cig dimension's
             # min bound, and max is the value sampled for ith p_cig's variable
+            
+            # g_for_variables = np.array([
+            #     (p_cig.variable_borders[x, 0], cases_p_cig_df.iloc[i, x])
+            #     for x in range(len(p_cig.variable_borders))])
             g_for_variables = np.array([
-                (p_cig.variable_borders[x, 0], cases_p_cig_df.iloc[i, x])
+                (0, cases_p_cig_df.iloc[i, x])
                 for x in range(len(p_cig.variable_borders))])
             g_for = Dimension(variable_borders=g_for_variables, n_cases=1, divs=1,
                               borders=(p_cig.borders[0], sample[p_cig.label]),
