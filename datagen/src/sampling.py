@@ -18,7 +18,6 @@ and cases from a given set of dimensions and then evaluate these cases to
 determine their stability. Parallel execution is used to evaluate the
 stability of each case.
 """
-import random
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
