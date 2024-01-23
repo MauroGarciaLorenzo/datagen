@@ -14,7 +14,7 @@ def main(result_dir=None, *args):
     cases_df, dims_df, execution_logs = start(dimensions, n_samples,
                                               rel_tolerance, func, max_depth,
                                               use_sensitivity=use_sensitivity,
-                                              ax=ax, divs_per_cell=2, seed=4)
+                                              ax=ax, divs_per_cell=2, seed=1)
     if result_dir != None:
         os.makedirs(result_dir, exist_ok=True)
 

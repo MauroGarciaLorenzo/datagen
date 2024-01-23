@@ -34,12 +34,15 @@ from ..tests.utils import unique
 try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
+    from pycompss.api.constraint import constraint
 except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
+    from pycompss.api.constraint import constraint
 
 
 @task(returns=3)
+@constraint(isLocal=true)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator):

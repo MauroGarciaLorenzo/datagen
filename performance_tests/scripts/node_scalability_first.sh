@@ -21,12 +21,10 @@ do
   --master_working_dir=local_disk \
   --lang=python \
   --exec_time=120 \
-  --agents=plain \
   --tracing \
   --debug \
   --qos=debug \
   --job_name="${job_name}_${num_nodes}" \
-  --scheduler="es.bsc.compss.scheduler.orderstrict.fifo.FifoTS" \
   node_scalability_test.py "${current_directory}/../results/${job_name}node_scalability${num_nodes}"
   num_nodes=$((num_nodes * 2))
 done

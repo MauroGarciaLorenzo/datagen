@@ -5,7 +5,7 @@ import numpy as np
 
 # file where objective function is declared (dummy test)
 def dummy(case):
-    time.sleep(0.0001)
+    time.sleep(10)
     return round(math.sin(sum(case)) * 0.5 + 0.5)
 
 def matmul(case):

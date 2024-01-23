@@ -33,8 +33,8 @@ def setUp_complex():
     tau_q_g_for = [(0., 2)]
     n_samples = 10
     n_cases = 5
-    rel_tolerance = 0.05
-    max_depth = 10
+    rel_tolerance = 0.005
+    max_depth = 14
     use_sensitivity = True
     ax = None
     divs_per_cell = 4
