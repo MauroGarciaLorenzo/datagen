@@ -18,6 +18,13 @@ from pycompss.api.task import task
 
 @task()
 def main(result_dir=None, *args):
+    print(result_dir)
+    last_int = get_last_int(result_dir)
+    print(last_int)
+    if last_int != None:
+        print(last_int)
+        for i in range(last_int * 48):
+            make_imports()
     (dimensions, n_samples, rel_tolerance, func, max_depth, use_sensitivity,
      ax, divs_per_cell, plot_boxplot) = setUp_complex()
     cases_df, dims_df, execution_logs = start(dimensions, n_samples,
@@ -26,10 +33,6 @@ def main(result_dir=None, *args):
                                               ax=ax, divs_per_cell=2, seed=1)
     if result_dir != None:
         os.makedirs(result_dir, exist_ok=True)
-        last_int = get_last_int(result_dir)
-        if last_int != None:
-            for i in range(last_int * 48):
-                make_imports(last_int)
         for file in os.listdir(result_dir):
             file_path = os.path.join(result_dir, file)
             try:
@@ -55,10 +58,12 @@ def main(result_dir=None, *args):
 
 
 def get_last_int(string):
+    if string is None or not isinstance(string, str):
+        return None
     match = re.search(r'\d+$', string)
     if match:
-        numero_al_final = int(match.group())
-        return numero_al_final
+        last_num = int(match.group())
+        return last_num
     else:
         return None
 
