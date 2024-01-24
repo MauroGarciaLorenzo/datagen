@@ -25,7 +25,7 @@ from stability_analysis.state_space import generate_NET, build_ss, \
 from stability_analysis.opal import process_opal
 from stability_analysis.analysis import small_signal
 from stability_analysis.preprocess.utils import *
-from stability_analysis.random_operating_point import random_OP
+# from stability_analysis.random_operating_point import random_OP
 from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
     assign_PQ_Loads_to_grid
 from GridCalEngine.Core.DataStructures import numerical_circuit
@@ -33,25 +33,30 @@ from GridCalEngine.Core.DataStructures import numerical_circuit
 # %% SET FILE NAMES AND PATHS
 
 # Paths to data
+
 path_data = get_data_path()
 path_raw = path.join(path_data, "raw")
 path_results = path.join(path_data, "results")
 
 # File names
 
-# IEEE 9
-raw = "ieee9_6"
-excel = "IEEE_9_headers"
-excel_data = "IEEE_9"
-excel_op = "OperationData_IEEE_9"
+gridname='IEEE118'#'IEEE9'#
 
-# IEEE 118
-# raw = "IEEE118busREE_Winter Solved_mod_PQ"
-# # excel = "IEEE_118bus_TH" # THÉVENIN
-# # excel = "IEEE_118_01" # SG
-# excel = "IEEE_118_FULL"
-# excel_data = "IEEE_118_FULL"
-# excel_op = "OperationData_IEEE_118"
+if gridname == 'IEEE9':
+# # # IEEE 9
+    raw = "ieee9_6"
+    excel = "IEEE_9_headers" 
+    excel_data = "IEEE_9" 
+    excel_op = "OperationData_IEEE_9" 
+
+elif gridname=='IEEE118':
+    # IEEE 118 
+    raw = "IEEE118busREE_Winter Solved_mod_PQ_91Loads"
+    # excel = "IEEE_118bus_TH" # THÉVENIN
+    # excel = "IEEE_118_01" # SG
+    excel = "IEEE_118_FULL_headers" 
+    excel_data = "IEEE_118_FULL" 
+    excel_op = "OperationData_IEEE_118" 
 
 # TEXAS 2000 bus
 # raw = "ACTIVSg2000_solved_noShunts"
@@ -60,19 +65,35 @@ excel_op = "OperationData_IEEE_9"
 
 raw_file = path.join(path_raw, raw + ".raw")
 # excel_raw = path.join(path_raw, raw + ".xlsx")
-excel_sys = path.join(path_data, "cases/" + excel + ".xlsx")  # empty
-excel_sg = path.join(path_data, "cases/" + excel_data + "_data_sg.xlsx")
-excel_vsc = path.join(path_data, "cases/" + excel_data + "_data_vsc.xlsx")
-excel_op = path.join(path_data, "cases/" + excel_op + ".xlsx")
+excel_sys = path.join(path_data, "cases/" + excel + ".xlsx") #empty 
+excel_sg = path.join(path_data, "cases/" + excel_data + "_data_sg.xlsx") 
+excel_vsc = path.join(path_data, "cases/" + excel_data + "_data_vsc.xlsx") 
+excel_op = path.join(path_data, "cases/" + excel_op + ".xlsx") 
+
+# %% READ OPERATION EXCEL FILE
+
+d_op = read_data.read_data(excel_op)
+
 # %% READ RAW FILE
 
 # Read raw file
 d_raw_data = process_raw.read_raw(raw_file)
 
-d_raw_data['generator']['Region'] = 1
-d_raw_data['load']['Region'] = 1
-d_raw_data['branch']['Region'] = 1
-d_raw_data['results_bus']['Region'] = 1
+if gridname == 'IEEE9':
+    # For the IEEE 9-bus system
+    d_raw_data['generator']['Region']=1
+    d_raw_data['load']['Region']=1
+    d_raw_data['branch']['Region']=1
+    d_raw_data['results_bus']['Region']=1
+
+elif gridname == 'IEEE118':
+    # FOR the 118-bus system
+    d_raw_data['generator']['Region']=d_op['Generators']['Region']
+    d_raw_data['load']['Region']=d_op['Loads']['Region']
+    # d_raw_data['branch']['Region']=1
+    d_raw_data['results_bus']['Region']=d_op['Buses']['Region']
+    d_raw_data['generator']['MBASE']=d_op['Generators']['Snom']
+
 
 # Preprocess input raw data to match excel file format
 preprocess_data.preprocess_raw(d_raw_data)
@@ -80,13 +101,9 @@ preprocess_data.preprocess_raw(d_raw_data)
 # Write to excel file
 # preprocess_data.raw2excel(d_raw_data,excel_raw)
 
-# Create GridCal Model
+#%% Create GridCal Model
 GridCal_grid = GridCal_powerflow.create_model(path_raw, raw_file)
-
-# %% READ OPERATION EXCEL FILE
-
-d_op = read_data.read_data(excel_op)
-
+   
 # %% READ EXCEL FILE
 
 # Read data of grid elements from Excel file
@@ -156,16 +173,16 @@ p_cig = [(d_op['Generators']['Pmin_CIG'].iloc[i],
          range(len(d_op['Generators']))]
 p_loads = list(d_op['Loads']['Load_Participation_Factor'])
 
-loads_power_factor = 0.95
-generators_power_factor = 0.95
+loads_power_factor = 0.98
+generators_power_factor = 0.98
 
 tau_f_g_for = [(0., 2)]
 tau_v_g_for = [(0., 2)]
 tau_p_g_for = [(0., 2)]
 tau_q_g_for = [(0., 2)]
 
-n_samples = 3
-n_cases = 3
+n_samples = 1
+n_cases = 1
 
 rel_tolerance = 0.01
 max_depth = 3
@@ -213,27 +230,24 @@ for d in list(d_op['Generators']['BusNum']):
                                 cosphi=None))
     
 
-#     Dimension(variable_borders=tau_f_g_for, n_cases=n_cases, divs=1,
-#               borders=(0, 2), independent_dimension="tau_f_g_for"),
-#     Dimension(variable_borders=tau_v_g_for, n_cases=n_cases, divs=1,
-#               borders=(0, 2), independent_dimension="tau_v_g_for"),
-#     Dimension(variable_borders=tau_p_g_for, n_cases=n_cases, divs=1,
-#               borders=(0, 2), independent_dimension="tau_p_g_for"),
-#     Dimension(variable_borders=tau_q_g_for, n_cases=n_cases, divs=1,
-#               borders=(0, 2), independent_dimension="tau_q_g_for")
-# ]
+#%%
 
-fig, ax = plt.subplots()
-use_sensitivity = True
-# %%
+from datagen.src.sampling import gen_samples
+from datagen.src.sampling import gen_cases
+from datagen.src.objective_function import *
 
-cases_df, dims_df, execution_logs, output_dataframes = \
-    start(dimensions=dimensions, n_samples=n_samples,
-          rel_tolerance=rel_tolerance, func=small_signal_stability, max_depth=max_depth,
-          use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2, seed=5,
-          d_raw_data=d_raw_data, d_op=d_op, GridCal_grid=GridCal_grid,
-          d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc
-          )
+seed=2
+generator = np.random.default_rng(seed)
 
-# if __name__ == "__main__":
-#     main()
+samples_df = gen_samples(n_samples, dimensions, generator)
+# Generate cases (n_cases (attribute of the class Dimension) for each dim)
+cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
+
+for _, case in cases_df.iterrows():
+    
+    d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
+                                             d_raw_data=d_raw_data,
+                                             d_op=d_op,
+                                             GridCal_grid=GridCal_grid,
+                                             d_grid=d_grid, d_sg=d_sg,
+                                             d_vsc=d_vsc)

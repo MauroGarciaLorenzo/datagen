@@ -96,8 +96,8 @@ def feasible_power_flow(case, **kwargs):
         
             print('Converged:',pf_results.convergence_reports[0].converged_[0])
             
-            if pf_results.convergence_reports[0].converged_[0] == False:
-                return None, None, None
+            # if pf_results.convergence_reports[0].converged_[0] == False:
+            #     return None, None, None
             
             if pf_results.convergence_reports[0].converged_[0] == False:
             
