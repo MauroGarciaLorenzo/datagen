@@ -40,8 +40,8 @@ except ImportError:
     from pycompss.api.constraint import constraint
 
 
+@constraint(is_local=True)
 @task(returns=3)
-@constraint(isLocal=True)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator):
