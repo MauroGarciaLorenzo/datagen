@@ -676,10 +676,10 @@ def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid):
     # d_raw_data['generator'].loc[d_raw_data['generator'].query('I == @slack_bus').index[0],'V']=V
 
     # Initialize voltage matrix
-    adj_matrix=GridCal_grid.get_adjacent_matrix()
-    # main_circuit=compile_numerical_circuit_at(GridCal_grid)
-    # C=main_circuit.Cf+main_circuit.Ct
-    # adj_matrix=C.T.dot(C)
+    # adj_matrix=GridCal_grid.get_adjacent_matrix()
+    main_circuit=compile_numerical_circuit_at(GridCal_grid)
+    C=main_circuit.Cf+main_circuit.Ct
+    adj_matrix=C.T.dot(C)
 
 
     # Find buses adjacents to slack_bus
