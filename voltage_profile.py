@@ -31,6 +31,7 @@ from stability_analysis.preprocess.utils import *
 from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
     assign_PQ_Loads_to_grid
 from GridCalEngine.Core.DataStructures import numerical_circuit
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 # %% SET FILE NAMES AND PATHS
 
@@ -132,7 +133,10 @@ V=random.uniform(vmin, vmax)
 # d_raw_data['generator'].loc[d_raw_data['generator'].query('I == @slack_bus').index[0],'V']=V
 
 # Initialize voltage matrix
-adj_matrix=GridCal_grid.get_adjacent_matrix()
+# adj_matrix=GridCal_grid.get_adjacent_matrix()
+main_circuit=compile_numerical_circuit_at(GridCal_grid)
+C=main_circuit.Cf+main_circuit.Ct
+adj_matrix=C.T.dot(C)
 
 # Find buses adjacents to slack_bus
 idx_adj_buses=list(GridCal_grid.get_adjacent_buses(adj_matrix, int(i_slack_bus)))
@@ -169,7 +173,7 @@ def calculate_voltage(adjacent_node, current_node):
     num_modifications = distances[adjacent_node][1]
     # Miro si el node contigu es generador
     if adjacent_node in generators_index_list:
-        V=random.uniform(-0.05,0.05)+voltages[current_node]
+        V=random.uniform(-0.02,0.02)+voltages[current_node]
         if num_modifications == 1:
             V_adjacent_node = V
         elif num_modifications > 1:
@@ -203,7 +207,10 @@ while len(pending)>0:
                 to_calculate.append(adjacent_node)            
     for adjacent_node in to_calculate:
         calculate_voltage(adjacent_node, current_node)
-    print(f"El node {current_node} donara a {to_calculate}")
+#    print(f"El node {current_node} donara a {to_calculate}")
+    current_bus=d_raw_data['results_bus'].loc[current_node,'I']
+    to_calculate_bus=list(d_raw_data['results_bus'].loc[to_calculate,'I'])
+    print(f"El bus {current_bus} donara a {to_calculate_bus}")
     pending.pop(0)
     # print(voltages)
 # print(distances)
