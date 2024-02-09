@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
-from datagen.src.objective_function import *
+from datagen.src.objective_function_7_02 import *
 
 # from datagen.src.objective_function import small_signal_stability
 
@@ -28,7 +28,7 @@ from stability_analysis.preprocess.utils import *
 # from stability_analysis.random_operating_point import random_OP
 from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
     assign_PQ_Loads_to_grid
-from GridCalEngine.Core.DataStructures import numerical_circuit
+# from GridCalEngine.Core.DataStructures import numerical_circuit
 
 # %% SET FILE NAMES AND PATHS
 
@@ -51,7 +51,7 @@ if gridname == 'IEEE9':
 
 elif gridname=='IEEE118':
     # IEEE 118 
-    raw = "IEEE118busREE_Winter Solved_mod_PQ_91Loads"
+    raw = "IEEE118busREE_Winter_Solved_mod_PQ_91Loads"
     # excel = "IEEE_118bus_TH" # THÉVENIN
     # excel = "IEEE_118_01" # SG
     excel = "IEEE_118_FULL_headers" 
@@ -234,15 +234,20 @@ for d in list(d_op['Generators']['BusNum']):
 
 from datagen.src.sampling import gen_samples
 from datagen.src.sampling import gen_cases
-from datagen.src.objective_function import *
+# from datagen.src.objective_function import *
 
-seed=2
+seed=4
+
 generator = np.random.default_rng(seed)
 
 samples_df = gen_samples(n_samples, dimensions, generator)
 # Generate cases (n_cases (attribute of the class Dimension) for each dim)
 cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
+voltage_profile=True
+v_min_v_max_delta_v=[0.95,1.05,0.02]
+
+# V_set=0.95
 for _, case in cases_df.iterrows():
     
     d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
@@ -250,4 +255,8 @@ for _, case in cases_df.iterrows():
                                              d_op=d_op,
                                              GridCal_grid=GridCal_grid,
                                              d_grid=d_grid, d_sg=d_sg,
-                                             d_vsc=d_vsc)
+                                             d_vsc=d_vsc,
+                                              voltage_profile=voltage_profile,
+                                              v_min_v_max_delta_v=v_min_v_max_delta_v
+                                             # V_set=V_set
+                                             )
