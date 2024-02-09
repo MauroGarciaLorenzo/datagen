@@ -236,7 +236,7 @@ from datagen.src.sampling import gen_samples
 from datagen.src.sampling import gen_cases
 # from datagen.src.objective_function import *
 
-seed=4
+seed=10
 
 generator = np.random.default_rng(seed)
 
@@ -244,10 +244,10 @@ samples_df = gen_samples(n_samples, dimensions, generator)
 # Generate cases (n_cases (attribute of the class Dimension) for each dim)
 cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
-voltage_profile=True
-v_min_v_max_delta_v=[0.95,1.05,0.02]
+# voltage_profile=True
+# v_min_v_max_delta_v=[0.95,1.05,0.02]
 
-# V_set=0.95
+V_set=1
 for _, case in cases_df.iterrows():
     
     d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
@@ -256,7 +256,7 @@ for _, case in cases_df.iterrows():
                                              GridCal_grid=GridCal_grid,
                                              d_grid=d_grid, d_sg=d_sg,
                                              d_vsc=d_vsc,
-                                              voltage_profile=voltage_profile,
-                                              v_min_v_max_delta_v=v_min_v_max_delta_v
-                                             # V_set=V_set
+                                              # voltage_profile=voltage_profile,
+                                              # v_min_v_max_delta_v=v_min_v_max_delta_v
+                                             V_set=V_set
                                              )
