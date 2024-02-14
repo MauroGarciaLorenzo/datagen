@@ -41,7 +41,7 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+# from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 @task(returns=4)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,

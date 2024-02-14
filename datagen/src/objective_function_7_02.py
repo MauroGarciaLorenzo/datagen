@@ -110,7 +110,7 @@ def feasible_power_flow(case, **kwargs):
  
 #%% IF UNFEASIBLE
 
-    sum_diff_0= sum_cosphi_underdev(Gen_pf_violation)
+    sum_diff_0= sum_cosphi_underdev(Gen_pf_violation) # funcion objectivo 
 
     num_gen_viol=len(Gen_pf_violation)
     d_raw_data_gen_prev_iter=d_raw_data['generator'].copy(deep=True)
@@ -308,10 +308,10 @@ def feasible_power_flow(case, **kwargs):
                         # Gen_high_cosphi=d_pf['pf_gen'].query('cosphi >= @max_cosphi and bus!=@exclude_gen').reset_index(drop=True)
                         
                         Gen_high_cosphi=d_pf['pf_gen'].query('cosphi >= @max_cosphi and bus!=@exclude_gen').sort_values(by='cosphi',ascending=False).reset_index(drop=True)
-                        # try:
-                        #     Gen_high_cosphi=Gen_high_cosphi.iloc[0:5]
-                        # except:
-                        #     Gen_high_cosphi=Gen_high_cosphi
+                       
+                        if len(Gen_high_cosphi)==0:
+                            print('No solution beacuse booth increasing and decreasing P has not a positive effect')
+                            return None, None, None 
                                                 
                         d_raw_data= proportional_decrease_P(d_pf,d_raw_data,d_op,Gen_high_cosphi,alpha_decr)
                                                 
@@ -378,9 +378,13 @@ def feasible_power_flow(case, **kwargs):
                 else:
                     Slack_at_1_pu=d_pf['pf_gen'].loc[d_pf['pf_gen'].query('bus == @slack_bus_num').index[0],'P']*100/d_op['Generators'].loc[d_op['Generators'].query('BusNum == @slack_bus_num').index[0],'Pmax']==1
 
-#%% P slack >0 and more_than_one_gen_violating=True and generators violating are all at 1 p.u., included the slack                    
+#%% P slack >0 and more_than_one_gen_violating=True and generators violating are all at 1 p.u., but not the slack                 
                     if Slack_at_1_pu==False:
                         print('Decrease P of close generators with J_f_neg >0')
+                        return d_pf_original, d_pf, d_raw_data 
+#%% P slack >0 and more_than_one_gen_violating=True and generators violating are all at 1 p.u., including the slack                 
+                    else:
+                        print('Decrease P of close generators with J_f_neg >0 and increas P')
                         return d_pf_original, d_pf, d_raw_data 
                     
 #%%  P slack >0 and only one generator is violating                

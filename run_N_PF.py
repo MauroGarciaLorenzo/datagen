@@ -256,7 +256,7 @@ for _, case in cases_df.iterrows():
                                              GridCal_grid=GridCal_grid,
                                              d_grid=d_grid, d_sg=d_sg,
                                              d_vsc=d_vsc,
-                                              # voltage_profile=voltage_profile,
-                                              # v_min_v_max_delta_v=v_min_v_max_delta_v
+                                             # voltage_profile=voltage_profile,
+                                             # v_min_v_max_delta_v=v_min_v_max_delta_v
                                              V_set=V_set
                                              )
