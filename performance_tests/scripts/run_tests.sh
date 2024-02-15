@@ -1,7 +1,5 @@
-#!/bin/bash
-
 usage() {
-    echo "Usage: $0 [--min_nodes MIN_NODES] [--max_nodes MAX_NODES] [--test_name TEST_NAME]" 1>&2
+    echo "Usage: $0 [--min_nodes=MIN_NODES] [--max_nodes=MAX_NODES] [--test_name=TEST_NAME]" 1>&2
     exit 1
 }
 
@@ -12,22 +10,20 @@ max_nodes=8
 # Parse arguments in command line
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --min_nodes)
-            min_nodes=$2
-            shift 2
+        --min_nodes=*)
+            min_nodes=${1#*=}
             ;;
-        --max_nodes)
-            max_nodes=$2
-            shift 2
+        --max_nodes=*)
+            max_nodes=${1#*=}
             ;;
-        --test_name)
-            test_name=$2
-            shift 2
+        --test_name=*)
+            test_name=${1#*=}
             ;;
         *)
             usage
             ;;
     esac
+    shift
 done
 
 # Load modules
@@ -61,3 +57,4 @@ while [ "$min_nodes" -le "$max_nodes" ]; do
     "${test_name}_test.py" "${current_directory}/../results/${job_name}/${test_name}/${min_nodes}"
     min_nodes=$((min_nodes * 2))
 done
+
