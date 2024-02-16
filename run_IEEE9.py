@@ -28,7 +28,6 @@ from stability_analysis.preprocess.utils import *
 from stability_analysis.random_operating_point import random_OP
 from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
     assign_PQ_Loads_to_grid
-from GridCalEngine.Core.DataStructures import numerical_circuit
 
 # %% SET FILE NAMES AND PATHS
 
