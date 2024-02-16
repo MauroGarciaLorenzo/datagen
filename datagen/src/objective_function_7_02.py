@@ -15,7 +15,9 @@ from stability_analysis.analysis import small_signal
 
 from stability_analysis.powerflow import check_feasibility
 
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCal.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.OPF.NumericalMethods import ac_opf
+
 
 from .utils_obj_fun import *
 
@@ -80,6 +82,14 @@ def feasible_power_flow(case, **kwargs):
         assign_Generators_to_grid.assign_PVGen(GridCal_grid=GridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=V_set)
         
     assign_PQ_Loads_to_grid.assign_PQ_load(GridCal_grid, d_raw_data)
+    
+# #%% solve optimal power flow
+    import GridCalEngine.api as gce
+
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR)
+    
+    from GridCal.src.GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf_autodif import ac_optimal_power_flow
+    ac_optimal_power_flow(nc=nc, pf_options=pf_options)    
 
     # %% Run 1st POWER-FLOW
 
