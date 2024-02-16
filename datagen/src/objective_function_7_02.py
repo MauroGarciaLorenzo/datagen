@@ -15,8 +15,6 @@ from stability_analysis.analysis import small_signal
 
 from stability_analysis.powerflow import check_feasibility
 
-import sys
-sys.path.append('../../../GridCal/src/')
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.OPF.NumericalMethods import ac_opf
 
