@@ -67,16 +67,46 @@ def feasible_power_flow_ACOPF(case, **kwargs):
         assign_Generators_to_grid.assign_PVGen(GridCal_grid=GridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=V_set)
 
     assign_PQ_Loads_to_grid.assign_PQ_load(GridCal_grid, d_raw_data)
+    
+    # %% Run 1st POWER-FLOW
+
+    # Receive system status from OPAL
+    # d_grid, GridCal_grid, data_old = process_opal.update_OP_from_RT(d_grid, GridCal_grid, data_old)
+
+    # Get Power-Flow results with GridCal
+    pf_results = GridCal_powerflow.run_powerflow(GridCal_grid)
+
+    print('Converged:', pf_results.convergence_reports[0].converged_[0])
+    
+
+    # Update PF results and operation point of generator elements
+    d_pf_original = process_powerflow.update_OP(GridCal_grid, pf_results, d_raw_data)
 
     nc = compile_numerical_circuit_at(GridCal_grid)
     nc.generator_data.cost_0[:] = 0
     nc.generator_data.cost_1[:] = 0
     nc.generator_data.cost_2[:] = 0
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8)
-    ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
-
+    d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
+    
+    def return_d_opf():
+        df_opf_bus = pd.DataFrame({'bus':d_raw_data['results_bus']['I'],'Vm':d_opf_results.Vm, 'theta':d_opf_results.Va})
+        df_opf_gen_pre = pd.DataFrame({'bus':d_raw_data['generator']['I'],'P':d_opf_results.Pg, 'Q':d_opf_results.Qg})
+        df_opf_gen = pd.merge(df_opf_gen_pre, df_opf_bus[['bus', 'Vm', 'theta']], on='bus', how='left')
+        d_opf = {'df_opf_bus': df_opf_bus, 'df_opf_gen': df_opf_gen}
+        return d_opf
+    
+    d_opf = return_d_opf()
+    
+    # bus_gen = [int(gen.bus.code) for gen in GridCal_grid.get_generators() + GridCal_grid.get_static_generators()]
+    # df_bus = pd.DataFrame({'bus':bus_gen,'Vm': d_opf_results.Vm, 'theta': d_opf_results.Va})
+    
     GridCal_grid.get_bus_branch_connectivity_matrix()
     nc = compile_numerical_circuit_at(GridCal_grid)
     print('')
 
-    # return d_pf_original, d_pf, d_raw_data
+#    return_d_opf()
+    
+
+
+    
