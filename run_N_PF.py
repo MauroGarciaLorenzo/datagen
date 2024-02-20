@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
-from datagen.src.objective_function_7_02 import *
+from datagen.src.objective_function_ACOPF import *
 
 # from datagen.src.objective_function import small_signal_stability
 
@@ -29,6 +29,9 @@ from stability_analysis.preprocess.utils import *
 from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
     assign_PQ_Loads_to_grid
 # from GridCalEngine.Core.DataStructures import numerical_circuit
+
+from datagen.src.SS_stab import small_signal_stability
+
 
 # %% SET FILE NAMES AND PATHS
 
@@ -208,26 +211,26 @@ dimensions = [
                 cosphi=loads_power_factor)
               ]
 
-for d in list(d_op['Generators']['BusNum']):
-    dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.1,0.5),
-                                independent_dimension=True,
-                                cosphi=None))
+# for d in list(d_op['Generators']['BusNum']):
+#     dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(0.1,0.5),
+#                                 independent_dimension=True,
+#                                 cosphi=None))
     
-    dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.1,0.5),
-                                independent_dimension=True,
-                                cosphi=None))
+#     dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(0.1,0.5),
+#                                 independent_dimension=True,
+#                                 cosphi=None))
     
-    dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.1,0.5),
-                                independent_dimension=True,
-                                cosphi=None))
+#     dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(0.1,0.5),
+#                                 independent_dimension=True,
+#                                 cosphi=None))
     
-    dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.1,0.5),
-                                independent_dimension=True,
-                                cosphi=None))
+#     dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(0.1,0.5),
+#                                 independent_dimension=True,
+#                                 cosphi=None))
     
 
 #%%
@@ -247,16 +250,35 @@ cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 # voltage_profile=True
 # v_min_v_max_delta_v=[0.95,1.05,0.02]
 
-V_set=1
+V_set=0.95
 for _, case in cases_df.iterrows():
-    
-    d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
-                                             d_raw_data=d_raw_data,
-                                             d_op=d_op,
-                                             GridCal_grid=GridCal_grid,
-                                             d_grid=d_grid, d_sg=d_sg,
-                                             d_vsc=d_vsc,
-                                             # voltage_profile=voltage_profile,
-                                             # v_min_v_max_delta_v=v_min_v_max_delta_v
-                                             V_set=V_set
-                                             )
+    feasible_power_flow_ACOPF(case=case,
+                              d_raw_data=d_raw_data,
+                              d_op=d_op,
+                              GridCal_grid=GridCal_grid,
+                              d_grid=d_grid, d_sg=d_sg,
+                              d_vsc=d_vsc,
+                              # voltage_profile=voltage_profile,
+                              # v_min_v_max_delta_v=v_min_v_max_delta_v
+                              V_set=V_set
+                              )
+
+    # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
+    #                                          d_raw_data=d_raw_data,
+    #                                          d_op=d_op,
+    #                                          GridCal_grid=GridCal_grid,
+    #                                          d_grid=d_grid, d_sg=d_sg,
+    #                                          d_vsc=d_vsc,
+    #                                          # voltage_profile=voltage_profile,
+    #                                          # v_min_v_max_delta_v=v_min_v_max_delta_v
+    #                                          V_set=V_set
+    #                                          )
+
+# stability, output_dataframes= small_signal_stability(case=case, d_raw_data = d_raw_data,
+#                                                      d_op = d_op,
+#                                                      GridCal_grid = GridCal_grid,
+#                                                      d_grid = d_grid,
+#                                                      d_sg = d_sg,
+#                                                      d_vsc = d_vsc,
+#                                                      d_pf = d_pf,
+#                                                      )
