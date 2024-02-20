@@ -98,6 +98,9 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     
     d_opf = return_d_opf()
     
+    for df_name, df in d_opf.items():
+        df.to_excel(f"{df_name}.xlsx", index=False)
+    
     # bus_gen = [int(gen.bus.code) for gen in GridCal_grid.get_generators() + GridCal_grid.get_static_generators()]
     # df_bus = pd.DataFrame({'bus':bus_gen,'Vm': d_opf_results.Vm, 'theta': d_opf_results.Va})
     
