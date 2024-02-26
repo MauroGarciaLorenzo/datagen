@@ -41,7 +41,7 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
-# from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 @task(returns=4)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
@@ -325,7 +325,7 @@ def process_p_load_dimension(samples_df, dim):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
-        new_sample = sample["p_sg"] + sample["p_cig"]
+        new_sample = (sample["p_sg"] + sample["p_cig"])*0.95
         cases = [[new_sample * value for value in dim.values]
                  for _ in range(dim.n_cases)]
         for case in cases:

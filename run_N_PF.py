@@ -50,7 +50,7 @@ if gridname == 'IEEE9':
     raw = "ieee9_6"
     excel = "IEEE_9_headers" 
     excel_data = "IEEE_9" 
-    excel_op = "OperationData_IEEE_9" 
+    excel_op = "OperationData_IEEE_9"
 
 elif gridname=='IEEE118':
     # IEEE 118 
@@ -59,7 +59,8 @@ elif gridname=='IEEE118':
     # excel = "IEEE_118_01" # SG
     excel = "IEEE_118_FULL_headers" 
     excel_data = "IEEE_118_FULL" 
-    excel_op = "OperationData_IEEE_118" 
+    excel_op = "OperationData_IEEE_118"
+    excel_lines_ratings = "IEEE_118_Lines"
 
 # TEXAS 2000 bus
 # raw = "ACTIVSg2000_solved_noShunts"
@@ -72,6 +73,9 @@ excel_sys = path.join(path_data, "cases/" + excel + ".xlsx") #empty
 excel_sg = path.join(path_data, "cases/" + excel_data + "_data_sg.xlsx") 
 excel_vsc = path.join(path_data, "cases/" + excel_data + "_data_vsc.xlsx") 
 excel_op = path.join(path_data, "cases/" + excel_op + ".xlsx") 
+
+if gridname == 'IEEE118':
+    excel_lines_ratings = path.join(path_data, "cases/" + excel_lines_ratings + ".csv")
 
 # %% READ OPERATION EXCEL FILE
 
@@ -97,6 +101,8 @@ elif gridname == 'IEEE118':
     d_raw_data['results_bus']['Region']=d_op['Buses']['Region']
     d_raw_data['generator']['MBASE']=d_op['Generators']['Snom']
 
+    lines_ratings=pd.read_csv(excel_lines_ratings)
+
 
 # Preprocess input raw data to match excel file format
 preprocess_data.preprocess_raw(d_raw_data)
@@ -106,7 +112,21 @@ preprocess_data.preprocess_raw(d_raw_data)
 
 #%% Create GridCal Model
 GridCal_grid = GridCal_powerflow.create_model(path_raw, raw_file)
-   
+
+for line in GridCal_grid.lines:
+    bf = int(line.bus_from.code)
+    bt = int(line.bus_to.code)
+
+    line.rate=lines_ratings.loc[lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[0],'Max Flow (MW)']
+    print(line.rate)
+
+for trafo in GridCal_grid.transformers2w:
+    bf = int(trafo.bus_from.code)
+    bt = int(trafo.bus_to.code)
+
+    trafo.rate=lines_ratings.loc[lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[0],'Max Flow (MW)']
+    print(trafo.rate)
+
 # %% READ EXCEL FILE
 
 # Read data of grid elements from Excel file
@@ -239,7 +259,7 @@ from datagen.src.sampling import gen_samples
 from datagen.src.sampling import gen_cases
 # from datagen.src.objective_function import *
 
-seed=10
+seed=1
 
 generator = np.random.default_rng(seed)
 
@@ -247,21 +267,24 @@ samples_df = gen_samples(n_samples, dimensions, generator)
 # Generate cases (n_cases (attribute of the class Dimension) for each dim)
 cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
-# voltage_profile=True
-# v_min_v_max_delta_v=[0.95,1.05,0.02]
+voltage_profile=True
+v_min_v_max_delta_v=[0.95,1.05,0.02]
 
-V_set=0.95
+# V_set=0.95
+N_pf=1
 for _, case in cases_df.iterrows():
     feasible_power_flow_ACOPF(case=case,
+                              N_pf=N_pf,
                               d_raw_data=d_raw_data,
                               d_op=d_op,
                               GridCal_grid=GridCal_grid,
                               d_grid=d_grid, d_sg=d_sg,
                               d_vsc=d_vsc,
-                              # voltage_profile=voltage_profile,
-                              # v_min_v_max_delta_v=v_min_v_max_delta_v
-                              V_set=V_set
+                              voltage_profile=voltage_profile,
+                              v_min_v_max_delta_v=v_min_v_max_delta_v
+                              # V_set=V_set
                               )
+    N_pf=N_pf+1
 
     # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
     #                                          d_raw_data=d_raw_data,
