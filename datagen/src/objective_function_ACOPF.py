@@ -100,21 +100,12 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     write_csv(d_pf_original, path, N_pf, 'PF_orig')
     write_csv(d_opf, path, N_pf, 'OPF')
 
-    print('')
+    #########################################################################33
 
-#    return_d_opf()
 
-def small_signal_stability(case, **kwargs):
-    d_raw_data = kwargs.get("d_raw_data", None)
-    d_op = kwargs.get("d_op", None)
-    GridCal_grid = kwargs.get("GridCal_grid", None)
-    d_grid = kwargs.get("d_grid", None)
-    d_sg = kwargs.get("d_sg", None)
-    d_vsc = kwargs.get("d_vsc", None)
-    d_pf = kwargs.get("d_pf", None)
 
     d_grid, d_pf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
-                                                           GridCal_grid, d_pf,
+                                                           GridCal_grid, d_pf_original,
                                                            d_raw_data, d_op)
 
     # %% READ PARAMETERS
