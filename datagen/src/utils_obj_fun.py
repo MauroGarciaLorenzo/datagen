@@ -32,12 +32,20 @@ def choose_slack_bus(d_raw_data):
         raise RuntimeError('Error: missing generator at slack bus')
     return d_raw_data, slack_bus
 
-def additional_info_results(d_pf,i_slack,pf_results):
+def additional_info_PF_results(d_pf,i_slack,pf_results, N_PF):
     d_pf['pf_gen']['slack_bus']=0
     d_pf['pf_gen'].loc[i_slack,'slack_bus']=1
     d_pf['pf_gen']['convergence']=pf_results.convergence_reports[0].converged_[0]
+    d_pf['pf_gen']['N_PF']=N_PF
 
     return d_pf
+
+def additional_info_OPF_results(d_opf,i_slack, N_PF):
+    d_opf['pf_gen']['slack_bus']=0
+    d_opf['pf_gen'].loc[i_slack,'slack_bus']=1
+    d_opf['pf_gen']['N_PF']=N_PF
+
+    return d_opf
 
 def update_raw_data(d_raw_data,d_pf):
     

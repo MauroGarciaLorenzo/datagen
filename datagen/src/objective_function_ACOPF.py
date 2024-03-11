@@ -13,6 +13,7 @@ from stability_analysis.preprocess import preprocess_data, read_data, process_ra
 from stability_analysis.state_space import generate_NET, build_ss, generate_elements
 from stability_analysis.analysis import small_signal
 
+from stability_analysis.optimal_power_flow import process_optimal_power_flow
 from stability_analysis.powerflow import check_feasibility
 
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
@@ -83,29 +84,26 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
 
     # Update PF results and operation point of generator elements
     d_pf_original = process_powerflow.update_OP(GridCal_grid, pf_results, d_raw_data)
-
-    d_pf_original = additional_info_results(d_pf_original, i_slack, pf_results)
+    d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, N_pf)
 
     nc = compile_numerical_circuit_at(GridCal_grid)
     nc.generator_data.cost_0[:] = 0
     nc.generator_data.cost_1[:] = 0
     nc.generator_data.cost_2[:] = 0
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, max_iter=50)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, max_iter=100)
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
     d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
+        
+    d_opf = process_optimal_power_flow.update_OP(GridCal_grid, d_opf_results, d_raw_data)
+    d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf)
 
-    d_opf = return_d_opf(d_raw_data, d_opf_results)
-
-    path='./datagen/src/results/'
-    write_csv(d_pf_original, path, N_pf, 'PF_orig')
-    write_csv(d_opf, path, N_pf, 'OPF')
-
+                                        
     #########################################################################33
 
 
 
-    d_grid, d_pf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
-                                                           GridCal_grid, d_pf_original,
+    d_grid, d_opf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
+                                                           GridCal_grid, d_opf,
                                                            d_raw_data, d_op)
 
     # %% READ PARAMETERS
@@ -114,6 +112,9 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_grid = parameters.get_params(d_grid, d_sg, d_vsc)
 
     d_grid = update_control(case, d_grid)
+    
+    d_grid['T_VSC'].loc[d_grid['T_VSC'].query('mode == "GFOL"').index,'k_droop_u']=0.1    
+    d_grid['T_VSC'].loc[d_grid['T_VSC'].query('mode == "GFOL"').index,'k_droop_f']=0.01    
 
     # Assign slack bus and slack element
     d_grid = slack_bus.assign_slack(d_grid)
@@ -137,7 +138,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
 
     # Define full system inputs and ouputs
     var_in = ['NET_Rld1']
-    var_out = ['all']  # ['GFOR3_w'] #
+    var_out = ['all'] #['all']  # ['GFOR3_w'] #
 
     # Build full system state-space model
     inputs, outputs = build_ss.select_io(l_blocks, var_in, var_out)
@@ -155,6 +156,14 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
         stability = 0
     else:
         stability = 1
+        
+    # Obtain all participation factors
+    # df_PF = small_signal.FMODAL(ss_sys, plot=False)
+    # # Obtain the participation factors for the selected modes
+    # T_modal, df_PF = small_signal.FMODAL_REDUCED(ss_sys, plot=True, modeID = [1,3,11])
+    # # Obtain the participation factors >= tol, for the selected modes
+    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,23), tol = 0.3)
+
 
     df_op, df_real, df_imag, df_freq, df_damp = (
         get_case_results(T_EIG=T_EIG, d_grid=d_grid))
@@ -162,8 +171,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
         "df_op": df_op, "df_real": df_real, "df_imag": df_imag,
         "df_freq": df_freq, "df_damp": df_damp
     }
-    return stability, output_dataframes
-
+    return stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG
 
 def return_d_opf(d_raw_data, d_opf_results):
     df_opf_bus = pd.DataFrame(
@@ -171,11 +179,35 @@ def return_d_opf(d_raw_data, d_opf_results):
     df_opf_gen_pre = pd.DataFrame(
         {'bus': d_raw_data['generator']['I'], 'P': d_opf_results.Pg, 'Q': d_opf_results.Qg})
     df_opf_gen = pd.merge(df_opf_gen_pre, df_opf_bus[['bus', 'Vm', 'theta']], on='bus', how='left')
-    d_opf = {'df_opf_bus': df_opf_bus, 'df_opf_gen': df_opf_gen}
+    d_opf = {'opf_bus': df_opf_bus, 'opf_gen': df_opf_gen,'opf_load': d_raw_data['load']} 
     return d_opf
 
 
-def write_csv(d, path, N_pf, filename):
+def write_csv(d, path, N_pf, filename_start):
     for df_name, df in d.items():
-        filename=filename+'_'+str(N_pf)+'_'+str(df_name)
+        filename=filename_start+'_'+str(N_pf)+'_'+str(df_name)
         pd.DataFrame.to_csv(df,path+filename+".csv")
+        
+def write_xlsx(d, path, filename):
+    with pd.ExcelWriter(path+filename+".xlsx") as writer:
+        for df_name, df in d.items():
+            if isinstance(df, pd.DataFrame):                
+                df.to_excel(writer, sheet_name=df_name)
+
+
+def update_control(case, d_grid):
+    case_index=case.index
+
+    for i in range(0,len(d_grid['T_VSC'])):
+        mode=d_grid['T_VSC'].loc[i,'mode']
+        bus=d_grid['T_VSC'].loc[i,'bus']
+        
+        control_p_mode=[cc for cc in case.index if 'tau' and mode.lower() in cc]
+        control_p_mode_bus=[cc for cc in control_p_mode if str(bus) in cc]
+        
+        control_p_labels=[''.join(filter(lambda x: not x.isdigit(), cc))[:-1].replace(mode.lower(),'')[:-1] for cc in control_p_mode_bus ]
+        
+        for control_p,control_p_bus in zip(control_p_labels,control_p_mode_bus):
+            d_grid['T_VSC'].loc[i,control_p]=case[control_p_bus]
+    
+    return d_grid

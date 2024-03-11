@@ -325,7 +325,7 @@ def process_p_load_dimension(samples_df, dim):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
-        new_sample = (sample["p_sg"] + sample["p_cig"])*0.95
+        new_sample = (sample["p_sg"] + sample["p_cig"])#*0.95
         cases = [[new_sample * value for value in dim.values]
                  for _ in range(dim.n_cases)]
         for case in cases:
