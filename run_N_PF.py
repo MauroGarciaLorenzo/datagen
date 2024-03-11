@@ -30,7 +30,7 @@ from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
     assign_PQ_Loads_to_grid
 # from GridCalEngine.Core.DataStructures import numerical_circuit
 
-from datagen.src.SS_stab import small_signal_stability
+# from datagen.src.SS_stab import small_signal_stability
 
 
 # %% SET FILE NAMES AND PATHS
@@ -118,14 +118,14 @@ for line in GridCal_grid.lines:
     bt = int(line.bus_to.code)
 
     line.rate=lines_ratings.loc[lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[0],'Max Flow (MW)']
-    print(line.rate)
+    # print(line.rate)
 
 for trafo in GridCal_grid.transformers2w:
     bf = int(trafo.bus_from.code)
     bt = int(trafo.bus_to.code)
 
     trafo.rate=lines_ratings.loc[lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[0],'Max Flow (MW)']
-    print(trafo.rate)
+    # print(trafo.rate)
 
 # %% READ EXCEL FILE
 
@@ -233,22 +233,22 @@ dimensions = [
 
 # for d in list(d_op['Generators']['BusNum']):
 #     dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
-#                                 divs=1, borders=(0.1,0.5),
+#                                 divs=1, borders=(1/50,1/10),
 #                                 independent_dimension=True,
 #                                 cosphi=None))
     
 #     dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
-#                                 divs=1, borders=(0.1,0.5),
+#                                 divs=1, borders=(1/50,1/10),
 #                                 independent_dimension=True,
 #                                 cosphi=None))
     
 #     dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
-#                                 divs=1, borders=(0.1,0.5),
+#                                 divs=1, borders=(1/50,1/10),
 #                                 independent_dimension=True,
 #                                 cosphi=None))
     
 #     dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
-#                                 divs=1, borders=(0.1,0.5),
+#                                 divs=1, borders=(1/50,1/10),
 #                                 independent_dimension=True,
 #                                 cosphi=None))
     
@@ -259,7 +259,7 @@ from datagen.src.sampling import gen_samples
 from datagen.src.sampling import gen_cases
 # from datagen.src.objective_function import *
 
-seed=1
+seed=10
 
 generator = np.random.default_rng(seed)
 
@@ -271,20 +271,31 @@ voltage_profile=True
 v_min_v_max_delta_v=[0.95,1.05,0.02]
 
 # V_set=0.95
+
+#%%
 N_pf=1
 for _, case in cases_df.iterrows():
-    feasible_power_flow_ACOPF(case=case,
-                              N_pf=N_pf,
-                              d_raw_data=d_raw_data,
-                              d_op=d_op,
-                              GridCal_grid=GridCal_grid,
-                              d_grid=d_grid, d_sg=d_sg,
-                              d_vsc=d_vsc,
-                              voltage_profile=voltage_profile,
-                              v_min_v_max_delta_v=v_min_v_max_delta_v
-                              # V_set=V_set
-                              )
+    stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG = feasible_power_flow_ACOPF(case=case,
+                                                                                    N_pf=N_pf,
+                                                                                    d_raw_data=d_raw_data,
+                                                                                    d_op=d_op,
+                                                                                    GridCal_grid=GridCal_grid,
+                                                                                    d_grid=d_grid, d_sg=d_sg,
+                                                                                    d_vsc=d_vsc,
+                                                                                    voltage_profile=voltage_profile,
+                                                                                    v_min_v_max_delta_v=v_min_v_max_delta_v
+                                                                                    # V_set=V_set
+                                                                                    )
+    
+    
     N_pf=N_pf+1
+
+control='_gfol_kf_001_kv_01'
+path='./datagen/src/results/'
+write_csv(d_pf_original, path, seed, 'PF_orig'+control)
+write_xlsx(d_opf, path, 'OPF_'+str(seed)+control)
+write_csv(output_dataframes, path, seed, 'OPF'+control)
+write_xlsx(d_grid,path,'d_grid_'+str(seed)+control)
 
     # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
     #                                          d_raw_data=d_raw_data,
