@@ -24,6 +24,8 @@ import GridCalEngine.api as gce
 
 from .utils_obj_fun import *
 
+import time
+
 def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_raw_data = kwargs.get("d_raw_data", None)
     d_op = kwargs.get("d_op", None)
@@ -34,6 +36,9 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     voltage_profile = kwargs.get("voltage_profile", None)
     v_min_v_max_delta_v = kwargs.get("v_min_v_max_delta_v", None)
     V_set = kwargs.get("V_set", None)
+    
+    computing_times=dict()
+
 
     if voltage_profile != None and v_min_v_max_delta_v == None:
         print('Error: Voltage profile option selected but v_min, v_max, and delta_v are missing')
@@ -92,8 +97,14 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     nc.generator_data.cost_2[:] = 0
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, max_iter=100)
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
+    
+    start = time.time()
+    
     d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
         
+    end = time.time()
+    computing_times['time_powerflow']=end - start
+    
     d_opf = process_optimal_power_flow.update_OP(GridCal_grid, d_opf_results, d_raw_data)
     d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf)
 
@@ -125,15 +136,24 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     # %% GENERATE STATE-SPACE MODEL
 
     # Generate AC & DC NET State-Space Model
+    start = time.time()
+
     l_blocks, l_states, d_grid = generate_NET.generate_SS_NET_blocks(d_grid,
                                                                      delta_slk)
+
+    end = time.time()
+    computing_times['time_generate_SS_net']=end - start
+    
+    start = time.time()
 
     # Generate generator units State-Space Model
     l_blocks, l_states = generate_elements.generate_SS_elements(d_grid,
                                                                 delta_slk,
                                                                 l_blocks,
                                                                 l_states)
-
+    end = time.time()
+    computing_times['time_generate_SS_elem']=end - start
+   
     # %% BUILD FULL SYSTEM STATE-SPACE MODEL
 
     # Define full system inputs and ouputs
@@ -141,13 +161,26 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     var_out = ['all'] #['all']  # ['GFOR3_w'] #
 
     # Build full system state-space model
+    start = time.time()
+
     inputs, outputs = build_ss.select_io(l_blocks, var_in, var_out)
     ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs)
+    
+    end = time.time()
+    computing_times['time_connect']=end - start
+  
 
     # %% SMALL-SIGNAL ANALYSIS
 
+    start = time.time()
+
+    
     T_EIG = small_signal.FEIG(ss_sys, True)
     T_EIG.head
+    
+    end = time.time()
+    computing_times['time_eig']=end - start
+ 
 
     # write to excel
     # T_EIG.to_excel(path.join(path_results, "EIG_" + excel + ".xlsx"))
@@ -162,16 +195,22 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     # # Obtain the participation factors for the selected modes
     # T_modal, df_PF = small_signal.FMODAL_REDUCED(ss_sys, plot=True, modeID = [1,3,11])
     # # Obtain the participation factors >= tol, for the selected modes
+    
+    start = time.time()
+
     T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,23), tol = 0.3)
 
-
+    end = time.time()
+    computing_times['time_partfact']=end - start
+    
+   
     df_op, df_real, df_imag, df_freq, df_damp = (
         get_case_results(T_EIG=T_EIG, d_grid=d_grid))
     output_dataframes = {
         "df_op": df_op, "df_real": df_real, "df_imag": df_imag,
         "df_freq": df_freq, "df_damp": df_damp
     }
-    return stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG
+    return stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times
 
 def return_d_opf(d_raw_data, d_opf_results):
     df_opf_bus = pd.DataFrame(
