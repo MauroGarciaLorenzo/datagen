@@ -275,7 +275,7 @@ v_min_v_max_delta_v=[0.95,1.05,0.02]
 #%%
 N_pf=1
 for _, case in cases_df.iterrows():
-    stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG = feasible_power_flow_ACOPF(case=case,
+    stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times = feasible_power_flow_ACOPF(case=case,
                                                                                     N_pf=N_pf,
                                                                                     d_raw_data=d_raw_data,
                                                                                     d_op=d_op,
@@ -290,12 +290,12 @@ for _, case in cases_df.iterrows():
     
     N_pf=N_pf+1
 
-control='_gfol_kf_001_kv_01'
-path='./datagen/src/results/'
-write_csv(d_pf_original, path, seed, 'PF_orig'+control)
-write_xlsx(d_opf, path, 'OPF_'+str(seed)+control)
-write_csv(output_dataframes, path, seed, 'OPF'+control)
-write_xlsx(d_grid,path,'d_grid_'+str(seed)+control)
+# control='_gfol_kf_001_kv_01'
+# path='./datagen/src/results/'
+# write_csv(d_pf_original, path, seed, 'PF_orig'+control)
+# write_xlsx(d_opf, path, 'OPF_'+str(seed)+control)
+# write_csv(output_dataframes, path, seed, 'OPF'+control)
+# write_xlsx(d_grid,path,'d_grid_'+str(seed)+control)
 
     # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
     #                                          d_raw_data=d_raw_data,
