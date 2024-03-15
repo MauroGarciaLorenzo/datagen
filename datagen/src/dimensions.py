@@ -175,14 +175,14 @@ class Dimension:
             case = initial_case.copy()
             total_sum = sum(case)
             iters_variables = 0
-            while (not np.isclose(total_sum, sample) and
+            while (not np.isclose(total_sum - sample, 0) and
                    iters_variables < iter_limit):
                 indexes = list(range(len(self.variable_borders)))
                 generator.shuffle(indexes)
 
                 iters_variables += 1
                 for i in indexes:
-                    if np.isclose(total_sum, sample):
+                    if np.isclose(total_sum - sample, 0):
                         break
                     new_var = generator.uniform(case[i],
                                                 self.variable_borders[i, 1])

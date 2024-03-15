@@ -285,7 +285,7 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
                 dims_g_fol.append(g_fol_sample)
                 # Compose g_fol subtracting p_cig from g_for case variable_borders
                 cases_g_fol.append(
-                    [cases_p_cig_df.iloc[i, x] - case_g_for[x]
+                    [cases_p_cig_df.iloc[i, x] - case_g_for[x] if cases_p_cig_df.iloc[i, x] - case_g_for[x] >1e-3 else 0
                      for x in range(len(p_cig.variable_borders))])
 
         cases_g_for_df = pd.DataFrame(
