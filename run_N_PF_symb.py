@@ -32,6 +32,7 @@ from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
 
 # from datagen.src.SS_stab import small_signal_stability
 
+import sympy as sp
 
 # %% SET FILE NAMES AND PATHS
 
@@ -266,9 +267,10 @@ generator = np.random.default_rng(seed)
 samples_df = gen_samples(n_samples, dimensions, generator)
 # Generate cases (n_cases (attribute of the class Dimension) for each dim)
 
-tau_droop_f_gfor_12=sp.Symbol('tau_droop_f_gfor_12')
+tau_droop_f_gfor_32=sp.Symbol('tau_droop_f_gfor_32')
 cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
-
+cases_df.loc[0,'tau_droop_f_gfor_32']=tau_droop_f_gfor_32
+tau_droop_f_gfor_32=0.01
 voltage_profile=True
 v_min_v_max_delta_v=[0.95,1.05,0.02]
 
@@ -277,9 +279,10 @@ v_min_v_max_delta_v=[0.95,1.05,0.02]
 #%%
 N_pf=1
 for _, case in cases_df.iterrows():
+    print(case)
     stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times = feasible_power_flow_ACOPF(case=case,
                                                                                     N_pf=N_pf,
-                                                                                    tau_droop_f_gfor_12,
+                                                                                    tau_droop_f_gfor_12=tau_droop_f_gfor_12,
                                                                                     d_raw_data=d_raw_data,
                                                                                     d_op=d_op,
                                                                                     GridCal_grid=GridCal_grid,
