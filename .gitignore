@@ -170,3 +170,4 @@ logs/
 *.err
 .enqueue_compss
 *.code-workspace
+**/results/*
