@@ -199,10 +199,10 @@ p_loads = list(d_op['Loads']['Load_Participation_Factor'])
 loads_power_factor = 0.98
 generators_power_factor = 0.98
 
-tau_f_g_for = [(0., 2)]
-tau_v_g_for = [(0., 2)]
-tau_p_g_for = [(0., 2)]
-tau_q_g_for = [(0., 2)]
+# tau_f_g_for = [(0., 2)]
+# tau_v_g_for = [(0., 2)]
+# tau_p_g_for = [(0., 2)]
+# tau_q_g_for = [(0., 2)]
 
 n_samples = 1
 n_cases = 1
@@ -222,8 +222,8 @@ dimensions = [
                 d_op['Generators']['Pmax_CIG'].sum()),
                 independent_dimension=True,
                 cosphi=generators_power_factor),
-      Dimension(label="perc_g_for", variable_borders=[(0,1)],
-                n_cases=n_cases, divs=1, borders=(0, 1),
+      Dimension(label="perc_g_for", variable_borders=[(0.9,1)],
+                n_cases=n_cases, divs=1, borders=(0.9, 1),
                 independent_dimension=True, cosphi=None),
       Dimension(label="p_load", values=p_loads,
                 n_cases=n_cases, divs=1,
@@ -232,25 +232,47 @@ dimensions = [
               ]
 
 # for d in list(d_op['Generators']['BusNum']):
-#     dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
-#                                 divs=1, borders=(1/50,1/10),
+#     dimensions.append(Dimension(label='k_droop_f_gfor_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(0.02,0.12),
 #                                 independent_dimension=True,
 #                                 cosphi=None))
     
-#     dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
-#                                 divs=1, borders=(1/50,1/10),
+#     dimensions.append(Dimension(label='k_droop_u_gfor_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(0.02/0.3,0.07/0.3),
 #                                 independent_dimension=True,
 #                                 cosphi=None))
     
-#     dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
-#                                 divs=1, borders=(1/50,1/10),
+#     dimensions.append(Dimension(label='k_droop_f_gfol_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(1/0.12,1/0.02),
 #                                 independent_dimension=True,
 #                                 cosphi=None))
     
-#     dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
-#                                 divs=1, borders=(1/50,1/10),
+#     dimensions.append(Dimension(label='k_droop_u_gfol_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(1/0.07,1/0.02),
 #                                 independent_dimension=True,
 #                                 cosphi=None))
+    
+for d in list(d_op['Generators']['BusNum']):
+    dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.2,0.2),
+                                independent_dimension=True,
+                                cosphi=None))
+    
+    dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.2,0.2),
+                                independent_dimension=True,
+                                cosphi=None))
+    
+    dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.2,0.2),
+                                independent_dimension=True,
+                                cosphi=None))
+    
+    dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.2,0.2),
+                                independent_dimension=True,
+                                cosphi=None))
+ 
     
 
 #%%
@@ -259,7 +281,7 @@ from datagen.src.sampling import gen_samples
 from datagen.src.sampling import gen_cases
 # from datagen.src.objective_function import *
 
-seed=10
+seed=17
 
 generator = np.random.default_rng(seed)
 
@@ -290,12 +312,19 @@ for _, case in cases_df.iterrows():
     
     N_pf=N_pf+1
 
-# control='_gfol_kf_001_kv_01'
-# path='./datagen/src/results/'
-# write_csv(d_pf_original, path, seed, 'PF_orig'+control)
-# write_xlsx(d_opf, path, 'OPF_'+str(seed)+control)
-# write_csv(output_dataframes, path, seed, 'OPF'+control)
-# write_xlsx(d_grid,path,'d_grid_'+str(seed)+control)
+control='_my_k_kf50_kv50_tau_upper_limit_min_perc_gfor_90_noGFOL_at_slack'
+path='./datagen/src/results/'
+write_csv(d_pf_original, path, seed, 'PF_orig'+control)
+write_xlsx(d_opf, path, 'OPF_'+str(seed)+control)
+write_csv(output_dataframes, path, seed, 'OPF'+control)
+write_xlsx(d_grid,path,'d_grid_'+str(seed)+control)
+
+pcig=np.zeros([len(d_grid['T_VSC']['bus'].unique()),1])
+for bb in range(0,len(d_grid['T_VSC']['bus'].unique())):
+    bus= d_grid['T_VSC']['bus'].unique()[bb]
+    pcig[bb,0]=d_grid['T_VSC'].query('bus == @bus')['P'].sum()
+    
+check_perc=np.array(d_grid['T_VSC'].query('mode == "GFOR"')['P'])/pcig.ravel()
 
     # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
     #                                          d_raw_data=d_raw_data,
