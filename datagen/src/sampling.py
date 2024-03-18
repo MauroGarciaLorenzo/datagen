@@ -280,13 +280,28 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
             # Create g_for case
             case_g_for = (g_for.get_cases_extreme(g_for_sample, generator))[0]
             if not np.isnan(case_g_for).any():
+                # dims_g_for.append(g_for_sample)
+                # cases_g_for.append(case_g_for)
+                # dims_g_fol.append(g_fol_sample)
+                # Compose g_fol subtracting p_cig from g_for case variable_borders
+                # cases_g_fol.append(
+                #     [cases_p_cig_df.iloc[i, x] - case_g_for[x] if cases_p_cig_df.iloc[i, x] - case_g_for[x] >1e-3 else 0
+                #      for x in range(len(p_cig.variable_borders))])
+                case_g_fol=[]
+                for x in range(len(p_cig.variable_borders)):
+                    if cases_p_cig_df.iloc[i, x] - case_g_for[x] >1e-3:
+                        case_g_fol.append(cases_p_cig_df.iloc[i, x] - case_g_for[x])
+                    else:
+                        case_g_fol.append(0)
+                        case_g_for[x]=case_g_for[x]+cases_p_cig_df.iloc[i, x] - case_g_for[x]
                 dims_g_for.append(g_for_sample)
                 cases_g_for.append(case_g_for)
                 dims_g_fol.append(g_fol_sample)
-                # Compose g_fol subtracting p_cig from g_for case variable_borders
-                cases_g_fol.append(
-                    [cases_p_cig_df.iloc[i, x] - case_g_for[x] if cases_p_cig_df.iloc[i, x] - case_g_for[x] >1e-3 else 0
-                     for x in range(len(p_cig.variable_borders))])
+                cases_g_fol.append(np.array(case_g_fol).ravel())
+
+                        
+                        
+                    
 
         cases_g_for_df = pd.DataFrame(
             cases_g_for,
