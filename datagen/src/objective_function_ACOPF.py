@@ -101,7 +101,9 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     start = time.time()
     
     d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
-        
+    # TODO: poner un check para verificar error y ver si ha convergido
+    #  hay un atributo d_opf_results.converged
+
     end = time.time()
     computing_times['time_powerflow']=end - start
     
@@ -210,6 +212,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
         "df_op": df_op, "df_real": df_real, "df_imag": df_imag,
         "df_freq": df_freq, "df_damp": df_damp
     }
+    # TODO: limpiar T_EIG
     return stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times
 
 def return_d_opf(d_raw_data, d_opf_results):

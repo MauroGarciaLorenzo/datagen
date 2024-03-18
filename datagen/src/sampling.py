@@ -87,6 +87,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     stabilities = []
     for _, case in cases_df.iterrows():
+        # TODO: Gestionar casos no convergidos en OPF
+        # TODO: Hacer que f_objectivo devuelvan convergencia
         stability, output_dataframes = eval_stability(case=case, f=func,
                                                  d_raw_data=d_raw_data,
                                                  d_op=d_op,
