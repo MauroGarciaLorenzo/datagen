@@ -63,9 +63,9 @@ def main():
     ]
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
-        start(dimensions, n_samples, rel_tolerance, dummy, max_depth,
-              use_sensitivity=use_sensitivity, ax=ax, divs_per_cell=2,
-              plot_boxplot=True, seed=1)
+        start(dimensions, n_samples, rel_tolerance, func=dummy, 
+              max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax, 
+              divs_per_cell=2, plot_boxplot=True, seed=1)
 
 
 if __name__ == '__main__':
