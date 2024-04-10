@@ -519,18 +519,17 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
     # plot_importances_and_divisions(dimensions, importances)
     return dimensions
 
-
 @task(returns=1)
-def eval_stability(case, f, d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc):
+def eval_stability(case, f, **kwargs):
     """Call objective function and return its result.
 
     :param case: Involved cases
     :param f: Objective function
+    :param kwargs: Additional keyword arguments
     :return: Result of the evaluation
     """
-    #print(d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc)
-    return f(case=case, d_raw_data=d_raw_data, d_op=d_op,
-             GridCal_grid=GridCal_grid, d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc)
+    return f(case=case, **kwargs)
+
 
 
 def gen_grid(dimensions):

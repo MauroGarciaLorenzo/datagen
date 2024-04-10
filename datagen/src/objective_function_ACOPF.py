@@ -33,7 +33,6 @@ except ImportError:
 
 import time
 
-@task(returns=7)
 def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_raw_data = kwargs.get("d_raw_data", None)
     d_op = kwargs.get("d_op", None)
@@ -212,16 +211,14 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
 
     end = time.time()
     computing_times['time_partfact']=end - start
-    
-   
+
+    output_dataframes = {}
     df_op, df_real, df_imag, df_freq, df_damp = (
         get_case_results(T_EIG=T_EIG, d_grid=d_grid))
-    output_dataframes = {
-        "df_op": df_op, "df_real": df_real, "df_imag": df_imag,
-        "df_freq": df_freq, "df_damp": df_damp
-    }
-    # TODO: limpiar T_EIG
-    return stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times
+    output_dataframes['df_op'].append(df_op)
+    output_dataframes['df_real'].append(df_real)
+    output_dataframes['df_imag'].append(df_imag)
+    return stability, output_dataframes
 
 def return_d_opf(d_raw_data, d_opf_results):
     df_opf_bus = pd.DataFrame(
