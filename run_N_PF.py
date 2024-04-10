@@ -1,3 +1,5 @@
+import os.path
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -208,7 +210,7 @@ n_samples = 1
 n_cases = 1
 
 rel_tolerance = 0.01
-max_depth = 3
+max_depth = 2
 dimensions = dict()
 dimensions = [
       Dimension(label="p_sg", variable_borders=p_sg,
@@ -296,6 +298,13 @@ v_min_v_max_delta_v=[0.95,1.05,0.02]
 
 #%%
 N_pf=1
+stability_array = []
+output_dataframes_array = []
+d_pf_original_array = []
+d_opf_array = []
+d_grid_array = []
+T_EIG_array = []
+computing_times_array = []
 for _, case in cases_df.iterrows():
     stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times = feasible_power_flow_ACOPF(case=case,
                                                                                     N_pf=N_pf,
@@ -308,23 +317,44 @@ for _, case in cases_df.iterrows():
                                                                                     v_min_v_max_delta_v=v_min_v_max_delta_v
                                                                                     # V_set=V_set
                                                                                     )
-    
-    
+    stability_array.append(stability)
+    output_dataframes_array.append(output_dataframes)
+    d_pf_original_array.append(d_pf_original)
+    d_opf_array.append(d_opf)
+    d_grid_array.append(d_grid)
+    T_EIG_array.append(T_EIG)
+    computing_times_array.append(computing_times)
     N_pf=N_pf+1
 
-control='_my_k_kf50_kv50_tau_upper_limit_min_perc_gfor_90_noGFOL_at_slack'
-path='./datagen/src/results/'
-write_csv(d_pf_original, path, seed, 'PF_orig'+control)
-write_xlsx(d_opf, path, 'OPF_'+str(seed)+control)
-write_csv(output_dataframes, path, seed, 'OPF'+control)
-write_xlsx(d_grid,path,'d_grid_'+str(seed)+control)
+stability_array = compss_wait_on(stability_array)
+output_dataframes_array = compss_wait_on(output_dataframes_array)
+d_pf_original_array = compss_wait_on(d_pf_original_array)
+d_opf_array = compss_wait_on(d_opf_array)
+d_grid_array = compss_wait_on(d_grid_array)
+T_EIG_array = compss_wait_on(T_EIG_array)
+computing_times_array = compss_wait_on(computing_times_array)
 
-pcig=np.zeros([len(d_grid['T_VSC']['bus'].unique()),1])
-for bb in range(0,len(d_grid['T_VSC']['bus'].unique())):
-    bus= d_grid['T_VSC']['bus'].unique()[bb]
-    pcig[bb,0]=d_grid['T_VSC'].query('bus == @bus')['P'].sum()
-    
-check_perc=np.array(d_grid['T_VSC'].query('mode == "GFOR"')['P'])/pcig.ravel()
+for stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times in zip(
+        stability_array, output_dataframes_array, d_pf_original_array,
+        d_opf_array, d_grid_array, T_EIG_array, computing_times_array):
+    control = '_my_k_kf50_kv50_tau_upper_limit_min_perc_gfor_90_noGFOL_at_slack'
+    path = './datagen/src/results/'
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    write_csv(d_pf_original, path, seed, 'PF_orig' + control)
+    write_xlsx(d_opf, path, 'OPF_' + str(seed) + control)
+    write_csv(output_dataframes, path, seed, 'OPF' + control)
+    write_xlsx(d_grid, path, 'd_grid_' + str(seed) + control)
+
+    pcig = np.zeros([len(d_grid['T_VSC']['bus'].unique()), 1])
+    for bb in range(0, len(d_grid['T_VSC']['bus'].unique())):
+        bus = d_grid['T_VSC']['bus'].unique()[bb]
+        pcig[bb, 0] = d_grid['T_VSC'].query('bus == @bus')['P'].sum()
+
+    check_perc = np.array(
+        d_grid['T_VSC'].query('mode == "GFOR"')['P']) / pcig.ravel()
 
     # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
     #                                          d_raw_data=d_raw_data,
