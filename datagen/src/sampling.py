@@ -743,7 +743,7 @@ def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,gene
                 elif adjacent_node_distance[0] > current_node_distance:
                     to_calculate.append(adjacent_node)            
         for adjacent_node in to_calculate:
-            calculate_voltage(adjacent_node, current_node, delta_v, distances, generators_index_list, voltages, vmin, vmax)
+            calculate_voltage(adjacent_node, current_node, delta_v, distances, generators_index_list, voltages, vmin, vmax, generator)
     #    print(f"El node {current_node} donara a {to_calculate}")
         current_bus=d_raw_data['results_bus'].loc[current_node,'I']
         to_calculate_bus=list(d_raw_data['results_bus'].loc[to_calculate,'I'])

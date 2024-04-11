@@ -43,7 +43,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     voltage_profile = kwargs.get("voltage_profile", None)
     v_min_v_max_delta_v = kwargs.get("v_min_v_max_delta_v", None)
     V_set = kwargs.get("V_set", None)
-    generator = kwargs("generator", None)
+    generator = kwargs.get("generator", None)
     
     computing_times=dict()
 
