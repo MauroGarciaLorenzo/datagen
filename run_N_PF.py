@@ -233,26 +233,48 @@ dimensions = [
                 cosphi=loads_power_factor)
               ]
 
+# for d in list(d_op['Generators']['BusNum']):
+#     dimensions.append(Dimension(label='k_droop_f_gfor_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(0.02,0.12),
+#                                 independent_dimension=True,
+#                                 cosphi=None))
+    
+#     dimensions.append(Dimension(label='k_droop_u_gfor_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(0.02/0.3,0.07/0.3),
+#                                 independent_dimension=True,
+#                                 cosphi=None))
+    
+#     dimensions.append(Dimension(label='k_droop_f_gfol_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(1/0.12,1/0.02),
+#                                 independent_dimension=True,
+#                                 cosphi=None))
+    
+#     dimensions.append(Dimension(label='k_droop_u_gfol_'+str(d), n_cases=n_cases,
+#                                 divs=1, borders=(1/0.07,1/0.02),
+#                                 independent_dimension=True,
+#                                 cosphi=None))
+
 for d in list(d_op['Generators']['BusNum']):
-    dimensions.append(Dimension(label='k_droop_f_gfor_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.02,0.12),
+    dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.01,0.2),
                                 independent_dimension=True,
                                 cosphi=None))
     
-    dimensions.append(Dimension(label='k_droop_u_gfor_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.02/0.3,0.07/0.3),
+    dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.01,0.2),
                                 independent_dimension=True,
                                 cosphi=None))
     
-    dimensions.append(Dimension(label='k_droop_f_gfol_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(1/0.12,1/0.02),
+    dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.01,0.2),
                                 independent_dimension=True,
                                 cosphi=None))
     
-    dimensions.append(Dimension(label='k_droop_u_gfol_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(1/0.07,1/0.02),
+    dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
+                                divs=1, borders=(0.01,0.2),
                                 independent_dimension=True,
                                 cosphi=None))
+ 
         
 
 #%%
