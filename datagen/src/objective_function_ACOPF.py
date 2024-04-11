@@ -43,6 +43,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     voltage_profile = kwargs.get("voltage_profile", None)
     v_min_v_max_delta_v = kwargs.get("v_min_v_max_delta_v", None)
     V_set = kwargs.get("V_set", None)
+    generator = kwargs("generator", None)
     
     computing_times=dict()
 
@@ -73,7 +74,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
         delta_v = v_min_v_max_delta_v[2]
 
         voltage_profile_list, indx_id = sampling.gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
-                                                                     GridCal_grid)
+                                                                     GridCal_grid, generator=generator)
 
         assign_Generators_to_grid.assign_PVGen(GridCal_grid=GridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
                                                voltage_profile_list=voltage_profile_list, indx_id=indx_id)

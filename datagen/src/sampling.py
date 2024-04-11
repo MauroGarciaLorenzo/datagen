@@ -22,7 +22,6 @@ import numpy
 import numpy as np
 import pandas as pd
 import random
-random.seed(10)
 
 
 from sklearn.ensemble import RandomForestClassifier
@@ -239,7 +238,7 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
     while g_fol variable_borders are complimentary to g_for to sum g_fol:
         g_fol_i = p_cig_i - g_for_i
 
-    :param generator:
+    :param generator: Random number generator
     :param samples_df: Involved samples
     :param p_cig: p_cig dimension
     :return: Cases obtained and samples extended (one sample for each case)
@@ -684,13 +683,13 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
     return total_cases, total_dims, total_dataframes, total_entropies
 
 
-def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid):
+def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,generator):
     
     # Find Index of slack bus
     i_slack_bus= d_raw_data['results_bus'].query('I==@slack_bus').index[0]
 
     # Assign random voltage to slack bus
-    V=random.uniform(vmin, vmax)
+    V = generator.random() * (vmax - vmin) + vmin
     # d_raw_data['generator'].loc[d_raw_data['generator'].query('I == @slack_bus').index[0],'V']=V
 
     # Initialize voltage matrix
@@ -755,13 +754,13 @@ def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid):
     
     return voltages, indx_id
 
-def calculate_voltage(adjacent_node, current_node, delta_v, distances, generators_index_list, voltages, vmin, vmax):
+def calculate_voltage(adjacent_node, current_node, delta_v, distances, generators_index_list, voltages, vmin, vmax, generator):
     # Aumento en una unitat el nombre de modificacions
     distances[adjacent_node][1]+=1
     num_modifications = distances[adjacent_node][1]
     # Miro si el node contigu es generador
     if adjacent_node in generators_index_list:
-        V=random.uniform(-delta_v,delta_v)+voltages[current_node]
+        V = generator.random() * (delta_v + delta_v) -delta_v + voltages[current_node]
         if num_modifications == 1:
             V_adjacent_node = V
         elif num_modifications > 1:

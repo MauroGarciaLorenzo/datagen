@@ -288,7 +288,8 @@ for _, case in cases_df.iterrows():
                                      GridCal_grid=GridCal_grid,d_grid=d_grid,
                                      d_sg=d_sg,d_vsc=d_vsc,
                                      voltage_profile=voltage_profile,
-                                     v_min_v_max_delta_v=v_min_v_max_delta_v
+                                     v_min_v_max_delta_v=v_min_v_max_delta_v,
+                                     generator=generator
                                      # V_set=V_set
                                     ))
     stability_array.append(stability)
