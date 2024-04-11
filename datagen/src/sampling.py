@@ -519,7 +519,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
     # plot_importances_and_divisions(dimensions, importances)
     return dimensions
 
-@task(returns=1)
+@task(returns=2)
 def eval_stability(case, f, **kwargs):
     """Call objective function and return its result.
 
@@ -528,7 +528,8 @@ def eval_stability(case, f, **kwargs):
     :param kwargs: Additional keyword arguments
     :return: Result of the evaluation
     """
-    return f(case=case, **kwargs)
+    stability, output_dataframes = f(case=case, **kwargs)
+    return stability, output_dataframes
 
 
 

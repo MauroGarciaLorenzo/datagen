@@ -215,9 +215,11 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     output_dataframes = {}
     df_op, df_real, df_imag, df_freq, df_damp = (
         get_case_results(T_EIG=T_EIG, d_grid=d_grid))
-    output_dataframes['df_op'].append(df_op)
-    output_dataframes['df_real'].append(df_real)
-    output_dataframes['df_imag'].append(df_imag)
+    output_dataframes['df_op'] = df_op
+    output_dataframes['df_real'] = df_real
+    output_dataframes['df_imag'] = df_imag
+    output_dataframes['df_freq'] = df_freq
+    output_dataframes['df_damp'] = df_damp
     return stability, output_dataframes
 
 def return_d_opf(d_raw_data, d_opf_results):
