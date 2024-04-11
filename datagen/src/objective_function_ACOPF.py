@@ -109,14 +109,12 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     start = time.time()
     
     d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
-    # TODO: poner un check para verificar error y ver si ha convergido
-    #  hay un atributo d_opf_results.converged
 
     end = time.time()
     computing_times['time_powerflow']=end - start
     
     d_opf = process_optimal_power_flow.update_OP(GridCal_grid, d_opf_results, d_raw_data)
-    d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf)
+    d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf, d_opf_results)
 
                                         
     #########################################################################33

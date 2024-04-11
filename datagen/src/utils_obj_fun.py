@@ -40,9 +40,10 @@ def additional_info_PF_results(d_pf,i_slack,pf_results, N_PF):
 
     return d_pf
 
-def additional_info_OPF_results(d_opf,i_slack, N_PF):
+def additional_info_OPF_results(d_opf,i_slack, N_PF, d_opf_results):
     d_opf['pf_gen']['slack_bus']=0
     d_opf['pf_gen'].loc[i_slack,'slack_bus']=1
+    d_opf['pf_gen']['convergence']=d_opf_results.converged
     d_opf['pf_gen']['N_PF']=N_PF
 
     return d_opf
