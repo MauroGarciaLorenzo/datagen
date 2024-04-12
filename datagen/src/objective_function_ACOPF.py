@@ -97,6 +97,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
 
     # Update PF results and operation point of generator elements
     d_pf_original = process_powerflow.update_OP(GridCal_grid, pf_results, d_raw_data)
+    d_pf_original['info']=pd.DataFrame()
     d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, N_pf)
 
     nc = compile_numerical_circuit_at(GridCal_grid)
@@ -114,6 +115,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     computing_times['time_powerflow']=end - start
     
     d_opf = process_optimal_power_flow.update_OP(GridCal_grid, d_opf_results, d_raw_data)
+    d_opf['info']=pd.DataFrame()
     d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf, d_opf_results)
 
                                         
@@ -219,6 +221,9 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     output_dataframes['df_imag'] = df_imag
     output_dataframes['df_freq'] = df_freq
     output_dataframes['df_damp'] = df_damp
+    output_dataframes['d_grid'] = d_grid
+    output_dataframes['d_opf'] = d_opf
+    output_dataframes['d_pf_original'] = d_pf_original
     return stability, output_dataframes
 
 def return_d_opf(d_raw_data, d_opf_results):
