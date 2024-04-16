@@ -171,3 +171,4 @@ logs/
 .enqueue_compss
 *.code-workspace
 **/results/*
+packages/
