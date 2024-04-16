@@ -1,13 +1,13 @@
 # For MN4, install these requirements in a separate directory "packages/" in the root of the repository, using
 # pip install -r requirements.txt --target=packages/
-# After this, install GridCalEngine separately into $HOME/.local:
+# After this, install the rest separately into $HOME/.local:
 # pip install -e ../GridCal/src/GridCalEngine
+# pip install -e ../stability_analysis
 control==0.9.4
 matplotlib==3.8.2
 numpy==1.26.2
 pandas==2.1.4
 scikit-learn==1.3.2
 scipy==1.11.4
--e ../stability_analysis
 # Older pandas version for issues detected in Windows users
 # pandas==1.5.3
