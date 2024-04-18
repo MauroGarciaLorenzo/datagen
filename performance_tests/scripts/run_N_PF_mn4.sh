@@ -11,7 +11,7 @@ username="${parts[-1]}"
 cd ..
 current_directory=$(pwd)
 working_dir="/gpfs/scratch/bsc19/$username"
-export PYTHONPATH="${PYTHONPATH}:${current_directory}/../:${current_directory}"
+export PYTHONPATH="${current_directory}/../packages/:${PYTHONPATH}:${current_directory}/../:${current_directory}"
 
 # Print user information
 echo "Username is: $username"
