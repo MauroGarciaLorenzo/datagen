@@ -41,7 +41,7 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 @task(returns=4)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
@@ -120,6 +120,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     # Finish recursivity if entropy decreases or cell become too small
     if delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth:
+        #TODO: add if condition: if los puntos que han devuelto None / n_sample*n_cases > x : 
         print("Stopped cell:")
         print("    Entropy: ", entropy)
         print("    Delta entropy: ", delta_entropy)

@@ -190,12 +190,20 @@ the user can define:
 # tau_p_g_for = [(0., 2)]
 # tau_q_g_for = [(0., 2)]
 
-p_sg = [
-    (d_op['Generators']['Pmin_SG'].iloc[i], d_op['Generators']['Pmax_SG'].iloc[i])
-    for i in range(len(d_op['Generators']))]
-p_cig = [(d_op['Generators']['Pmin_CIG'].iloc[i],
-          d_op['Generators']['Pmax_CIG'].iloc[i]) for i in
-         range(len(d_op['Generators']))]
+p_sg=[]
+p_cig=[]
+
+for i in range(len(d_op['Generators'])):
+  p_sg.append((d_op['Generators']['Pmin_SG'].iloc[i], d_op['Generators']['Pmax_SG'].iloc[i]))             
+  p_cig.append((d_op['Generators']['Pmin_CIG'].iloc[i],d_op['Generators']['Pmax_CIG'].iloc[i]))
+
+
+# p_sg = [
+#     (d_op['Generators']['Pmin_SG'].iloc[i], d_op['Generators']['Pmax_SG'].iloc[i])
+#     for i in range(len(d_op['Generators']))]
+# p_cig = [(d_op['Generators']['Pmin_CIG'].iloc[i],
+#           d_op['Generators']['Pmax_CIG'].iloc[i]) for i in
+#          range(len(d_op['Generators']))]
 p_loads = list(d_op['Loads']['Load_Participation_Factor'])
 
 loads_power_factor = 0.98

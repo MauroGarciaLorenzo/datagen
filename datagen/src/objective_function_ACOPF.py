@@ -19,7 +19,7 @@ from stability_analysis.powerflow import check_feasibility
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.OPF.NumericalMethods import ac_opf
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 import GridCalEngine.api as gce
 
 from .utils_obj_fun import *
@@ -32,6 +32,9 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 import time
+
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+
 
 def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_raw_data = kwargs.get("d_raw_data", None)
@@ -104,13 +107,27 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     nc.generator_data.cost_0[:] = 0
     nc.generator_data.cost_1[:] = 0
     nc.generator_data.cost_2[:] = 0
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, max_iter=100)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)#, tolerance=1e-8, max_iter=100)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=1, ips_tolerance=1e-8)#, max_iter=100)
+    
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
     
     start = time.time()
     
-    d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
-
+    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+    
+    d_opf_results = ac_optimal_power_flow(nc= nc,
+                                          pf_options= pf_options,
+                                          opf_options= opf_options,
+                                          # debug: bool = False,
+                                          #use_autodiff = True,
+                                          pf_init= True,
+                                          Sbus_pf= pf_results.Sbus,
+                                          voltage_pf= pf_results.voltage,
+                                          plot_error= True,
+                                          use_bound_slacks = False)
+                                          
+                    
     end = time.time()
     computing_times['time_powerflow']=end - start
     
@@ -118,7 +135,13 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_opf['info']=pd.DataFrame()
     d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf, d_opf_results)
 
-                                        
+    
+    #TODO: if d_opf_results.converged == False:
+        # return none none none,
+        
+    #TODO: en la version para el data generator, si el punto de operacion se ha salido de la casilla:
+        # return none, none 
+                                    
     #########################################################################33
 
 
