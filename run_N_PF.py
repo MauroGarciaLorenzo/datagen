@@ -311,7 +311,7 @@ stability_array = []
 output_dataframes_array = []
 
 for _, case in cases_df.iterrows():
-    stability, output_dataframes = (eval_stability
+    stability, output_dataframes, computing_times = (eval_stability
                                     (case=case,
                                      f=feasible_power_flow_ACOPF, N_pf=N_pf,
                                      d_raw_data=d_raw_data, d_op=d_op,
@@ -328,6 +328,24 @@ for _, case in cases_df.iterrows():
 
 stability_array = compss_wait_on(stability_array)
 output_dataframes_array = compss_wait_on(output_dataframes_array)
+
+#%%
+from openpyxl import load_workbook
+
+def write_dataframes_to_excel(df_dict, path,filename):
+    excel_file_path=path+filename
+    # Create a Pandas Excel writer using xlsxwriter as the engine
+    with pd.ExcelWriter(excel_file_path, engine='xlsxwriter') as writer:
+        # Iterate over each key-value pair in the dictionary
+        for sheet_name, df in df_dict.items():
+            # Write each DataFrame to a separate sheet with the sheet name as the key
+            df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+for key, value in output_dataframes.items():
+    if isinstance(value, dict): 
+        write_dataframes_to_excel(value,'C:/Users/Francesca/Documents/hp2c-dt/',key+'_seed'+str(seed)+'.xlsx')
+    else:
+        pd.DataFrame.to_excel(value,'C:/Users/Francesca/Documents/hp2c-dt/'+key+'_seed'+str(seed)+'.xlsx')
 
 # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
 #                                          d_raw_data=d_raw_data,
