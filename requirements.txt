@@ -9,5 +9,6 @@ numpy==1.26.2
 pandas==2.1.4
 scikit-learn==1.3.2
 scipy==1.11.4
+xlsxwriter
 # Older pandas version for issues detected in Windows users
 # pandas==1.5.3
