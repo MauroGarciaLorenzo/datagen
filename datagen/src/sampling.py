@@ -528,8 +528,8 @@ def eval_stability(case, f, **kwargs):
     :param kwargs: Additional keyword arguments
     :return: Result of the evaluation
     """
-    stability, output_dataframes, computing_times = f(case=case, **kwargs)
-    return stability, output_dataframes, computing_times
+    stability, output_dataframes = f(case=case, **kwargs)
+    return stability, output_dataframes
 
 
 
