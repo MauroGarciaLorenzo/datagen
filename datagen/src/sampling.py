@@ -48,8 +48,9 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 @task(returns=4)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
-                 max_depth, divs_per_cell, generator, d_raw_data, d_op,
-                 GridCal_grid, d_grid, d_sg, d_vsc, total_dataframes=None):
+                 max_depth, divs_per_cell, generator, feasible_rate,
+                 d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc,
+                total_dataframes=None):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -88,6 +89,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
     stabilities = []
+    feasible_cases = 0
     for _, case in cases_df.iterrows():
         # TODO: Gestionar casos no convergidos en OPF
         # TODO: Hacer que f_objectivo devuelvan convergencia
@@ -96,7 +98,9 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                                                  d_op=d_op,
                                                  GridCal_grid=GridCal_grid,
                                                  d_grid=d_grid, d_sg=d_sg,
-                                                 d_vsc=d_vsc)
+                                                 d_vsc=d_vsc, dimensions= dimensions)
+        if stability == None: continue
+        feasible_cases += 1
         stabilities.append(stability)
         output_dataframes = compss_wait_on(output_dataframes)
         if total_dataframes:
@@ -120,9 +124,12 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
+    total_cases = 0
+    for d in dimensions:
+        total_cases += n_samples * d.n_cases
     # Finish recursivity if entropy decreases or cell become too small
-    if delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth:
-        #TODO: add if condition: if los puntos que han devuelto None / n_sample*n_cases > x : 
+    if (delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth or
+            feasible_cases/total_cases < feasible_rate):
         print("Stopped cell:")
         print("    Entropy: ", entropy)
         print("    Delta entropy: ", delta_entropy)
@@ -142,8 +149,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                          depth=depth, dims_df=dims_df, func=func,
                          n_samples=n_samples, use_sensitivity=use_sensitivity,
                          max_depth=max_depth, divs_per_cell=divs_per_cell,
-                         generator=generator, d_raw_data=d_raw_data,
-                         d_op=d_op, GridCal_grid=GridCal_grid,
+                         generator=generator, feasible_rate=feasible_rate,
+                         d_raw_data=d_raw_data, d_op=d_op, GridCal_grid=GridCal_grid,
                          d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc,
                          dataframes=total_dataframes))
         return children_total, cases_df, dims_df, total_dataframes
@@ -151,8 +158,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
-                 d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc,
-                 dataframes):
+                 feasible_rate, d_raw_data, d_op, GridCal_grid, d_grid,
+                 d_sg, d_vsc, dataframes):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -193,8 +200,8 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                          dims_heritage_df=dims_heritage_df,
                          use_sensitivity=use_sensitivity,
                          max_depth=max_depth, divs_per_cell=divs_per_cell,
-                         generator=generator, d_raw_data=d_raw_data,
-                         d_op=d_op, GridCal_grid=GridCal_grid,
+                         generator=generator, feasible_rate=feasible_rate,
+                         d_raw_data=d_raw_data, GridCal_grid=GridCal_grid,
                          d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc,
                          total_dataframes=heritage_dataframes))
 
@@ -532,8 +539,7 @@ def eval_stability(case, f, **kwargs):
     :param kwargs: Additional keyword arguments
     :return: Result of the evaluation
     """
-    stability, output_dataframes = f(case=case, **kwargs)
-    return stability, output_dataframes
+    return f(case=case, **kwargs)
 
 
 

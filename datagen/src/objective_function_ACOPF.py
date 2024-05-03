@@ -30,21 +30,24 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     v_min_v_max_delta_v = kwargs.get("v_min_v_max_delta_v", None)
     V_set = kwargs.get("V_set", None)
     generator = kwargs.get("generator", None)
+    dimensions = None
+    if "dimensions" in kwargs:
+        dimensions = kwargs.get("dimensions", None)
     
     computing_times=dict()
 
 
     if voltage_profile != None and v_min_v_max_delta_v == None:
         print('Error: Voltage profile option selected but v_min, v_max, and delta_v are missing')
-        return None, None, None
+        return None, None
 
     if voltage_profile != None and V_set != None:
         print('Error: Both Voltage profile and V_set option is selected. Choose only one of them')
-        return None, None, None
+        return None, None
 
     if voltage_profile == None and V_set == None:
         print('Error: Neither Voltage profile or V_set option is selected. Choose one of them')
-        return None, None, None
+        return None, None
 
     d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
                                                             d_op)
@@ -118,20 +121,34 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf, d_opf_results)
 
     
-    #TODO: if d_opf_results.converged == False:
-        # return none none none,
-        
-    #TODO: en la version para el data generator, si el punto de operacion se ha salido de la casilla:
-        # return none, none 
-                                    
-    #########################################################################33
+    if d_opf_results.converged == False:
+        return None, None
 
+                                    
+    #########################################################################
 
 
     d_grid, d_opf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
                                                            GridCal_grid, d_opf,
                                                            d_raw_data, d_op)
 
+    p_sg = np.sum(d_grid['T_gen'].query('element' == "SG")['P']) * 100
+    p_cig = np.sum(d_grid['T_gen'].query('element' != "SG")['P']) * 100
+    perc_gfor = np.sum(d_grid['T_gen'].query('element' == "GFOR")['P'])/p_cig
+
+    valid_point = True
+    for d in dimensions:
+        if d.label == "p_sg":
+            if p_sg < d.borders[0] or p_sg > d.borders[1]:
+                valid_point = False
+        if d.label == "p_cig":
+            if p_cig < d.borders[0] or p_cig > d.borders[1]:
+                valid_point = False
+        if d.label == "perc_gfor":
+            if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
+                valid_point = False
+
+    if not valid_point: return None, None
     # %% READ PARAMETERS
 
     # Get parameters of generator units from excel files & compute pu base

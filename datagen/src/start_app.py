@@ -33,7 +33,7 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
           use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          **kwargs):
+          feasible_rate=0.5, **kwargs):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -89,7 +89,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
                      dims_heritage_df=pd.DataFrame(),
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
                      divs_per_cell=divs_per_cell, generator=generator,
-                     d_raw_data=d_raw_data, d_op=d_op,
+                     feasible_rate=feasible_rate, d_raw_data=d_raw_data, d_op=d_op,
                      GridCal_grid=GridCal_grid, d_grid=d_grid, d_sg=d_sg,
                      d_vsc=d_vsc))
     execution_logs = compss_wait_on(execution_logs)
