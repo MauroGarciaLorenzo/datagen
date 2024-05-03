@@ -246,6 +246,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     output_dataframes['d_grid'] = d_grid
     output_dataframes['d_opf'] = d_opf
     output_dataframes['d_pf_original'] = d_pf_original
+    output_dataframes['computing_times'] = pd.Series(computing_times)
     return stability, output_dataframes
 
 def return_d_opf(d_raw_data, d_opf_results):
