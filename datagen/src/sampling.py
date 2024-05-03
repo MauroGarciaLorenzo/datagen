@@ -37,9 +37,11 @@ from ..tests.utils import unique
 try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
+    from pycompss.api.constraint import constraint
 except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
+    from datagen.dummies.constraint import constraint
 
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
@@ -519,6 +521,8 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
     # plot_importances_and_divisions(dimensions, importances)
     return dimensions
 
+
+@constraint(computing_units="32")
 @task(returns=2)
 def eval_stability(case, f, **kwargs):
     """Call objective function and return its result.
