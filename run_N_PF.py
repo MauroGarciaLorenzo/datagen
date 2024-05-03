@@ -346,7 +346,6 @@ def write_dataframes_to_excel(df_dict, path,filename):
                 print(f'Warning: Not writing {sheet_name}. '
                       f'Not a DataFrame or Series')
 
-output_dataframes = {'test_df': pd.DataFrame(np.random.randn(10, 2))}
 for key, value in output_dataframes.items():
     filename = key + '_seed' + str(seed)+ '.xlsx'
     if isinstance(value, dict): 
