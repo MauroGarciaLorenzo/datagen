@@ -124,8 +124,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
                                           pf_init= True,
                                           Sbus_pf= pf_results.Sbus,
                                           voltage_pf= pf_results.voltage,
-                                          plot_error= True,
-                                          use_bound_slacks = False)
+                                          plot_error= True)
                                           
                     
     end = time.time()
