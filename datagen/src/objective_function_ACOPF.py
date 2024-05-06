@@ -30,10 +30,8 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     v_min_v_max_delta_v = kwargs.get("v_min_v_max_delta_v", None)
     V_set = kwargs.get("V_set", None)
     generator = kwargs.get("generator", None)
-    dimensions = None
-    if "dimensions" in kwargs:
-        dimensions = kwargs.get("dimensions", None)
-    
+    dimensions = kwargs.get("dimensions", None)
+
     computing_times=dict()
 
 
@@ -72,7 +70,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
         assign_Generators_to_grid.assign_PVGen(GridCal_grid=GridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=V_set)
 
     assign_PQ_Loads_to_grid.assign_PQ_load(GridCal_grid, d_raw_data)
-    
+
     # %% Run 1st POWER-FLOW
 
     # Receive system status from OPAL
@@ -82,7 +80,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     pf_results = GridCal_powerflow.run_powerflow(GridCal_grid)
 
     print('Converged:', pf_results.convergence_reports[0].converged_[0])
-    
+
 
     # Update PF results and operation point of generator elements
     d_pf_original = process_powerflow.update_OP(GridCal_grid, pf_results, d_raw_data)
@@ -95,13 +93,13 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     nc.generator_data.cost_2[:] = 0
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)#, tolerance=1e-8, max_iter=100)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=1, ips_tolerance=1e-8)#, max_iter=100)
-    
+
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
-    
+
     start = time.time()
-    
+
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
-    
+
     d_opf_results = ac_optimal_power_flow(nc= nc,
                                           pf_options= pf_options,
                                           opf_options= opf_options,
@@ -111,20 +109,20 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
                                           Sbus_pf= pf_results.Sbus,
                                           voltage_pf= pf_results.voltage,
                                           plot_error= True)
-                                          
-                    
+
+
     end = time.time()
     computing_times['time_powerflow']=end - start
-    
+
     d_opf = process_optimal_power_flow.update_OP(GridCal_grid, d_opf_results, d_raw_data)
     d_opf['info']=pd.DataFrame()
     d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf, d_opf_results)
 
-    
+
     if d_opf_results.converged == False:
         return None, None
 
-                                    
+
     #########################################################################
 
 
@@ -132,32 +130,33 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
                                                            GridCal_grid, d_opf,
                                                            d_raw_data, d_op)
 
-    p_sg = np.sum(d_grid['T_gen'].query('element' == "SG")['P']) * 100
-    p_cig = np.sum(d_grid['T_gen'].query('element' != "SG")['P']) * 100
-    perc_gfor = np.sum(d_grid['T_gen'].query('element' == "GFOR")['P'])/p_cig
+    p_sg = np.sum(d_grid['T_gen'].query('element == "SG"')['P']) * 100
+    p_cig = np.sum(d_grid['T_gen'].query('element != "SG"')['P']) * 100
+    perc_gfor = np.sum(d_grid['T_gen'].query('element == "GFOR"')['P']) / p_cig
 
-    valid_point = True
-    for d in dimensions:
-        if d.label == "p_sg":
-            if p_sg < d.borders[0] or p_sg > d.borders[1]:
-                valid_point = False
-        if d.label == "p_cig":
-            if p_cig < d.borders[0] or p_cig > d.borders[1]:
-                valid_point = False
-        if d.label == "perc_gfor":
-            if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
-                valid_point = False
+    if dimensions:
+        valid_point = True
+        for d in dimensions:
+            if d.label == "p_sg":
+                if p_sg < d.borders[0] or p_sg > d.borders[1]:
+                    valid_point = False
+            if d.label == "p_cig":
+                if p_cig < d.borders[0] or p_cig > d.borders[1]:
+                    valid_point = False
+            if d.label == "perc_gfor":
+                if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
+                    valid_point = False
+        if not valid_point: return None, None
 
-    if not valid_point: return None, None
     # %% READ PARAMETERS
 
     # Get parameters of generator units from excel files & compute pu base
     d_grid = parameters.get_params(d_grid, d_sg, d_vsc)
 
     d_grid = update_control(case, d_grid)
-    
-    # d_grid['T_VSC'].loc[d_grid['T_VSC'].query('mode == "GFOL"').index,'k_droop_u']=0.1    
-    # d_grid['T_VSC'].loc[d_grid['T_VSC'].query('mode == "GFOL"').index,'k_droop_f']=0.01    
+
+    # d_grid['T_VSC'].loc[d_grid['T_VSC'].query('mode == "GFOL"').index,'k_droop_u']=0.1
+    # d_grid['T_VSC'].loc[d_grid['T_VSC'].query('mode == "GFOL"').index,'k_droop_f']=0.01
 
     # Assign slack bus and slack element
     d_grid = slack_bus.assign_slack(d_grid)
@@ -175,7 +174,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
 
     end = time.time()
     computing_times['time_generate_SS_net']=end - start
-    
+
     start = time.time()
 
     # Generate generator units State-Space Model
@@ -185,7 +184,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
                                                                 l_states)
     end = time.time()
     computing_times['time_generate_SS_elem']=end - start
-   
+
     # %% BUILD FULL SYSTEM STATE-SPACE MODEL
 
     # Define full system inputs and ouputs
@@ -197,22 +196,22 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
 
     inputs, outputs = build_ss.select_io(l_blocks, var_in, var_out)
     ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs)
-    
+
     end = time.time()
     computing_times['time_connect']=end - start
-  
+
 
     # %% SMALL-SIGNAL ANALYSIS
 
     start = time.time()
 
-    
+
     T_EIG = small_signal.FEIG(ss_sys, True)
     T_EIG.head
-    
+
     end = time.time()
     computing_times['time_eig']=end - start
- 
+
 
     # write to excel
     # T_EIG.to_excel(path.join(path_results, "EIG_" + excel + ".xlsx"))
@@ -221,13 +220,13 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
         stability = 0
     else:
         stability = 1
-        
+
     # Obtain all participation factors
     # df_PF = small_signal.FMODAL(ss_sys, plot=False)
     # # Obtain the participation factors for the selected modes
     # T_modal, df_PF = small_signal.FMODAL_REDUCED(ss_sys, plot=True, modeID = [1,3,11])
     # # Obtain the participation factors >= tol, for the selected modes
-    
+
     start = time.time()
 
     T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,23), tol = 0.3)
