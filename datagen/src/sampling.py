@@ -48,8 +48,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 @task(returns=4)
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
-                 max_depth, divs_per_cell, generator, feasible_rate,
-                 d_raw_data, d_op, GridCal_grid, d_grid, d_sg, d_vsc,
+                 max_depth, divs_per_cell, generator, feasible_rate, func_params,
                 total_dataframes=None):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
@@ -94,11 +93,9 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         # TODO: Gestionar casos no convergidos en OPF
         # TODO: Hacer que f_objectivo devuelvan convergencia
         stability, output_dataframes = eval_stability(case=case, f=func,
-                                                 d_raw_data=d_raw_data,
-                                                 d_op=d_op,
-                                                 GridCal_grid=GridCal_grid,
-                                                 d_grid=d_grid, d_sg=d_sg,
-                                                 d_vsc=d_vsc, dimensions= dimensions)
+                                                      func_params=func_params,
+                                                      dimensions=dimensions,
+                                                      generator=generator)
         if stability == None: continue
         feasible_cases += 1
         stabilities.append(stability)
@@ -150,16 +147,13 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                          n_samples=n_samples, use_sensitivity=use_sensitivity,
                          max_depth=max_depth, divs_per_cell=divs_per_cell,
                          generator=generator, feasible_rate=feasible_rate,
-                         d_raw_data=d_raw_data, d_op=d_op, GridCal_grid=GridCal_grid,
-                         d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc,
-                         dataframes=total_dataframes))
+                         func_params=func_params, dataframes=total_dataframes))
         return children_total, cases_df, dims_df, total_dataframes
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
-                 feasible_rate, d_raw_data, d_op, GridCal_grid, d_grid,
-                 d_sg, d_vsc, dataframes):
+                 feasible_rate, func_params, dataframes):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -201,8 +195,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                          use_sensitivity=use_sensitivity,
                          max_depth=max_depth, divs_per_cell=divs_per_cell,
                          generator=generator, feasible_rate=feasible_rate,
-                         d_raw_data=d_raw_data, GridCal_grid=GridCal_grid,
-                         d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc,
+                         func_params=func_params,
                          total_dataframes=heritage_dataframes))
 
         children_total_params.append(child_total_params)
@@ -531,7 +524,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
 
 @constraint(computing_units="32")
 @task(returns=2)
-def eval_stability(case, f, **kwargs):
+def eval_stability(case, f, func_params, **kwargs):
     """Call objective function and return its result.
 
     :param case: Involved cases
@@ -539,7 +532,7 @@ def eval_stability(case, f, **kwargs):
     :param kwargs: Additional keyword arguments
     :return: Result of the evaluation
     """
-    return f(case=case, **kwargs)
+    return f(case=case, func_params=func_params, **kwargs)
 
 
 

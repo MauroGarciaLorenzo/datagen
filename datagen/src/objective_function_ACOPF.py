@@ -6,6 +6,7 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 import GridCalEngine.api as gce
 
 from .utils_obj_fun import *
+from .sampling import gen_voltage_profile
 
 try:
     from pycompss.api.task import task
@@ -19,18 +20,22 @@ import time
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
-def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
-    d_raw_data = kwargs.get("d_raw_data", None)
-    d_op = kwargs.get("d_op", None)
-    GridCal_grid = kwargs.get("GridCal_grid", None)
-    d_grid = kwargs.get("d_grid", None)
-    d_sg = kwargs.get("d_sg", None)
-    d_vsc = kwargs.get("d_vsc", None)
-    voltage_profile = kwargs.get("voltage_profile", None)
-    v_min_v_max_delta_v = kwargs.get("v_min_v_max_delta_v", None)
-    V_set = kwargs.get("V_set", None)
+def feasible_power_flow_ACOPF(case, **kwargs):
+    func_params = kwargs.get("func_params", None)
     generator = kwargs.get("generator", None)
     dimensions = kwargs.get("dimensions", None)
+
+    N_pf = func_params.get("N_pf", None)
+    d_raw_data = func_params.get("d_raw_data", None)
+    d_op = func_params.get("d_op", None)
+    GridCal_grid = func_params.get("GridCal_grid", None)
+    d_grid = func_params.get("d_grid", None)
+    d_sg = func_params.get("d_sg", None)
+    d_vsc = func_params.get("d_vsc", None)
+    voltage_profile = func_params.get("voltage_profile", None)
+    v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
+    V_set = func_params.get("V_set", None)
+
 
     computing_times=dict()
 
@@ -60,7 +65,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
         vmax = v_min_v_max_delta_v[1]
         delta_v = v_min_v_max_delta_v[2]
 
-        voltage_profile_list, indx_id = sampling.gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
+        voltage_profile_list, indx_id = gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
                                                                      GridCal_grid, generator=generator)
 
         assign_Generators_to_grid.assign_PVGen(GridCal_grid=GridCal_grid, d_raw_data=d_raw_data, d_op=d_op,

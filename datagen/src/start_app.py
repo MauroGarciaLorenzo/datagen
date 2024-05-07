@@ -33,7 +33,7 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
           use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0.5, **kwargs):
+          feasible_rate=0.5, func_params = {}):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -61,13 +61,6 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
     :param plot_boxplot: Indicates whether a boxplot representing all variable_borders
     should be plotted
     """
-    d_raw_data = kwargs.get("d_raw_data", None)
-    d_op = kwargs.get("d_op", None)
-    GridCal_grid = kwargs.get("GridCal_grid", None)
-    d_grid = kwargs.get("d_grid", None)
-    d_sg = kwargs.get("d_sg", None)
-    d_vsc = kwargs.get("d_vsc", None)
-
     clean_dir("results")
     if ax is not None and len(dimensions) == 2:
         clean_dir("results/figures")
@@ -89,9 +82,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
                      dims_heritage_df=pd.DataFrame(),
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
                      divs_per_cell=divs_per_cell, generator=generator,
-                     feasible_rate=feasible_rate, d_raw_data=d_raw_data, d_op=d_op,
-                     GridCal_grid=GridCal_grid, d_grid=d_grid, d_sg=d_sg,
-                     d_vsc=d_vsc))
+                     feasible_rate=feasible_rate, func_params=func_params))
     execution_logs = compss_wait_on(execution_logs)
     cases_df = compss_wait_on(cases_df)
     dims_df = compss_wait_on(dims_df)
