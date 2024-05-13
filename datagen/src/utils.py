@@ -88,11 +88,18 @@ def flatten_list(data):
     return flattened_list
 
 
-def save_results(cases_df, dims_df, execution_logs):
-    result_dir = "results"
+def save_results(cases_df, dims_df, execution_logs, output_dataframes, seed):
+    result_dir = f"results/seed{str(seed)}"
+
+    if not os.path.exists(result_dir):
+        os.makedirs(result_dir)
+
     cases_df.to_csv(os.path.join(result_dir, "cases_df.csv"), index=False)
 
     dims_df.to_csv(os.path.join(result_dir, "dims_df.csv"), index=False)
+
+    for key, value in output_dataframes.items():
+        value.to_csv(os.path.join(result_dir, f"{key}.csv"))
 
     with open(os.path.join(result_dir, "execution_logs.txt"), "w") as log_file:
         for log_entry in execution_logs:

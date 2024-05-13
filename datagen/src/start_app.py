@@ -16,6 +16,8 @@
 goal is to explore the various cells (or combinations of dimensions) and
 produce both a record of execution logs and a DataFrame containing specific
 cases and their associated stability."""
+import random
+
 import numpy as np
 import pandas as pd
 
@@ -75,6 +77,9 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
         ax.set_xlim(left=x_lims[0], right=x_lims[1])
         ax.set_ylim(bottom=y_lims[0], top=y_lims[1])
 
+    if seed is None:
+        seed = random.randint(1,100)
+
     generator = np.random.default_rng(seed)
     execution_logs, cases_df, dims_df, output_dataframes = (
         explore_cell(func=func, n_samples=n_samples, entropy=None, depth=0,
@@ -90,7 +95,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
     if plot_boxplot:
         boxplot(cases_df)
     print_results(execution_logs, cases_df)
-    save_results(cases_df, dims_df, execution_logs)
+    save_results(cases_df, dims_df, execution_logs, output_dataframes, seed)
     if cases_df.min().min() < 0:
         print("Warning. Negative numbers in dataframe.")
     print("")
