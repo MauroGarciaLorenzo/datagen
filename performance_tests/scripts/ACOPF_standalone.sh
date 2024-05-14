@@ -37,7 +37,7 @@ do
   --qos=gp_bsccs \
   --log_dir=${working_dir} \
   -d \
-  ACOPF_standalone.py
+  ACOPF_standalone.py "$PWD"
 
   num_nodes=$((num_nodes * 2))
 done
