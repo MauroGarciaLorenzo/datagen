@@ -13,7 +13,7 @@ username="${parts[-1]}"
 cd ..
 current_directory=$(pwd)
 working_dir="/gpfs/scratch/bsc19/$username"
-export PYTHONPATH="${current_directory}/../packages/:${PYTHONPATH}:${current_directory}/../:${current_directory}"
+export PYTHONPATH="${current_directory}/../packages/:${PYTHONPATH}:${current_directory}/../../:${current_directory}/../:${current_directory}"
 
 # Print user information
 echo "Username is: $username"
@@ -37,7 +37,7 @@ do
   --qos=gp_bsccs \
   --log_dir=${working_dir} \
   -d \
-  run_N_PF.py "${current_directory}/../results/run_N_PF_${num_nodes}"
+  ACOPF_standalone.py
 
   num_nodes=$((num_nodes * 2))
 done
