@@ -89,6 +89,7 @@ def flatten_list(data):
 
 
 def save_results(cases_df, dims_df, execution_logs, output_dataframes, seed, log_dir):
+    if log_dir is None: log_dir = ""
     if log_dir != "":
         log_dir += "/"
     result_dir = f"{log_dir}results/seed{str(seed)}"

@@ -33,9 +33,9 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
-          use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0.5, func_params = {}, log_dir=""):
+def start(dimensions, n_samples, rel_tolerance, func, max_depth, log_dir="",
+          seed=None,use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
+          feasible_rate=0.5, func_params = {}):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
