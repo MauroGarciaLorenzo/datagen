@@ -37,6 +37,7 @@ do
   --qos=gp_bsccs \
   --log_dir=${working_dir} \
   -d \
+  --agents \
   run_N_PF.py "${current_directory}/../results/run_N_PF_${num_nodes}"
 
   num_nodes=$((num_nodes * 2))
