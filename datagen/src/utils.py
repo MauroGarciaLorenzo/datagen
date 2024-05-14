@@ -88,8 +88,10 @@ def flatten_list(data):
     return flattened_list
 
 
-def save_results(cases_df, dims_df, execution_logs, output_dataframes, seed):
-    result_dir = f"results/seed{str(seed)}"
+def save_results(cases_df, dims_df, execution_logs, output_dataframes, seed, log_dir):
+    if log_dir != "":
+        log_dir += "/"
+    result_dir = f"{log_dir}results/seed{str(seed)}"
 
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)

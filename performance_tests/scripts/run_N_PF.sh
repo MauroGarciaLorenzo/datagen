@@ -38,7 +38,7 @@ do
   --log_dir=${working_dir} \
   -d \
   --agents \
-  run_N_PF.py "${current_directory}/../results/run_N_PF_${num_nodes}"
+  run_N_PF.py "$PWD"
 
   num_nodes=$((num_nodes * 2))
 done

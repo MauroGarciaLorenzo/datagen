@@ -35,7 +35,7 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
           use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0.5, func_params = {}):
+          feasible_rate=0.5, func_params = {}, log_dir=""):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -91,12 +91,13 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, seed=None,
     execution_logs = compss_wait_on(execution_logs)
     cases_df = compss_wait_on(cases_df)
     dims_df = compss_wait_on(dims_df)
-
+    output_dataframes = compss_wait_on(output_dataframes)
 
     if plot_boxplot:
         boxplot(cases_df)
     print_results(execution_logs, cases_df)
-    save_results(cases_df, dims_df, execution_logs, output_dataframes, seed)
+
+    save_results(cases_df, dims_df, execution_logs, output_dataframes, seed, log_dir)
     if cases_df.min().min() < 0:
         print("Warning. Negative numbers in dataframe.")
     print("")
