@@ -36,11 +36,11 @@ from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
 # from datagen.src.SS_stab import small_signal_stability
 
 @task()
-def main(log_dir=None):
+def main(dst_dir=None):
     if len(sys.argv) > 1:
-        log_dir = sys.argv[1]
+        dst_dir = sys.argv[1]
     print("----------------------------------------------------------")
-    print(log_dir)
+    print(dst_dir)
     print("----------------------------------------------------------")
     # %% SET FILE NAMES AND PATHS
     path_data = get_data_path()
@@ -236,14 +236,12 @@ def main(log_dir=None):
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        log_dir=log_dir
+        dst_dir=dst_dir
     )
 
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
-    # Paths to data
-    if len(sys.argv) > 1:
-        log_dir = sys.argv[1]
+
 
 
 

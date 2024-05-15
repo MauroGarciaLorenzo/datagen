@@ -135,12 +135,10 @@ def print_results(execution_logs, cases_df):
     print("")
     print("number of cells: ", len(execution_logs))
     for r in execution_logs:
-        #print("dimensions: ", r[0])
-        print("entropy: ", r[1])
-        print("delta entropy: ", r[2])
-        print("depth: ", r[3])
-        print("")
-        print("")
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", flush=True)
+        print(r, flush=True)
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", flush=True)
+
 
 
 def plot_sample(ax, x, y, z):

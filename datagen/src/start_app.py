@@ -33,8 +33,8 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def start(dimensions, n_samples, rel_tolerance, func, max_depth, log_dir="",
-          seed=None,use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
+def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
+          seed=None, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
           feasible_rate=0.5, func_params = {}):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
@@ -96,8 +96,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, log_dir="",
     if plot_boxplot:
         boxplot(cases_df)
     print_results(execution_logs, cases_df)
-
-    save_results(cases_df, dims_df, execution_logs, output_dataframes, seed, log_dir)
+    save_results(cases_df, dims_df, execution_logs, output_dataframes, seed, dst_dir)
     if cases_df.min().min() < 0:
         print("Warning. Negative numbers in dataframe.")
     print("")

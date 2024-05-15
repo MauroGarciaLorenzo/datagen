@@ -51,7 +51,9 @@ def main():
     if not path.isdir(path_results):
         os.makedirs(path_results)
 
-    # File names
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+    print(path_results, flush=True)
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
 
     gridname = 'IEEE118'  # 'IEEE9'#
 
@@ -364,6 +366,12 @@ def main():
 
     for key, value in output_dataframes.items():
         filename = key + '_seed' + str(seed) + '.xlsx'
+        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+        print(key,flush=True)
+        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+        print(value, flush=True)
+        print("",flush=True)
+        print("",flush=True)
         if not os.path.exists(path_results):
             os.makedirs(path_results)
         if isinstance(value, dict):
