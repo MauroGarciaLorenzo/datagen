@@ -19,7 +19,7 @@ from stability_analysis.powerflow import check_feasibility
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.OPF.NumericalMethods import ac_opf
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
-from GridCalEngine.Core.DataStructures.numerical_circuit import compile_numerical_circuit_at
+from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 import GridCalEngine.api as gce
 
 from .utils_obj_fun import *
@@ -100,7 +100,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     
     start = time.time()
     
-    d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True)
+    d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True, use_autodiff=True)
     # TODO: poner un check para verificar error y ver si ha convergido
     #  hay un atributo d_opf_results.converged
 
