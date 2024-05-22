@@ -24,8 +24,16 @@ import GridCalEngine.api as gce
 
 from .utils_obj_fun import *
 
+try:
+    from pycompss.api.task import task
+    from pycompss.api.api import compss_wait_on
+except ImportError:
+    from datagen.dummies.task import task
+    from datagen.dummies.api import compss_wait_on
+
 import time
 
+@task(returns=7)
 def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_raw_data = kwargs.get("d_raw_data", None)
     d_op = kwargs.get("d_op", None)
