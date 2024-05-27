@@ -3,7 +3,7 @@
 # After this, install the rest separately into $HOME/.local:
 # pip install -e ../GridCal/src/GridCalEngine
 # pip install -e ../stability_analysis
-control==0.9.4
+control==0.10.0
 matplotlib==3.8.2
 numpy==1.26.2
 pandas==2.1.4
