@@ -311,8 +311,13 @@ v_min_v_max_delta_v=[0.95,1.05,0.02]
 N_pf=1
 stability_array = []
 output_dataframes_array = []
+import cProfile
+import pstats
+import io
 
 for _, case in cases_df.iterrows():
+    profiler = cProfile.Profile()
+    profiler.enable()
     stability, output_dataframes = (eval_stability
                                     (case=case,
                                      f=feasible_power_flow_ACOPF, N_pf=N_pf,
@@ -327,48 +332,40 @@ for _, case in cases_df.iterrows():
     stability_array.append(stability)
     output_dataframes_array.append(output_dataframes)
     N_pf=N_pf+1
+    profiler.disable()
+    
+    profiler.print_stats(sort='cumtime')
 
+    s = io.StringIO()
+    ps = pstats.Stats(profiler, stream=s).sort_stats('cumtime')
+    ps.print_stats()
+
+    with open('profiler.txt', 'w+') as f:
+        f.write(s.getvalue())
+
+    
 stability_array = compss_wait_on(stability_array)
 output_dataframes_array = compss_wait_on(output_dataframes_array)
 
 #%%
 
-def write_dataframes_to_excel(df_dict, path,filename):
-    excel_file_path=os.path.join(path, filename)
-    # Create a Pandas Excel writer using xlsxwriter as the engine
-    with pd.ExcelWriter(excel_file_path, engine='xlsxwriter') as writer:
-        # Iterate over each key-value pair in the dictionary
-        for sheet_name, df in df_dict.items():
-            # Write each DataFrame to a separate sheet with the sheet name as the key
-            if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
-                df.to_excel(writer, sheet_name=sheet_name, index=False)
-            else:
-                print(f'Warning: Not writing {sheet_name}. '
-                      f'Not a DataFrame or Series')
+# def write_dataframes_to_excel(df_dict, path,filename):
+#     excel_file_path=os.path.join(path, filename)
+#     # Create a Pandas Excel writer using xlsxwriter as the engine
+#     with pd.ExcelWriter(excel_file_path, engine='xlsxwriter') as writer:
+#         # Iterate over each key-value pair in the dictionary
+#         for sheet_name, df in df_dict.items():
+#             # Write each DataFrame to a separate sheet with the sheet name as the key
+#             if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
+#                 df.to_excel(writer, sheet_name=sheet_name, index=False)
+#             else:
+#                 print(f'Warning: Not writing {sheet_name}. '
+#                       f'Not a DataFrame or Series')
 
-for key, value in output_dataframes.items():
-    filename = key + '_seed' + str(seed)+ '.xlsx'
-    if isinstance(value, dict): 
-        write_dataframes_to_excel(value, path_results, filename)
-    else:
-        pd.DataFrame.to_excel(value, os.path.join(path_results, filename))
+# for key, value in output_dataframes.items():
+#     filename = key + '_seed' + str(seed)+ '.xlsx'
+#     if isinstance(value, dict): 
+#         write_dataframes_to_excel(value, path_results, filename)
+#     else:
+#         pd.DataFrame.to_excel(value, os.path.join(path_results, filename))
 
-# d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
-#                                          d_raw_data=d_raw_data,
-#                                          d_op=d_op,
-#                                          GridCal_grid=GridCal_grid,
-#                                          d_grid=d_grid, d_sg=d_sg,
-#                                          d_vsc=d_vsc,
-#                                          # voltage_profile=voltage_profile,
-#                                          # v_min_v_max_delta_v=v_min_v_max_delta_v
-#                                          V_set=V_set
-#                                          )
-
-# stability, output_dataframes= small_signal_stability(case=case, d_raw_data = d_raw_data,
-#                                                      d_op = d_op,
-#                                                      GridCal_grid = GridCal_grid,
-#                                                      d_grid = d_grid,
-#                                                      d_sg = d_sg,
-#                                                      d_vsc = d_vsc,
-#                                                      d_pf = d_pf,
-#                                                      )
