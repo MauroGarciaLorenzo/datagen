@@ -21,7 +21,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_p
 
 
 def feasible_power_flow_ACOPF(case, **kwargs):
-    """func_params = kwargs.get("func_params", None)
+    func_params = kwargs.get("func_params", None)
     generator = kwargs.get("generator", None)
     dimensions = kwargs.get("dimensions", None)
 
@@ -249,10 +249,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     output_dataframes['d_grid'] = d_grid
     output_dataframes['d_opf'] = d_opf
     output_dataframes['d_pf_original'] = d_pf_original
-    output_dataframes['computing_times'] = pd.Series(computing_times)"""
-    output_d = {}
-    output_d["test"] = {}
-    return 0, output_d
+    output_dataframes['computing_times'] = pd.Series(computing_times)
+    return stability, output_dataframes
 
 def return_d_opf(d_raw_data, d_opf_results):
     df_opf_bus = pd.DataFrame(
