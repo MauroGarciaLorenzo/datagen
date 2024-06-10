@@ -1,4 +1,4 @@
-
+import pandas as pd
 from stability_analysis.optimal_power_flow import process_optimal_power_flow
 
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
@@ -21,7 +21,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_p
 
 
 def feasible_power_flow_ACOPF(case, **kwargs):
-    func_params = kwargs.get("func_params", None)
+    """func_params = kwargs.get("func_params", None)
     generator = kwargs.get("generator", None)
     dimensions = kwargs.get("dimensions", None)
 
@@ -113,7 +113,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                                           pf_init= True,
                                           Sbus_pf= pf_results.Sbus,
                                           voltage_pf= pf_results.voltage,
-                                          plot_error= True)
+                                          plot_error= False)
 
 
     end = time.time()
@@ -231,10 +231,9 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # # Obtain the participation factors for the selected modes
     # T_modal, df_PF = small_signal.FMODAL_REDUCED(ss_sys, plot=True, modeID = [1,3,11])
     # # Obtain the participation factors >= tol, for the selected modes
-
     start = time.time()
 
-    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,23), tol = 0.3)
+    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=False, modeID = np.arange(1,23), tol = 0.3)
 
     end = time.time()
     computing_times['time_partfact']=end - start
@@ -250,8 +249,10 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     output_dataframes['d_grid'] = d_grid
     output_dataframes['d_opf'] = d_opf
     output_dataframes['d_pf_original'] = d_pf_original
-    output_dataframes['computing_times'] = pd.Series(computing_times)
-    return stability, output_dataframes
+    output_dataframes['computing_times'] = pd.Series(computing_times)"""
+    output_d = {}
+    output_d["test"] = {}
+    return 0, output_d
 
 def return_d_opf(d_raw_data, d_opf_results):
     df_opf_bus = pd.DataFrame(

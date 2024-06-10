@@ -362,23 +362,23 @@ def main():
                 else:
                     print(f'Warning: Not writing {sheet_name}. '
                           f'Not a DataFrame or Series')
-
-
-    for key, value in output_dataframes.items():
-        filename = key + '_seed' + str(seed) + '.xlsx'
-        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-        print(key,flush=True)
-        print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-        print(value, flush=True)
-        print("",flush=True)
-        print("",flush=True)
-        if not os.path.exists(path_results):
-            os.makedirs(path_results)
-        if isinstance(value, dict):
-            write_dataframes_to_excel(value, path_results, filename)
-        else:
-            pd.DataFrame.to_excel(value, os.path.join(path_results, filename))
-
+    index = 0
+    for dataframe in output_dataframes_array:
+        for key, value in dataframe.items():
+            filename = f"case_{str(index)}_{key}_seed{str(seed)}.xlsx"
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+            print(key,flush=True)
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+            print(value, flush=True)
+            print("",flush=True)
+            print("",flush=True)
+            if not os.path.exists(path_results):
+                os.makedirs(path_results)
+            if isinstance(value, dict):
+                write_dataframes_to_excel(value, path_results, filename)
+            else:
+                pd.DataFrame.to_excel(value, os.path.join(path_results, filename))
+        index += 1
 
 if __name__ == "__main__":
     main()

@@ -33,7 +33,6 @@ from .utils import check_dims, flatten_list, get_dimension, concat_dataframes
 from .dimensions import Cell, Dimension
 from .viz import plot_divs, plot_stabilities, plot_importances_and_divisions
 from ..tests.utils import unique
-
 try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
@@ -522,7 +521,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
     return dimensions
 
 
-@constraint(computing_units="32")
+@constraint(computing_units="4")
 @task(returns=2)
 def eval_stability(case, f, func_params, **kwargs):
     """Call objective function and return its result.
