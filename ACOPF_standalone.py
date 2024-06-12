@@ -17,6 +17,7 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
+from os import path, getcwd
 import os
 from stability_analysis.data import get_data_path
 from stability_analysis.preprocess import preprocess_data, read_data, \
@@ -365,7 +366,8 @@ def main():
     index = 0
     for dataframe in output_dataframes_array:
         for key, value in dataframe.items():
-            filename = f"case_{str(index)}_{key}_seed{str(seed)}.xlsx"
+            cu = os.environ.get("COMPUTING_UNITS")
+            filename = f"cu_{cu}_case_{str(index)}_{key}_seed{str(seed)}.xlsx"
             print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
             print(key,flush=True)
             print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
