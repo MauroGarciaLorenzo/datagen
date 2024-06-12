@@ -4,7 +4,7 @@
 %     results.gen = [1	1	2.6 0.71641	0.27046;
 %                    2	4	3.10 1.63	0.06654;
 %                    3	6	2.8 0.85	-0.1086;];
-%     
+%
 %     % Number, Vn, Vpu, th (degrees)
 %     results_bus = [1,230.0000,1.02579,  -2.2168;
 %                    2,230.0000,0.99563,  -3.9888;
@@ -20,10 +20,10 @@
 %    [T_NET,T_trafo,T_load,T_TH] = xb2lc(T_NET,T_trafo,T_load,T_TH,T_global.f_Hz);
 %    % Generates the Connectivity Matrix and the Table of nodes for the AC grid:
 %    [connect_mtx, connect_mtx_PI, connect_mtx_rl, T_nodes] = generate_general_connectivity_matrix(AC_grid{:});
-% 
+%
 %    results = powerFlow(T_nodes, T_global, T_DC_NET, AC_grid{:});
 %    results.bus = results.global;
-% 
+%
 %    % write results to T_user
 %    for idx = 1:height(T_user)
 %        bus_user = T_user{idx,"bus"};
@@ -36,4 +36,7 @@
 
 %% Read from excel
 
-     results.bus = readtable(excel,'Sheet','PF','ReadRowNames',false, 'NumHeaderLines', 0, 'ReadVariableNames', true, 'VariableNamingRule','preserve'); 
+     ## results.bus = readtable(excel,'Sheet','PF','ReadRowNames',false, 'NumHeaderLines', 0, 'ReadVariableNames', true, 'VariableNamingRule','preserve');
+
+     results.bus = read_sheet_to_struct(excel, 'PF');
+
