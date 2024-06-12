@@ -18,6 +18,8 @@ and cases from a given set of dimensions and then evaluate these cases to
 determine their stability. Parallel execution is used to evaluate the
 stability of each case.
 """
+import os
+
 import numpy
 import numpy as np
 import pandas as pd
@@ -521,7 +523,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
     return dimensions
 
 
-@constraint(computing_units="4")
+@constraint(computing_units=os.environ.get('COMPUTING_UNITS'))
 @task(returns=2)
 def eval_stability(case, f, func_params, **kwargs):
     """Call objective function and return its result.

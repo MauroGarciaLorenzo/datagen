@@ -17,7 +17,7 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
-from os import path, getcwd
+import os
 from stability_analysis.data import get_data_path
 from stability_analysis.preprocess import preprocess_data, read_data, \
     process_raw, parameters, admittance_matrix
@@ -52,7 +52,7 @@ def main():
         os.makedirs(path_results)
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-    print(path_results, flush=True)
+    print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
 
     gridname = 'IEEE118'  # 'IEEE9'#
