@@ -21,12 +21,13 @@ echo "Using $working_dir as the working directory"
 echo "Current directory is ${current_directory}"
 
 # Run COMPSs execution
-num_nodes=1
-while [ ${num_nodes} -le 1 ]
+computing_units=1
+while [ ${computing_units} -le 112 ]
 do
+  export COMPUTING_UNITS=computing_units
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
-  --num_nodes=${num_nodes} \
+  --num_nodes=1 \
   --job_execution_dir="${current_directory}/.." \
   --worker_working_dir=${working_dir} \
   --master_working_dir=${working_dir} \
@@ -38,6 +39,8 @@ do
   --log_dir=${working_dir} \
   -d \
   ACOPF_standalone.py "$PWD"
-
-  num_nodes=$((num_nodes * 2))
+  if [ ${computing_units} -eq 64 ]; then
+    computing_units=112
+  fi
+  computing_units=$((computing_units * 2))
 done
