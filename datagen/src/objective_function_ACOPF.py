@@ -233,7 +233,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # # Obtain the participation factors >= tol, for the selected modes
     start = time.time()
 
-    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=False, modeID = np.arange(1,23), tol = 0.3)
+    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,23), tol = 0.3)
 
     end = time.time()
     computing_times['time_partfact']=end - start
