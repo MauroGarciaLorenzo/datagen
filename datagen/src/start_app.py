@@ -92,6 +92,8 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
     cases_df = compss_wait_on(cases_df)
     dims_df = compss_wait_on(dims_df)
     output_dataframes = compss_wait_on(output_dataframes)
+    if not isinstance(execution_logs, list):
+        execution_logs = [execution_logs]
 
     if plot_boxplot:
         boxplot(cases_df)

@@ -88,6 +88,44 @@ def flatten_list(data):
     return flattened_list
 
 
+def write_dataframes_to_excel(df_dict, path, filename):
+    excel_file_path = os.path.join(path, filename)
+    # Create a Pandas Excel writer using xlsxwriter as the engine
+    with pd.ExcelWriter(excel_file_path, engine='xlsxwriter') as writer:
+        # Iterate over each key-value pair in the dictionary
+        for sheet_name, df in df_dict.items():
+            # Write each DataFrame to a separate sheet with the sheet name as the key
+            if isinstance(df, dict):
+                df = pd.DataFrame(df)
+            if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
+                df.to_excel(writer, sheet_name=sheet_name, index=False)
+            else:
+                print(f'Warning: Not writing {sheet_name}. '
+                      f'Not a DataFrame or Series')
+
+
+def save_dataframes(output_dataframes_array, path_results, seed):
+    index = 0
+    for dataframe in output_dataframes_array:
+        for key, value in dataframe.items():
+            cu = os.environ.get("COMPUTING_UNITS")
+            filename = f"cu{cu}_case_{str(index)}_{key}_seed{str(seed)}.xlsx"
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+            print(key, flush=True)
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+            print(value, flush=True)
+            print("", flush=True)
+            print("", flush=True)
+            if not os.path.exists(path_results):
+                os.makedirs(path_results)
+            if isinstance(value, dict):
+                write_dataframes_to_excel(value, path_results, filename)
+            else:
+                pd.DataFrame.to_excel(value,
+                                      os.path.join(path_results, filename))
+        index += 1
+
+
 def save_results(cases_df, dims_df, execution_logs, output_dataframes, seed, dst_dir):
     if dst_dir is None: dst_dir = ""
     if dst_dir != "":
@@ -98,11 +136,19 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes, seed, dst
         os.makedirs(result_dir)
 
     cases_df.to_csv(os.path.join(result_dir, "cases_df.csv"), index=False)
-
     dims_df.to_csv(os.path.join(result_dir, "dims_df.csv"), index=False)
 
+    case = 0
     for key, value in output_dataframes.items():
-        value.to_csv(os.path.join(result_dir, f"{key}.csv"))
+        if isinstance(value, pd.DataFrame):
+            value.to_csv(os.path.join(result_dir, f"case{case}_{key}.csv"))
+        else:
+            for k, v in value.items():
+                if isinstance(v, pd.DataFrame):
+                    value.to_csv(os.path.join(result_dir, f"case{case}_{k}.csv"))
+                else:
+                    print("Wrong format for output dataframes")
+        case += 1
 
     with open(os.path.join(result_dir, "execution_logs.txt"), "w") as log_file:
         for log_entry in execution_logs:

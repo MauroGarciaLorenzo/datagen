@@ -122,9 +122,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     entropy, delta_entropy = eval_entropy(stabilities, entropy)
 
-    total_cases = 0
-    for d in dimensions:
-        total_cases += n_samples * d.n_cases
+    total_cases = n_samples * dimensions[0].n_cases
     # Finish recursivity if entropy decreases or cell become too small
     if (delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth or
             feasible_cases/total_cases < feasible_rate):

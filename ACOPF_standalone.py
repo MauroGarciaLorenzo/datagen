@@ -4,6 +4,7 @@ import sys
 import numpy as np
 from matplotlib import pyplot as plt
 
+from datagen.src.utils import save_dataframes
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
 from datagen.src.objective_function_ACOPF import *
@@ -348,39 +349,8 @@ def main():
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
 
+    save_dataframes(output_dataframes_array, path_results, seed)
 
-    # %%
-
-    def write_dataframes_to_excel(df_dict, path, filename):
-        excel_file_path = os.path.join(path, filename)
-        # Create a Pandas Excel writer using xlsxwriter as the engine
-        with pd.ExcelWriter(excel_file_path, engine='xlsxwriter') as writer:
-            # Iterate over each key-value pair in the dictionary
-            for sheet_name, df in df_dict.items():
-                # Write each DataFrame to a separate sheet with the sheet name as the key
-                if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
-                    df.to_excel(writer, sheet_name=sheet_name, index=False)
-                else:
-                    print(f'Warning: Not writing {sheet_name}. '
-                          f'Not a DataFrame or Series')
-    index = 0
-    for dataframe in output_dataframes_array:
-        for key, value in dataframe.items():
-            cu = os.environ.get("COMPUTING_UNITS")
-            filename = f"cu_{cu}_case_{str(index)}_{key}_seed{str(seed)}.xlsx"
-            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-            print(key,flush=True)
-            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-            print(value, flush=True)
-            print("",flush=True)
-            print("",flush=True)
-            if not os.path.exists(path_results):
-                os.makedirs(path_results)
-            if isinstance(value, dict):
-                write_dataframes_to_excel(value, path_results, filename)
-            else:
-                pd.DataFrame.to_excel(value, os.path.join(path_results, filename))
-        index += 1
 
 if __name__ == "__main__":
     main()
