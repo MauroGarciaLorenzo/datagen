@@ -544,12 +544,13 @@ def gen_grid(dimensions):
     :param dimensions: Involved dimensions
     :return: Grid
     """
-    independent_dims = [dim for dim in dimensions if dim.independent_dimension]
+    independent_dims_subdv = [dim for dim in dimensions if dim.independent_dimension if dim.divs > 1]
+    independent_dims_no_subdv = [dim for dim in dimensions if dim.independent_dimension if dim.divs == 1]
     dependent_dims = [dim for dim in dimensions if not dim.independent_dimension]
-    n_dims = len(independent_dims)
-    ini = tuple(dim.borders[0] for dim in independent_dims)
-    fin = tuple(dim.borders[1] for dim in independent_dims)
-    div = tuple(dim.divs for dim in independent_dims)
+    n_dims = len(independent_dims_subdv)
+    ini = tuple(dim.borders[0] for dim in independent_dims_subdv if dim.divs > 1)
+    fin = tuple(dim.borders[1] for dim in independent_dims_subdv if dim.divs > 1)
+    div = tuple(dim.divs for dim in independent_dims_subdv if dim.divs > 1)
     total_div = np.prod(div)
     grid = []
     for i in range(total_div):
@@ -562,17 +563,18 @@ def gen_grid(dimensions):
             for j in range(n_dims)
         ]
         dims = []
-        for j in range(len(independent_dims)):
+        for j in range(len(independent_dims_subdv)):
             dims.append(
                 Dimension(
-                    variable_borders=independent_dims[j].variable_borders,
-                    n_cases=independent_dims[j].n_cases,
-                    divs=independent_dims[j].divs,
+                    variable_borders=independent_dims_subdv[j].variable_borders,
+                    n_cases=independent_dims_subdv[j].n_cases,
+                    divs=independent_dims_subdv[j].divs,
                     borders=(lower[j], upper[j]),
-                    label=independent_dims[j].label,
-                    tolerance=independent_dims[j].tolerance,
-                    cosphi=independent_dims[j].cosphi)
+                    label=independent_dims_subdv[j].label,
+                    tolerance=independent_dims_subdv[j].tolerance,
+                    cosphi=independent_dims_subdv[j].cosphi)
             )
+        dims.extend(independent_dims_no_subdv)
         dims.extend(dependent_dims)
         grid.append(Cell(dims))
     return grid
