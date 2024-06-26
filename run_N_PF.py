@@ -340,8 +340,8 @@ for _, case in cases_df.iterrows():
     ps = pstats.Stats(profiler, stream=s).sort_stats('cumtime')
     ps.print_stats()
 
-    with open('profiler.txt', 'w+') as f:
-        f.write(s.getvalue())
+    # with open('profiler_interconnect.txt', 'w+') as f:
+    #     f.write(s.getvalue())
 
     
 stability_array = compss_wait_on(stability_array)
@@ -369,3 +369,38 @@ output_dataframes_array = compss_wait_on(output_dataframes_array)
 #     else:
 #         pd.DataFrame.to_excel(value, os.path.join(path_results, filename))
 
+#%%
+
+path_interc='C:/Users/Francesca/miniconda3/envs/gridcal_original/hp2c-dt/interconnect_test/'
+path_aec='C:/Users/Francesca/miniconda3/envs/gridcal_original/hp2c-dt/append_and_connect_test/'
+
+def list_csv_files(folder_path):
+    excel_files = []
+    # List all files in the directory
+    files = os.listdir(folder_path)
+    # Filter Excel files
+    for file in files:
+        if file.endswith('.csv'):
+            excel_files.append(file)
+    return excel_files
+
+list_interc=list_csv_files(path_interc)
+list_aec=list_csv_files(path_aec)
+
+diff_shape=[]
+diff_val=[]
+miss_block=[]
+for file in list_interc:
+    mat_int=np.array(pd.read_csv(path_interc+file))
+    try:
+        mat_aec=np.array(pd.read_csv(path_aec+file))
+    except:
+        miss_block.append(file)
+    shape_inc=mat_int.shape
+    shape_aec=mat_aec.shape
+    
+    if shape_inc!=shape_aec:
+        diff_shape.append(file)
+    if np.isclose(mat_int.sum(),mat_aec.sum(),atol=1e-4)==False:
+        diff_val.append(file)
+    
