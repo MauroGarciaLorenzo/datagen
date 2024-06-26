@@ -166,12 +166,21 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_grid, REF_w, num_slk, delta_slk = slack_bus.delta_slk(d_grid)
 
     # %% GENERATE STATE-SPACE MODEL
+    '''connect_fun='append_and_connect' or 'interconnect'. 'append_and_connect' default option.
+                     'append_and_connec': use function that bypass linearization; 
+                     'interconnect': use original ct.interconnect function. 
+    save_ss_matrices=True/False: True: write on csv file the A,B,C,D matrices of the state space. False default option'''
 
     # Generate AC & DC NET State-Space Model
     start = time.time()
+    
+    connect_fun='append_and_connect'#'interconnect'#
+    save_ss_matrices=False
 
     l_blocks, l_states, d_grid = generate_NET.generate_SS_NET_blocks(d_grid,
-                                                                     delta_slk)
+                                                                     delta_slk, 
+                                                                     connect_fun,
+                                                                     save_ss_matrices)
 
     end = time.time()
     computing_times['time_generate_SS_net']=end - start
@@ -182,7 +191,9 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     l_blocks, l_states = generate_elements.generate_SS_elements(d_grid,
                                                                 delta_slk,
                                                                 l_blocks,
-                                                                l_states)
+                                                                l_states,
+                                                                connect_fun,
+                                                                save_ss_matrices)
     end = time.time()
     computing_times['time_generate_SS_elem']=end - start
    
@@ -196,7 +207,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     start = time.time()
 
     inputs, outputs = build_ss.select_io(l_blocks, var_in, var_out)
-    ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs)
+    ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs,connect_fun,save_ss_matrices)
     
     end = time.time()
     computing_times['time_connect']=end - start
