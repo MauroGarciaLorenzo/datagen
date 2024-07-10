@@ -13,7 +13,7 @@ Move into datagen and checkout to the necessary branch and create "packages" dir
 ```bash
 cd datagen
 git checkout 54...
-datagen/packages
+mkdir packages
 ```
 
 Load python
