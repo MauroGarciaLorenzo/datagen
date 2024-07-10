@@ -1,15 +1,18 @@
-import os.path
+import os
 import sys
-
-import numpy as np
-from matplotlib import pyplot as plt
 
 from datagen.src.utils import save_dataframes
 from datagen.src.dimensions import Dimension
-from datagen.src.start_app import start
 from datagen.src.objective_function_ACOPF import *
+from datagen.src.sampling import gen_samples
+from datagen.src.sampling import gen_cases
+from datagen.src.sampling import eval_stability
 
-# from datagen.src.objective_function import small_signal_stability
+from stability_analysis.data import get_data_path
+from stability_analysis.preprocess import preprocess_data, read_data, \
+    process_raw
+from stability_analysis.powerflow import GridCal_powerflow
+from stability_analysis.preprocess.utils import *
 
 try:
     from pycompss.api.task import task
@@ -18,87 +21,62 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
-from os import path, getcwd
-import os
-from stability_analysis.data import get_data_path
-from stability_analysis.preprocess import preprocess_data, read_data, \
-    process_raw, parameters, admittance_matrix
-from stability_analysis.powerflow import GridCal_powerflow, process_powerflow, \
-    slack_bus, fill_d_grid_after_powerflow
-from stability_analysis.state_space import generate_NET, build_ss, \
-    generate_elements
-from stability_analysis.opal import process_opal
-from stability_analysis.analysis import small_signal
-from stability_analysis.preprocess.utils import *
-# from stability_analysis.random_operating_point import random_OP
-from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid, \
-    assign_PQ_Loads_to_grid
-
-# from GridCalEngine.Core.DataStructures import numerical_circuit
-
-# from datagen.src.SS_stab import small_signal_stability
 
 def main():
-    # %% SET FILE NAMES AND PATHS
-
-    # Paths to data
-
-    path_data = get_data_path()
-    path_raw = path.join(path_data, "raw")
-    path_results = ""
-    if len(sys.argv) > 1:
-        path_results += sys.argv[1]
-        path_results += "/"
-    path_results += "results"
-    if not path.isdir(path_results):
-        os.makedirs(path_results)
-
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
 
-    gridname = 'IEEE118'  # 'IEEE9'#
+    # %% PARSE ARGUMENTS AND CASE CONFIGURATION
+    # Results directory
+    if len(sys.argv) > 1:
+        path_results = os.path.join(sys.argv[1], "results")
+    else:
+        path_results = "results"
+    if not os.path.isdir(path_results):
+        os.makedirs(path_results)
 
+    # Input data directory (raw and Excel files)
+    path_data = get_data_path()
+
+    # Case name
+    gridname = 'IEEE118'  # 'IEEE9'
+
+    # Seed
+    seed = 17
+
+    # %% SET FILE NAMES AND PATHS
     if gridname == 'IEEE9':
-        # # # IEEE 9
+        # IEEE 9
         raw = "ieee9_6"
-        excel = "IEEE_9_headers"
+        excel_headers = "IEEE_9_headers"
         excel_data = "IEEE_9"
         excel_op = "OperationData_IEEE_9"
-
     elif gridname == 'IEEE118':
         # IEEE 118
         raw = "IEEE118busREE_Winter_Solved_mod_PQ_91Loads"
-        # excel = "IEEE_118bus_TH" # THÉVENIN
-        # excel = "IEEE_118_01" # SG
-        excel = "IEEE_118_FULL_headers"
+        # excel_headers = "IEEE_118bus_TH"  # THÉVENIN
+        # excel_headers = "IEEE_118_01"  # SG
+        excel_headers = "IEEE_118_FULL_headers"
         excel_data = "IEEE_118_FULL"
         excel_op = "OperationData_IEEE_118"
         excel_lines_ratings = "IEEE_118_Lines"
+    else:
+        raise ValueError(f"Grid {gridname} not implemented")
 
-    # TEXAS 2000 bus
-    # raw = "ACTIVSg2000_solved_noShunts"
-    # excel = "texas_2000"
-
-
-    raw_file = path.join(path_raw, raw + ".raw")
-    # excel_raw = path.join(path_raw, raw + ".xlsx")
-    excel_sys = path.join(path_data, "cases/" + excel + ".xlsx")  # empty
-    excel_sg = path.join(path_data, "cases/" + excel_data + "_data_sg.xlsx")
-    excel_vsc = path.join(path_data, "cases/" + excel_data + "_data_vsc.xlsx")
-    excel_op = path.join(path_data, "cases/" + excel_op + ".xlsx")
-
+    raw_file = os.path.join(path_data, "raw", raw + ".raw")
+    excel_sys = os.path.join(path_data, "cases", excel_headers + ".xlsx")
+    excel_sg = os.path.join(path_data, "cases", excel_data + "_data_sg.xlsx")
+    excel_vsc = os.path.join(path_data, "cases", excel_data + "_data_vsc.xlsx")
+    excel_op = os.path.join(path_data, "cases", excel_op + ".xlsx")
     if gridname == 'IEEE118':
-        excel_lines_ratings = path.join(path_data,
-                                        "cases/" + excel_lines_ratings + ".csv")
+        excel_lines_ratings = os.path.join(
+            path_data, "cases", excel_lines_ratings + ".csv")
 
     # %% READ OPERATION EXCEL FILE
-
     d_op = read_data.read_data(excel_op)
 
     # %% READ RAW FILE
-
-    # Read raw file
     d_raw_data = process_raw.read_raw(raw_file)
 
     if gridname == 'IEEE9':
@@ -107,7 +85,6 @@ def main():
         d_raw_data['load']['Region'] = 1
         d_raw_data['branch']['Region'] = 1
         d_raw_data['results_bus']['Region'] = 1
-
     elif gridname == 'IEEE118':
         # FOR the 118-bus system
         d_raw_data['generator']['Region'] = d_op['Generators']['Region']
@@ -115,128 +92,61 @@ def main():
         # d_raw_data['branch']['Region']=1
         d_raw_data['results_bus']['Region'] = d_op['Buses']['Region']
         d_raw_data['generator']['MBASE'] = d_op['Generators']['Snom']
-
         lines_ratings = pd.read_csv(excel_lines_ratings)
 
-    # Preprocess input raw data to match excel file format
+    # Preprocess input raw data to match Excel file format
     preprocess_data.preprocess_raw(d_raw_data)
 
-    # Write to excel file
-    # preprocess_data.raw2excel(d_raw_data,excel_raw)
-
     # %% Create GridCal Model
-    GridCal_grid = GridCal_powerflow.create_model(path_raw, raw_file)
+    GridCal_grid = GridCal_powerflow.create_model(raw_file)
 
     for line in GridCal_grid.lines:
         bf = int(line.bus_from.code)
         bt = int(line.bus_to.code)
-
         line.rate = lines_ratings.loc[
             lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                 0], 'Max Flow (MW)']
-        # print(line.rate)
 
     for trafo in GridCal_grid.transformers2w:
         bf = int(trafo.bus_from.code)
         bt = int(trafo.bus_to.code)
-
         trafo.rate = lines_ratings.loc[
             lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                 0], 'Max Flow (MW)']
-        # print(trafo.rate)
 
     # %% READ EXCEL FILE
-
     # Read data of grid elements from Excel file
     d_grid, d_grid_0 = read_data.read_sys_data(excel_sys)
-
     # TO BE DELETED
     d_grid = read_data.tempTables(d_grid)
 
-    # # Read simulation configuration parameters from Excel file
-    # sim_config = read_data.get_simParam(excel_sys)
-
     # %% READ EXEC FILES WITH SG AND VSC CONTROLLERS PARAMETERS
-
     d_sg = read_data.read_data(excel_sg)
-
     d_vsc = read_data.read_data(excel_vsc)
 
-    # %%
-    # @task()
-    # def main():
-    """
-    In this method we work with dimensions (main axes), which represent a
-    list of variable_borders. For example, the value of each variable of a concrete
-    dimension could represent the power supplied by a generator, while the
-    value linked to that dimension should be the total sum of energy produced.
-    
-    For each dimension it must be declared:
-        -variable_borders: list of variable_borders represented by tuples containing its
-                lower and upper borders.
-        -n_cases: number of cases taken for each sample (each sample represents
-                the total sum of a dimension). A case is a combination of
-                variable_borders where all summed together equals the sample.
-        -divs: number of divisions in that dimension. It will be the growth
-                order of the number of cells
-        -lower: lower bound of the dimension (minimum value of a sample)
-        -upper: upper bound of the dimension (maximum value of a sample)
-        -label: dimension identifier
-        -independent_dimension: indicates whether the dimension is true (sampleable) or not.
-    
-    Apart from that, it can also be specified the number of samples and
-    the relative tolerance (indicates the portion of the size of the original
-    dimension). For example, if we have a dimension of size 10 and relative
-    tolerance is 0.5, the smallest cell in this dimension will have size 5.
-    Lastly, user should provide the objective function. As optional parameters,
-    the user can define:
-        -use_sensitivity: a boolean indicating whether sensitivity analysis is
-        used or not.
-        -ax: plot axes in case it is desired to show stability points and cells
-        divisions (dimensions length must be 2). Plots saved in
-        "datagen/results/figures".
-        -plot_boxplot: a boolean indicating whether boxplots for each variable
-        must be obtained or not. Plots saved in "datagen/results/figures".
-    """
+    # %% CONFIGURATION OF DIMENSIONS FOR THE DATA GENERATOR
+    # Initialization
+    N_pf = 1
+    voltage_profile = True
+    v_min_v_max_delta_v = [0.95, 1.05, 0.02]
+    loads_power_factor = 0.98
+    generators_power_factor = 0.98
+    n_samples = 1
+    n_cases = 1
+    rel_tolerance = 0.01
+    max_depth = 2
 
-    # p_sg = [(0, 2), (0, 1.5), (0, 1.5)]
-    # p_cig = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
-    # tau_f_g_for = [(0., 2)]
-    # tau_v_g_for = [(0., 2)]
-    # tau_p_g_for = [(0., 2)]
-    # tau_q_g_for = [(0., 2)]
-
+    # Set up dimensions for generators, converters and loads
     p_sg = []
     p_cig = []
-
     for i in range(len(d_op['Generators'])):
         p_sg.append((d_op['Generators']['Pmin_SG'].iloc[i],
                      d_op['Generators']['Pmax_SG'].iloc[i]))
         p_cig.append((d_op['Generators']['Pmin_CIG'].iloc[i],
                       d_op['Generators']['Pmax_CIG'].iloc[i]))
 
-    # p_sg = [
-    #     (d_op['Generators']['Pmin_SG'].iloc[i], d_op['Generators']['Pmax_SG'].iloc[i])
-    #     for i in range(len(d_op['Generators']))]
-    # p_cig = [(d_op['Generators']['Pmin_CIG'].iloc[i],
-    #           d_op['Generators']['Pmax_CIG'].iloc[i]) for i in
-    #          range(len(d_op['Generators']))]
     p_loads = list(d_op['Loads']['Load_Participation_Factor'])
 
-    loads_power_factor = 0.98
-    generators_power_factor = 0.98
-
-    # tau_f_g_for = [(0., 2)]
-    # tau_v_g_for = [(0., 2)]
-    # tau_p_g_for = [(0., 2)]
-    # tau_q_g_for = [(0., 2)]
-
-    n_samples = 1
-    n_cases = 1
-
-    rel_tolerance = 0.01
-    max_depth = 2
-    dimensions = dict()
     dimensions = [
         Dimension(label="p_sg", variable_borders=p_sg,
                   n_cases=n_cases, divs=2,
@@ -258,118 +168,60 @@ def main():
                   cosphi=loads_power_factor)
     ]
 
-    # for d in list(d_op['Generators']['BusNum']):
-    #     dimensions.append(Dimension(label='k_droop_f_gfor_'+str(d), n_cases=n_cases,
-    #                                 divs=1, borders=(0.02,0.12),
-    #                                 independent_dimension=True,
-    #                                 cosphi=None))
-
-    #     dimensions.append(Dimension(label='k_droop_u_gfor_'+str(d), n_cases=n_cases,
-    #                                 divs=1, borders=(0.02/0.3,0.07/0.3),
-    #                                 independent_dimension=True,
-    #                                 cosphi=None))
-
-    #     dimensions.append(Dimension(label='k_droop_f_gfol_'+str(d), n_cases=n_cases,
-    #                                 divs=1, borders=(1/0.12,1/0.02),
-    #                                 independent_dimension=True,
-    #                                 cosphi=None))
-
-    #     dimensions.append(Dimension(label='k_droop_u_gfol_'+str(d), n_cases=n_cases,
-    #                                 divs=1, borders=(1/0.07,1/0.02),
-    #                                 independent_dimension=True,
-    #                                 cosphi=None))
-
+    # Set up independent dimensions (controllers)
     for d in list(d_op['Generators']['BusNum']):
         dimensions.append(
             Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
                       divs=1, borders=(0.01, 0.2),
                       independent_dimension=True,
                       cosphi=None))
-
         dimensions.append(
             Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
                       divs=1, borders=(0.01, 0.2),
                       independent_dimension=True,
                       cosphi=None))
-
         dimensions.append(
             Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
                       divs=1, borders=(0.01, 0.2),
                       independent_dimension=True,
                       cosphi=None))
-
         dimensions.append(
             Dimension(label='tau_droop_u_gfol_' + str(d), n_cases=n_cases,
                       divs=1, borders=(0.01, 0.2),
                       independent_dimension=True,
                       cosphi=None))
 
-    # %%
-
-    from datagen.src.sampling import gen_samples
-    from datagen.src.sampling import gen_cases
-    from datagen.src.sampling import eval_stability
-
-    # from datagen.src.objective_function import *
-
-    seed = 17
-
+    # %% SAMPLING FOR THE DATA GENERATION
+    # Generate samples
     generator = np.random.default_rng(seed)
-
     samples_df = gen_samples(n_samples, dimensions, generator)
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
-    voltage_profile = True
-    v_min_v_max_delta_v = [0.95, 1.05, 0.02]
+    # %% RUN OBJECTIVE FUNCTION
+    func_params = {"N_pf": N_pf, "d_raw_data": d_raw_data, "d_op": d_op,
+                   "GridCal_grid": GridCal_grid, "d_grid": d_grid,
+                   "d_sg": d_sg,
+                   "d_vsc": d_vsc, "voltage_profile": voltage_profile,
+                   "v_min_v_max_delta_v": v_min_v_max_delta_v}
 
-    # V_set=0.95
-
-    # %%
-    N_pf = 1
     stability_array = []
     output_dataframes_array = []
-
-    func_params = {"N_pf":N_pf, "d_raw_data": d_raw_data, "d_op":d_op,
-                   "GridCal_grid":GridCal_grid, "d_grid":d_grid, "d_sg":d_sg,
-                    "d_vsc":d_vsc, "voltage_profile":voltage_profile,
-                    "v_min_v_max_delta_v":v_min_v_max_delta_v}
-
     for _, case in cases_df.iterrows():
-        stability, output_dataframes = (eval_stability
-                                        (case=case,
-                                         f=feasible_power_flow_ACOPF,
-                                         func_params=func_params, generator=generator
-                                         # V_set=V_set
-                                         ))
+        stability, output_dataframes = eval_stability(
+            case=case,
+            f=feasible_power_flow_ACOPF,
+            func_params=func_params,
+            generator=generator)
         stability_array.append(stability)
         output_dataframes_array.append(output_dataframes)
         N_pf = N_pf + 1
 
+    # %% SAVE RESULTS
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
-
     save_dataframes(output_dataframes_array, path_results, seed)
 
 
 if __name__ == "__main__":
     main()
-# d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
-#                                          d_raw_data=d_raw_data,
-#                                          d_op=d_op,
-#                                          GridCal_grid=GridCal_grid,
-#                                          d_grid=d_grid, d_sg=d_sg,
-#                                          d_vsc=d_vsc,
-#                                          # voltage_profile=voltage_profile,
-#                                          # v_min_v_max_delta_v=v_min_v_max_delta_v
-#                                          V_set=V_set
-#                                          )
-
-# stability, output_dataframes= small_signal_stability(case=case, d_raw_data = d_raw_data,
-#                                                      d_op = d_op,
-#                                                      GridCal_grid = GridCal_grid,
-#                                                      d_grid = d_grid,
-#                                                      d_sg = d_sg,
-#                                                      d_vsc = d_vsc,
-#                                                      d_pf = d_pf,
-#                                                      )
