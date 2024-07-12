@@ -19,9 +19,11 @@ list, which is useful for processing the list of logs generated during the
 exploration.
 """
 import os
+import yaml
+import sys
 
 import pandas as pd
-
+from stability_analysis.data import get_data_path
 
 def combine_columns_by_prefix(df, sum_columns):
     """Combine columns in a dataframe by common prefixes."""
@@ -193,6 +195,7 @@ def get_case_results(T_EIG, d_grid):
 
     return df_op, df_real, df_imag, df_freq, df_damp
 
+
 def concat_dataframes(dict_list):
     result_dict = {}
 
@@ -204,3 +207,94 @@ def concat_dataframes(dict_list):
                 result_dict[key] = pd.concat([result_dict[key], value])
 
     return result_dict
+
+
+def get_args():
+    working_dir, path_data, setup_path = parse_args()
+    if not working_dir:
+        working_dir = ""
+    if not path_data:
+        path_data = get_data_path()
+    print("Working directory: ", working_dir)
+    print("Path data: ", path_data)
+    if setup_path:
+        setup = load_yaml(setup_path)
+    else:
+        setup = {}
+    default_values = {
+        "n_pf": 1,
+        "voltage_profile": True,
+        "v_min_v_max_delta_v": [0.95, 1.05, 0.02],
+        "loads_power_factor": 0.98,
+        "generators_power_factor": 0.98,
+        "n_samples": 1,
+        "n_cases": 1,
+        "rel_tolerance": 0.01,
+        "max_depth": 2,
+        "seed": 17,
+        "grid_name": 'IEEE118'
+    }
+
+    for key in default_values:
+        if key not in setup:
+            setup[key] = default_values[key]
+
+    n_pf = setup["n_pf"]
+    voltage_profile = setup["voltage_profile"]
+    v_min_v_max_delta_v = setup["v_min_v_max_delta_v"]
+    loads_power_factor = setup["loads_power_factor"]
+    generators_power_factor = setup["generators_power_factor"]
+    n_samples = setup["n_samples"]
+    n_cases = setup["n_cases"]
+    rel_tolerance = setup["rel_tolerance"]
+    max_depth = setup["max_depth"]
+    seed = setup["seed"]
+    grid_name = setup["grid_name"]
+    print(f'N_PF: {n_pf}')
+    print(f'Voltage profile: {voltage_profile}')
+    print(f'V min, V max, Delta V: {v_min_v_max_delta_v}')
+    print(f'Loads power factor: {loads_power_factor}')
+    print(f'Generators power factor: {generators_power_factor}')
+    print(f'Number of samples: {n_samples}')
+    print(f'Number of cases: {n_cases}')
+    print(f'Relative tolerance: {rel_tolerance}')
+    print(f'Max depth: {max_depth}')
+    print(f'Seed: {seed}')
+    print(f'Grid name: {grid_name}')
+    return generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf, n_samples, path_data, seed, v_min_v_max_delta_v, voltage_profile, working_dir
+
+
+def parse_args():
+    working_dir = None
+    path_data = None
+    setup_content = None
+
+    args = sys.argv[1:]
+    while args:
+        arg = args.pop(0)
+        if arg.startswith('--working_dir='):
+            working_dir = arg.split('=', 1)[1]
+        elif arg.startswith('--path_data='):
+            path_data = arg.split('=', 1)[1]
+        elif arg.startswith('--setup='):
+            setup_content = arg.split('=', 1)[1]
+        else:
+            print(f"Error: Argument not recognized {arg}")
+            sys.exit(1)
+
+    return working_dir, path_data, setup_content
+
+
+def load_yaml(content):
+    try:
+        content = os.path.expanduser(content)
+        # Try to interpret content as a file path
+        with open(content, 'r') as file:
+            return yaml.safe_load(file)
+    except FileNotFoundError:
+        try:
+            # If not a file, try to interpret content as a YAML string
+            return yaml.safe_load(content)
+        except yaml.YAMLError as exc:
+            print(f"Error parsing YAML content: {exc}")
+            sys.exit(1)

@@ -1,14 +1,13 @@
 import os
 import sys
 
-from datagen.src.utils import save_dataframes
+from datagen.src.utils import save_dataframes, get_args
 from datagen.src.dimensions import Dimension
 from datagen.src.objective_function_ACOPF import *
 from datagen.src.sampling import gen_samples
 from datagen.src.sampling import gen_cases
 from datagen.src.sampling import eval_stability
 
-from stability_analysis.data import get_data_path
 from stability_analysis.preprocess import preprocess_data, read_data, \
     process_raw
 from stability_analysis.powerflow import GridCal_powerflow
@@ -23,36 +22,28 @@ except ImportError:
 
 
 def main():
+    (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
+     n_samples, path_data, seed, v_min_v_max_delta_v, voltage_profile,
+     working_dir) = get_args()
+
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
 
     # %% PARSE ARGUMENTS AND CASE CONFIGURATION
-    # Results directory
-    if len(sys.argv) > 1:
-        path_results = os.path.join(sys.argv[1], "results")
-    else:
-        path_results = "results"
+
+    path_results = os.path.join(working_dir, "results")
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
 
-    # Input data directory (raw and Excel files)
-    path_data = get_data_path()
-
-    # Case name
-    gridname = 'IEEE118'  # 'IEEE9'
-
-    # Seed
-    seed = 17
-
     # %% SET FILE NAMES AND PATHS
-    if gridname == 'IEEE9':
+    if grid_name == 'IEEE9':
         # IEEE 9
         raw = "ieee9_6"
         excel_headers = "IEEE_9_headers"
         excel_data = "IEEE_9"
         excel_op = "OperationData_IEEE_9"
-    elif gridname == 'IEEE118':
+    elif grid_name == 'IEEE118':
         # IEEE 118
         raw = "IEEE118busREE_Winter_Solved_mod_PQ_91Loads"
         # excel_headers = "IEEE_118bus_TH"  # THÉVENIN
@@ -62,14 +53,14 @@ def main():
         excel_op = "OperationData_IEEE_118"
         excel_lines_ratings = "IEEE_118_Lines"
     else:
-        raise ValueError(f"Grid {gridname} not implemented")
+        raise ValueError(f"Grid {grid_name} not implemented")
 
     raw_file = os.path.join(path_data, "raw", raw + ".raw")
     excel_sys = os.path.join(path_data, "cases", excel_headers + ".xlsx")
     excel_sg = os.path.join(path_data, "cases", excel_data + "_data_sg.xlsx")
     excel_vsc = os.path.join(path_data, "cases", excel_data + "_data_vsc.xlsx")
     excel_op = os.path.join(path_data, "cases", excel_op + ".xlsx")
-    if gridname == 'IEEE118':
+    if grid_name == 'IEEE118':
         excel_lines_ratings = os.path.join(
             path_data, "cases", excel_lines_ratings + ".csv")
 
@@ -79,13 +70,13 @@ def main():
     # %% READ RAW FILE
     d_raw_data = process_raw.read_raw(raw_file)
 
-    if gridname == 'IEEE9':
+    if grid_name == 'IEEE9':
         # For the IEEE 9-bus system
         d_raw_data['generator']['Region'] = 1
         d_raw_data['load']['Region'] = 1
         d_raw_data['branch']['Region'] = 1
         d_raw_data['results_bus']['Region'] = 1
-    elif gridname == 'IEEE118':
+    elif grid_name == 'IEEE118':
         # FOR the 118-bus system
         d_raw_data['generator']['Region'] = d_op['Generators']['Region']
         d_raw_data['load']['Region'] = d_op['Loads']['Region']
@@ -98,16 +89,16 @@ def main():
     preprocess_data.preprocess_raw(d_raw_data)
 
     # %% Create GridCal Model
-    GridCal_grid = GridCal_powerflow.create_model(raw_file)
+    gridCal_grid = GridCal_powerflow.create_model(raw_file)
 
-    for line in GridCal_grid.lines:
+    for line in gridCal_grid.lines:
         bf = int(line.bus_from.code)
         bt = int(line.bus_to.code)
         line.rate = lines_ratings.loc[
             lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                 0], 'Max Flow (MW)']
 
-    for trafo in GridCal_grid.transformers2w:
+    for trafo in gridCal_grid.transformers2w:
         bf = int(trafo.bus_from.code)
         bt = int(trafo.bus_to.code)
         trafo.rate = lines_ratings.loc[
@@ -126,15 +117,7 @@ def main():
 
     # %% CONFIGURATION OF DIMENSIONS FOR THE DATA GENERATOR
     # Initialization
-    N_pf = 1
-    voltage_profile = True
-    v_min_v_max_delta_v = [0.95, 1.05, 0.02]
-    loads_power_factor = 0.98
-    generators_power_factor = 0.98
-    n_samples = 1
-    n_cases = 1
-    rel_tolerance = 0.01
-    max_depth = 2
+
 
     # Set up dimensions for generators, converters and loads
     p_sg = []
@@ -199,8 +182,8 @@ def main():
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
     # %% RUN OBJECTIVE FUNCTION
-    func_params = {"N_pf": N_pf, "d_raw_data": d_raw_data, "d_op": d_op,
-                   "GridCal_grid": GridCal_grid, "d_grid": d_grid,
+    func_params = {"n_pf": n_pf, "d_raw_data": d_raw_data, "d_op": d_op,
+                   "gridCal_grid": gridCal_grid, "d_grid": d_grid,
                    "d_sg": d_sg,
                    "d_vsc": d_vsc, "voltage_profile": voltage_profile,
                    "v_min_v_max_delta_v": v_min_v_max_delta_v}
@@ -215,13 +198,12 @@ def main():
             generator=generator)
         stability_array.append(stability)
         output_dataframes_array.append(output_dataframes)
-        N_pf = N_pf + 1
+        n_pf = n_pf + 1
 
     # %% SAVE RESULTS
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
     save_dataframes(output_dataframes_array, path_results, seed)
-
 
 if __name__ == "__main__":
     main()

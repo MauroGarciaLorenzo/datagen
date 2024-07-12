@@ -24,7 +24,7 @@ echo "Current directory is ${current_directory}"
 computing_units=1
 while [ ${computing_units} -le 112 ]
 do
-  export COMPUTING_UNITS=computing_units
+  export COMPUTING_UNITS=${computing_units}
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
   --num_nodes=1 \

@@ -25,16 +25,16 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     generator = kwargs.get("generator", None)
     dimensions = kwargs.get("dimensions", None)
 
-    N_pf = func_params.get("N_pf", None)
+    n_pf = func_params.get("n_pf", None)
     d_raw_data = func_params.get("d_raw_data", None)
     d_op = func_params.get("d_op", None)
-    GridCal_grid = func_params.get("GridCal_grid", None)
+    gridCal_grid = func_params.get("gridCal_grid", None)
     d_grid = func_params.get("d_grid", None)
     d_sg = func_params.get("d_sg", None)
     d_vsc = func_params.get("d_vsc", None)
     voltage_profile = func_params.get("voltage_profile", None)
     v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
-    V_set = func_params.get("V_set", None)
+    v_set = func_params.get("v_set", None)
 
 
     computing_times=dict()
@@ -44,12 +44,12 @@ def feasible_power_flow_ACOPF(case, **kwargs):
         print('Error: Voltage profile option selected but v_min, v_max, and delta_v are missing')
         return None, None
 
-    if voltage_profile != None and V_set != None:
-        print('Error: Both Voltage profile and V_set option is selected. Choose only one of them')
+    if voltage_profile != None and v_set != None:
+        print('Error: Both Voltage profile and v_set option is selected. Choose only one of them')
         return None, None
 
-    if voltage_profile == None and V_set == None:
-        print('Error: Neither Voltage profile or V_set option is selected. Choose one of them')
+    if voltage_profile == None and v_set == None:
+        print('Error: Neither Voltage profile or v_set option is selected. Choose one of them')
         return None, None
 
     d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
@@ -58,7 +58,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
 
     # slack_bus_num=80
-    assign_SlackBus_to_grid.assign_slack_bus(GridCal_grid, slack_bus_num)
+    assign_SlackBus_to_grid.assign_slack_bus(gridCal_grid, slack_bus_num)
 
     if voltage_profile != None:
         vmin = v_min_v_max_delta_v[0]
@@ -66,33 +66,33 @@ def feasible_power_flow_ACOPF(case, **kwargs):
         delta_v = v_min_v_max_delta_v[2]
 
         voltage_profile_list, indx_id = gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
-                                                                     GridCal_grid, generator=generator)
+                                                                     gridCal_grid, generator=generator)
 
-        assign_Generators_to_grid.assign_PVGen(GridCal_grid=GridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
+        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
                                                voltage_profile_list=voltage_profile_list, indx_id=indx_id)
 
-    elif V_set != None:
-        assign_Generators_to_grid.assign_PVGen(GridCal_grid=GridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=V_set)
+    elif v_set != None:
+        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
 
-    assign_PQ_Loads_to_grid.assign_PQ_load(GridCal_grid, d_raw_data)
+    assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
     # %% Run 1st POWER-FLOW
 
     # Receive system status from OPAL
-    # d_grid, GridCal_grid, data_old = process_opal.update_OP_from_RT(d_grid, GridCal_grid, data_old)
+    # d_grid, gridCal_grid, data_old = process_opal.update_OP_from_RT(d_grid, gridCal_grid, data_old)
 
     # Get Power-Flow results with GridCal
-    pf_results = GridCal_powerflow.run_powerflow(GridCal_grid)
+    pf_results = GridCal_powerflow.run_powerflow(gridCal_grid)
 
     print('Converged:', pf_results.convergence_reports[0].converged_[0])
 
 
     # Update PF results and operation point of generator elements
-    d_pf_original = process_powerflow.update_OP(GridCal_grid, pf_results, d_raw_data)
+    d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
     d_pf_original['info']=pd.DataFrame()
-    d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, N_pf)
+    d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
 
-    nc = compile_numerical_circuit_at(GridCal_grid)
+    nc = compile_numerical_circuit_at(gridCal_grid)
     nc.generator_data.cost_0[:] = 0
     nc.generator_data.cost_1[:] = 0
     nc.generator_data.cost_2[:] = 0
@@ -119,9 +119,9 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     end = time.time()
     computing_times['time_powerflow']=end - start
 
-    d_opf = process_optimal_power_flow.update_OP(GridCal_grid, d_opf_results, d_raw_data)
+    d_opf = process_optimal_power_flow.update_OP(gridCal_grid, d_opf_results, d_raw_data)
     d_opf['info']=pd.DataFrame()
-    d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf, d_opf_results)
+    d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
 
 
     if d_opf_results.converged == False:
@@ -132,7 +132,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
 
     d_grid, d_opf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
-                                                           GridCal_grid, d_opf,
+                                                           gridCal_grid, d_opf,
                                                            d_raw_data, d_op)
 
     p_sg = np.sum(d_grid['T_gen'].query('element == "SG"')['P']) * 100
@@ -262,9 +262,9 @@ def return_d_opf(d_raw_data, d_opf_results):
     return d_opf
 
 
-def write_csv(d, path, N_pf, filename_start):
+def write_csv(d, path, n_pf, filename_start):
     for df_name, df in d.items():
-        filename=filename_start+'_'+str(N_pf)+'_'+str(df_name)
+        filename=filename_start+'_'+str(n_pf)+'_'+str(df_name)
         pd.DataFrame.to_csv(df,path+filename+".csv")
         
 def write_xlsx(d, path, filename):
