@@ -26,7 +26,7 @@ This main method runs a basic execution (just one case of objective_function_ACO
 
 Usage: python3 ACOPF_standalone.p [--working_dir=<dir>] [--path_data=<path>] [--setup=<yaml>]
 Options:
-  --working_dir=<dir>
+  --working_dir=<dir>: Path where results will be stored (default: "")
   --path_data=<path>: Path to input_data (where the grid setup is stored) 
         (default: stability_analysis/stability_analysis/data)
   --setup=<yaml>: Yaml or path to a yaml file (refer to the setup directory for examples)
