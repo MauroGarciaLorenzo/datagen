@@ -220,24 +220,8 @@ def get_args():
     if setup_path:
         setup = load_yaml(setup_path)
     else:
-        setup = {}
-    default_values = {
-        "n_pf": 1,
-        "voltage_profile": True,
-        "v_min_v_max_delta_v": [0.95, 1.05, 0.02],
-        "loads_power_factor": 0.98,
-        "generators_power_factor": 0.98,
-        "n_samples": 1,
-        "n_cases": 1,
-        "rel_tolerance": 0.01,
-        "max_depth": 2,
-        "seed": 17,
-        "grid_name": 'IEEE118'
-    }
-
-    for key in default_values:
-        if key not in setup:
-            setup[key] = default_values[key]
+        current_directory = os.path.dirname(__file__)
+        setup = load_yaml(f"{current_directory}/../../setup/default_setup.yaml")
 
     n_pf = setup["n_pf"]
     voltage_profile = setup["voltage_profile"]
