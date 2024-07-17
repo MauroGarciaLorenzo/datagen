@@ -1,3 +1,31 @@
+"""
+Standalone execution of the stability analysis function
+(objective_function_ACOPF.py)
+
+Usage: python3 ACOPF_standalone.p [--working_dir=<dir>] [--path_data=<path>]
+[--setup=<yaml>]
+Options:
+  --working_dir=<dir>: Path where results will be stored (default: "")
+  --path_data=<path>: Path to input_data (where the grid setup is stored)
+        (default: stability_analysis/stability_analysis/data)
+  --setup=<yaml>: Yaml or path to a yaml file (refer to the setup directory for
+  examples)
+        User can specify:
+            -n_pf
+            -voltage_profile
+            -v_min_v_max_delta_v
+            -loads_power_factor
+            -generators_power_factor
+            -n_samples: Number of samples to produce for each cell
+            -n_cases: Number of different combinations of cases for each sample
+            -rel_tolerance: Indicates the minimum size of a cell as pu (related
+            to the initial size of the cell)
+            -max_depth: Maximum number of subdivisions
+            -seed: Seed
+            -grid_name: Grid name
+        (default: "setup/default_setup.yaml")
+"""
+
 import os
 import sys
 
@@ -21,29 +49,6 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-"""
-This main method runs a basic execution (just one case of objective_function_ACOPF.py)
-
-Usage: python3 ACOPF_standalone.p [--working_dir=<dir>] [--path_data=<path>] [--setup=<yaml>]
-Options:
-  --working_dir=<dir>: Path where results will be stored (default: "")
-  --path_data=<path>: Path to input_data (where the grid setup is stored) 
-        (default: stability_analysis/stability_analysis/data)
-  --setup=<yaml>: Yaml or path to a yaml file (refer to the setup directory for examples)
-        User can specify: #TODO: explain every argument
-            -n_pf
-            -voltage_profile
-            -v_min_v_max_delta_v
-            -loads_power_factor
-            -generators_power_factor
-            -n_samples: Number of samples to produce for each cell
-            -n_cases: Number of different combinations of cases for each sample
-            -rel_tolerance: Indicates the minimum size of a cell as pu (related to the initial size of the cell)
-            -max_depth: Maximum number of subdivisions
-            -seed: Seed
-            -grid_name: Grid name    
-        (default: "setup/default_setup.yaml")
-"""
 def main():
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, path_data, seed, v_min_v_max_delta_v, voltage_profile,
