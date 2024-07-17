@@ -174,8 +174,19 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # Generate AC & DC NET State-Space Model
     start = time.time()
 
-    l_blocks, l_states, d_grid = generate_NET.generate_SS_NET_blocks(d_grid,
-                                                                     delta_slk)
+    """
+    connect_fun: 'append_and_connect' (default) or 'interconnect'. 
+        'append_and_connect': Uses a function that bypasses linearization; 
+        'interconnect': use original ct.interconnect function. 
+    save_ss_matrices: bool. Default is False. 
+        If True, write on csv file the A, B, C, D matrices of the state space.
+        False default option
+    """
+    connect_fun = 'append_and_connect'
+    save_ss_matrices = False
+
+    l_blocks, l_states, d_grid = generate_NET.generate_SS_NET_blocks(
+        d_grid, delta_slk, connect_fun, save_ss_matrices)
 
     end = time.time()
     computing_times['time_generate_SS_net']=end - start
@@ -183,10 +194,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     start = time.time()
 
     # Generate generator units State-Space Model
-    l_blocks, l_states = generate_elements.generate_SS_elements(d_grid,
-                                                                delta_slk,
-                                                                l_blocks,
-                                                                l_states)
+    l_blocks, l_states = generate_elements.generate_SS_elements(
+        d_grid, delta_slk, l_blocks, l_states, connect_fun, save_ss_matrices)
     end = time.time()
     computing_times['time_generate_SS_elem']=end - start
 
@@ -200,7 +209,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     start = time.time()
 
     inputs, outputs = build_ss.select_io(l_blocks, var_in, var_out)
-    ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs)
+    ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs, connect_fun,
+                              save_ss_matrices)
 
     end = time.time()
     computing_times['time_connect']=end - start
