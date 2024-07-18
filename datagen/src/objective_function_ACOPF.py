@@ -101,7 +101,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
 
-    start = time.time()
+    start = time.perf_counter()
 
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
@@ -116,8 +116,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                                           plot_error= False)
 
 
-    end = time.time()
-    computing_times['time_powerflow']=end - start
+    end = time.perf_counter()
+    computing_times['time_powerflow'] = end - start
 
     d_opf = process_optimal_power_flow.update_OP(gridCal_grid, d_opf_results, d_raw_data)
     d_opf['info']=pd.DataFrame()
@@ -172,23 +172,32 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # %% GENERATE STATE-SPACE MODEL
 
     # Generate AC & DC NET State-Space Model
-    start = time.time()
+    start = time.perf_counter()
 
-    l_blocks, l_states, d_grid = generate_NET.generate_SS_NET_blocks(d_grid,
-                                                                     delta_slk)
+    """
+    connect_fun: 'append_and_connect' (default) or 'interconnect'. 
+        'append_and_connect': Uses a function that bypasses linearization; 
+        'interconnect': use original ct.interconnect function. 
+    save_ss_matrices: bool. Default is False. 
+        If True, write on csv file the A, B, C, D matrices of the state space.
+        False default option
+    """
+    connect_fun = 'append_and_connect'
+    save_ss_matrices = False
 
-    end = time.time()
-    computing_times['time_generate_SS_net']=end - start
+    l_blocks, l_states, d_grid = generate_NET.generate_SS_NET_blocks(
+        d_grid, delta_slk, connect_fun, save_ss_matrices)
 
-    start = time.time()
+    end = time.perf_counter()
+    computing_times['time_generate_SS_net'] = end - start
+
+    start = time.perf_counter()
 
     # Generate generator units State-Space Model
-    l_blocks, l_states = generate_elements.generate_SS_elements(d_grid,
-                                                                delta_slk,
-                                                                l_blocks,
-                                                                l_states)
-    end = time.time()
-    computing_times['time_generate_SS_elem']=end - start
+    l_blocks, l_states = generate_elements.generate_SS_elements(
+        d_grid, delta_slk, l_blocks, l_states, connect_fun, save_ss_matrices)
+    end = time.perf_counter()
+    computing_times['time_generate_SS_elem'] = end - start
 
     # %% BUILD FULL SYSTEM STATE-SPACE MODEL
 
@@ -197,25 +206,26 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     var_out = ['all'] #['all']  # ['GFOR3_w'] #
 
     # Build full system state-space model
-    start = time.time()
+    start = time.perf_counter()
 
     inputs, outputs = build_ss.select_io(l_blocks, var_in, var_out)
-    ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs)
+    ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs, connect_fun,
+                              save_ss_matrices)
 
-    end = time.time()
-    computing_times['time_connect']=end - start
+    end = time.perf_counter()
+    computing_times['time_connect'] = end - start
 
 
     # %% SMALL-SIGNAL ANALYSIS
 
-    start = time.time()
+    start = time.perf_counter()
 
 
     T_EIG = small_signal.FEIG(ss_sys, True)
     T_EIG.head
 
-    end = time.time()
-    computing_times['time_eig']=end - start
+    end = time.perf_counter()
+    computing_times['time_eig'] = end - start
 
 
     # write to excel
@@ -231,12 +241,12 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # # Obtain the participation factors for the selected modes
     # T_modal, df_PF = small_signal.FMODAL_REDUCED(ss_sys, plot=True, modeID = [1,3,11])
     # # Obtain the participation factors >= tol, for the selected modes
-    start = time.time()
+    start = time.perf_counter()
 
     T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,23), tol = 0.3)
 
-    end = time.time()
-    computing_times['time_partfact']=end - start
+    end = time.perf_counter()
+    computing_times['time_partfact'] = end - start
 
     output_dataframes = {}
     df_op, df_real, df_imag, df_freq, df_damp = (
