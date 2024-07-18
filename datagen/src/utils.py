@@ -111,7 +111,7 @@ def save_dataframes(output_dataframes_array, path_results, seed):
     for dataframe in output_dataframes_array:
         for key, value in dataframe.items():
             cu = os.environ.get("COMPUTING_UNITS")
-            filename = f"cu{cu}_case_{str(index)}_{key}_seed{str(seed)}.xlsx"
+            filename = f"cu{cu}_case_{str(index)}_{key}_seed{str(seed)}"
             print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
             print(key, flush=True)
             print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -121,10 +121,11 @@ def save_dataframes(output_dataframes_array, path_results, seed):
             if not os.path.exists(path_results):
                 os.makedirs(path_results)
             if isinstance(value, dict):
-                write_dataframes_to_excel(value, path_results, filename)
+                write_dataframes_to_excel(
+                    value, path_results, f"{filename}.xlsx")
             else:
-                pd.DataFrame.to_excel(value,
-                                      os.path.join(path_results, filename))
+                pd.DataFrame.to_csv(
+                    value, os.path.join(path_results, f"{filename}.csv"))
         index += 1
 
 
@@ -221,8 +222,9 @@ def get_args():
         setup = load_yaml(setup_path)
     else:
         current_directory = os.path.dirname(__file__)
-        setup = load_yaml(f"{current_directory}/../../setup/default_setup.yaml")
-
+        setup = load_yaml(
+            os.path.join(current_directory, "../../setup/default_setup.yaml"))
+    print(f"USING THE FOLLOWING SETUP: \n{setup}", flush=True)
     n_pf = setup["n_pf"]
     voltage_profile = setup["voltage_profile"]
     v_min_v_max_delta_v = setup["v_min_v_max_delta_v"]
