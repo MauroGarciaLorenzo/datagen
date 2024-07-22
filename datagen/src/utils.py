@@ -210,21 +210,17 @@ def concat_dataframes(dict_list):
     return result_dict
 
 
-def get_args():
-    working_dir, path_data, setup_path = parse_args()
-    if not working_dir:
-        working_dir = ""
-    if not path_data:
-        path_data = get_data_path()
-    print("Working directory: ", working_dir)
-    print("Path data: ", path_data)
-    if setup_path:
-        setup = load_yaml(setup_path)
-    else:
+def parse_setup_file(setup_path):
+    # Check setup file path
+    if not setup_path:
         current_directory = os.path.dirname(__file__)
-        setup = load_yaml(
-            os.path.join(current_directory, "../../setup/default_setup.yaml"))
-    print(f"USING THE FOLLOWING SETUP: \n{setup}", flush=True)
+        setup_path = os.path.join(current_directory,
+                                  "../../setup/default_setup.yaml")
+    if not os.path.exists(setup_path):
+        raise FileNotFoundError(f"Setup file {setup_path} not found")
+
+    # Load case parameters
+    setup = load_yaml(setup_path)
     n_pf = setup["n_pf"]
     voltage_profile = setup["voltage_profile"]
     v_min_v_max_delta_v = setup["v_min_v_max_delta_v"]
@@ -247,15 +243,16 @@ def get_args():
     print(f'Max depth: {max_depth}')
     print(f'Seed: {seed}')
     print(f'Grid name: {grid_name}')
-    return generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf, n_samples, path_data, seed, v_min_v_max_delta_v, voltage_profile, working_dir
+    return generators_power_factor, grid_name, loads_power_factor, n_cases, \
+        n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile
 
 
-def parse_args():
+def parse_args(argv):
     working_dir = None
     path_data = None
-    setup_content = None
+    setup_path = None
 
-    args = sys.argv[1:]
+    args = argv[1:]
     while args:
         arg = args.pop(0)
         if arg.startswith('--working_dir='):
@@ -263,12 +260,32 @@ def parse_args():
         elif arg.startswith('--path_data='):
             path_data = arg.split('=', 1)[1]
         elif arg.startswith('--setup='):
-            setup_content = arg.split('=', 1)[1]
+            setup_path = arg.split('=', 1)[1]
         else:
             print(f"Error: Argument not recognized {arg}")
             sys.exit(1)
 
-    return working_dir, path_data, setup_content
+    # Check paths
+    if not working_dir:
+        working_dir = ""
+        print(f"Working directory not specified. Using current directory: "
+              f"{os.getcwd()}")
+    else:
+        if not os.path.exists(working_dir):
+            raise FileNotFoundError(
+                f"Working directory {working_dir} not found")
+        else:
+            print("Working directory: ", working_dir)
+    if not path_data:
+        path_data = get_data_path()
+        print(f"Path data not specified. Using default path: {path_data}")
+    else:
+        if not os.path.exists(path_data):
+            raise FileNotFoundError(f"Path data {path_data} not found")
+        else:
+            print("Path data: ", path_data)
+
+    return working_dir, path_data, setup_path
 
 
 def load_yaml(content):

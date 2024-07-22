@@ -29,7 +29,7 @@ Options:
 import os
 import sys
 
-from datagen.src.utils import save_dataframes, get_args
+from datagen.src.utils import save_dataframes, parse_setup_file, parse_args
 from datagen.src.dimensions import Dimension
 from datagen.src.objective_function_ACOPF import *
 from datagen.src.sampling import gen_samples
@@ -50,16 +50,17 @@ except ImportError:
 
 
 def main():
+    # %% Parse arguments
+    working_dir, path_data, setup_path = parse_args(sys.argv)
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
-     n_samples, path_data, seed, v_min_v_max_delta_v, voltage_profile,
-     working_dir) = get_args()
+     n_samples, seed, v_min_v_max_delta_v, voltage_profile) = \
+        parse_setup_file(setup_path)
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
 
-    # %% PARSE ARGUMENTS AND CASE CONFIGURATION
-
+    # CASE CONFIGURATION
     path_results = os.path.join(working_dir, "results")
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
@@ -144,9 +145,6 @@ def main():
     d_vsc = read_data.read_data(excel_vsc)
 
     # %% CONFIGURATION OF DIMENSIONS FOR THE DATA GENERATOR
-    # Initialization
-
-
     # Set up dimensions for generators, converters and loads
     p_sg = []
     p_cig = []
@@ -232,6 +230,7 @@ def main():
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
     save_dataframes(output_dataframes_array, path_results, seed)
+
 
 if __name__ == "__main__":
     main()
