@@ -3,6 +3,8 @@ PATH_STABILITY_ANALYSIS="$2"
 PATH_GRIDCAL="$3"
 MACHINE_NODE="$4"
 
+echo "LOAD MODULES&&&&&&&&&&&&&&&&&&&&&&&&"
+
 export COMPSS_PYTHON_VERSION="3.12.1"
 module load hdf5
 module load sqlite3
