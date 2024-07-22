@@ -12,8 +12,11 @@ gOPTION=${11}
 tOPTION=${12}
 dOPTION=${13}
 PROJECT_NAME=${14}
+
+echo "PWDDDDDDDDDDDDDDDDDDDDDD: $PWD"
 # shellcheck disable=SC2164
 cd $EXECUTION_FOLDER
+echo "PWDDDDDDDDDDDDDDDDDDDDDD: $PWD"
 
 # Construct the enqueue_compss command based on user options
 enqueue_compss_cmd="enqueue_compss --project_name=$PROJECT_NAME --keep_workingdir --output_profile=$EXECUTION_FOLDER/results/time --scheduler=es.bsc.compss.scheduler.orderstrict.fifo.FifoTS --job_execution_dir=$EXECUTION_FOLDER --log_dir=$EXECUTION_FOLDER --qos=$QOS --exec_time=$EXEC_TIME --pythonpath=$PYTHONPATH --num_nodes=$NUM_NODES --worker_in_master_cpus=112"
