@@ -5,13 +5,28 @@ EXECUTION_FOLDER=$4
 NUM_NODES=$5
 EXEC_TIME=$6
 QOS=$7
-INSTALL_DIR=$8
+ROOT_DIR=$8
 BRANCH=$9
 DATA_DIR=${10}
 gOPTION=${11}
 tOPTION=${12}
 dOPTION=${13}
 PROJECT_NAME=${14}
+
+echo "USER: $USER"
+echo "NAMEFILE: $NAMEFILE"
+echo "SETUP_FOLDER: $SETUP_FOLDER"
+echo "EXECUTION_FOLDER: $EXECUTION_FOLDER"
+echo "NUM_NODES: $NUM_NODES"
+echo "EXEC_TIME: $EXEC_TIME"
+echo "QOS: $QOS"
+echo "ROOT_DIR: $ROOT_DIR"
+echo "BRANCH: $BRANCH"
+echo "DATA_DIR: $DATA_DIR"
+echo "gOPTION: $gOPTION"
+echo "tOPTION: $tOPTION"
+echo "dOPTION: $dOPTION"
+echo "PROJECT_NAME: $PROJECT_NAME"
 
 if [[ "$EXECUTION_FOLDER" != /* ]]; then
   EXECUTION_FOLDER="$HOME/$EXECUTION_FOLDER"
@@ -39,7 +54,7 @@ if [ "$dOPTION" = "true" ]; then
 fi
 
 # Add the rest of the command
-enqueue_compss_cmd="$enqueue_compss_cmd $INSTALL_DIR/$BRANCH/ACOPF_standalone.py --setup=$SETUP_FOLDER/$NAMEFILE --working_dir=$EXECUTION_FOLDER --path_data=$DATA_DIR"
+enqueue_compss_cmd="$enqueue_compss_cmd $ROOT_DIR/ACOPF_standalone.py --setup=$SETUP_FOLDER/$NAMEFILE --working_dir=$EXECUTION_FOLDER --path_data=$DATA_DIR"
 
 # Execute the command
 $enqueue_compss_cmd
