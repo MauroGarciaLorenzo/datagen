@@ -244,7 +244,8 @@ def parse_setup_file(setup_path):
     print(f'Seed: {seed}')
     print(f'Grid name: {grid_name}')
     return generators_power_factor, grid_name, loads_power_factor, n_cases, \
-        n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile
+        n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile, \
+        rel_tolerance, max_depth
 
 
 def parse_args(argv):

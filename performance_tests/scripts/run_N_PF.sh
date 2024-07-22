@@ -11,23 +11,29 @@ username="${parts[-1]}"
 
 # Set up variables and directories
 cd ..
-current_directory=$(pwd)
+current_dir=$(pwd)
+datagen_root_dir="${current_dir}/.."
+stability_dir="${datagen_root_dir}/../stability_analysis"
+input_data="${stability_dir}/stability_analysis/data"
+yaml_file="${datagen_root_dir}/setup/default_setup.yaml"
 working_dir="/gpfs/scratch/bsc19/$username"
-export PYTHONPATH="${current_directory}/../packages/:${PYTHONPATH}:${current_directory}/../:${current_directory}"
+export PYTHONPATH="${current_dir}/../packages/:${PYTHONPATH}:${current_dir}/../:${current_dir}"
 
 # Print user information
 echo "Username is: $username"
 echo "Using $working_dir as the working directory"
-echo "Current directory is ${current_directory}"
+echo "Current directory is ${current_dir}"
 
 # Run COMPSs execution
 num_nodes=1
+computing_units=1
 while [ ${num_nodes} -le 1 ]
 do
+  export COMPUTING_UNITS=${computing_units}
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
   --num_nodes=${num_nodes} \
-  --job_execution_dir="${current_directory}/.." \
+  --job_execution_dir="${current_dir}/.." \
   --worker_working_dir=${working_dir} \
   --master_working_dir=${working_dir} \
   --lang=python \
@@ -38,7 +44,7 @@ do
   --log_dir=${working_dir} \
   -d \
   --agents \
-  run_N_PF.py "$PWD"
+  run_N_PF.py --working_dir="${current_dir}" --path_data="${input_data}" --setup="${yaml_file}"
 
   num_nodes=$((num_nodes * 2))
 done
