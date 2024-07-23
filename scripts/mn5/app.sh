@@ -32,9 +32,13 @@ if [[ "$EXECUTION_FOLDER" != /* ]]; then
   EXECUTION_FOLDER="$HOME/$EXECUTION_FOLDER"
 fi
 
+echo "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$SETUP_FOLDER"
+
 if [[ "$SETUP_FOLDER" != /* ]]; then
   SETUP_FOLDER="$HOME/$SETUP_FOLDER"
 fi
+
+echo "&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&$SETUP_FOLDER"
 
 if [[ "$DATA_DIR" != /* ]]; then
   DATA_DIR="$HOME/$DATA_DIR"
