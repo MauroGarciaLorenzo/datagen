@@ -32,6 +32,14 @@ if [[ "$EXECUTION_FOLDER" != /* ]]; then
   EXECUTION_FOLDER="$HOME/$EXECUTION_FOLDER"
 fi
 
+if [[ "$SETUP_FOLDER" != /* ]]; then
+  SETUP_FOLDER="$HOME/$SETUP_FOLDER"
+fi
+
+if [[ "$DATA_DIR" != /* ]]; then
+  DATA_DIR="$HOME/$DATA_DIR"
+fi
+
 # shellcheck disable=SC2164
 cd $EXECUTION_FOLDER
 
