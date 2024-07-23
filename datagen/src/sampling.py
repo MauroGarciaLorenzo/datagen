@@ -521,7 +521,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
     return dimensions
 
 
-@constraint(computing_units=os.environ.get('COMPUTING_UNITS', '1'))
+@constraint(computing_units=os.environ.get('COMPUTING_UNITS', '10'))
 @task(returns=2)
 def eval_stability(case, f, func_params, **kwargs):
     """Call objective function and return its result.
