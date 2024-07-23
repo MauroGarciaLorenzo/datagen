@@ -53,7 +53,8 @@ def main():
     # %% Parse arguments
     working_dir, path_data, setup_path = parse_args(sys.argv)
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
-     n_samples, seed, v_min_v_max_delta_v, voltage_profile) = \
+     n_samples, seed, v_min_v_max_delta_v, voltage_profile,
+     _, _) = \
         parse_setup_file(setup_path)
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
