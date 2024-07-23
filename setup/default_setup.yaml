@@ -9,3 +9,5 @@ rel_tolerance: 0.01
 max_depth: 2
 seed: 17
 grid_name: IEEE118
+environment:
+  COMPUTING_UNITS: 10
