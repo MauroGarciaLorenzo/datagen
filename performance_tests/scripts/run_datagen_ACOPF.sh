@@ -44,7 +44,7 @@ do
   --log_dir=${working_dir} \
   -d \
   --agents \
-  run_N_PF.py "${current_dir}" "${input_data}" "${yaml_file}"
+  run_datagen_ACOPF.py "${current_dir}" "${input_data}" "${yaml_file}"
 
   num_nodes=$((num_nodes * 2))
 done

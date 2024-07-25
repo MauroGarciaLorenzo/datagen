@@ -4,7 +4,7 @@ import os
 from datagen import parse_args, parse_setup_file
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
-from datagen.src.objective_function_ACOPF import *
+from datagen.src.objective_function_ACOPF import feasible_power_flow_ACOPF
 
 from stability_analysis.preprocess import preprocess_data, read_data, \
     process_raw
@@ -30,9 +30,11 @@ def main(working_dir=None, path_data=None, setup_path=None):
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+    cu = os.environ.get("COMPUTING_UNITS")
 
     # CASE CONFIGURATION
-    path_results = os.path.join(working_dir, "results")
+    path_results = os.path.join(
+        working_dir, "results", f'datagen_ACOPF_seed{seed}_cu{cu}')
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
 
