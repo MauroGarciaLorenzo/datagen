@@ -2,7 +2,7 @@
 Standalone execution of the stability analysis function
 (objective_function_ACOPF.py)
 
-Usage: python3 ACOPF_standalone.p [--working_dir=<dir>] [--path_data=<path>]
+Usage: python3 ACOPF_standalone.py [--working_dir=<dir>] [--path_data=<path>]
 [--setup=<yaml>]
 Options:
   --working_dir=<dir>: Path where results will be stored (default: "")
