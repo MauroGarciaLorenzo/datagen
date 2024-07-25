@@ -20,8 +20,10 @@ except ImportError:
 
 
 @task()
-def main(working_dir=None, path_data=None, setup_path=None):
-    # %% Parse arguments
+def main(working_dir='', path_data='', setup_path=''):
+    # %% Parse arguments (emulate sys.argv list as input)
+    working_dir, path_data, setup_path = parse_args(
+        [None, working_dir, path_data, setup_path])
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
      max_depth) = \
@@ -194,5 +196,4 @@ def main(working_dir=None, path_data=None, setup_path=None):
 
 
 if __name__ == "__main__":
-    main(".",
-         "../stability_analysis/stability_analysis/data")
+    main()
