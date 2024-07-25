@@ -216,6 +216,10 @@ def parse_setup_file(setup_path):
         current_directory = os.path.dirname(__file__)
         setup_path = os.path.join(current_directory,
                                   "../../setup/default_setup.yaml")
+        print (f"Setup file not specified. Using default setup file: "
+                f"{setup_path}")
+    else:
+        print(f"Setup file: {setup_path}")
     if not os.path.exists(setup_path):
         raise FileNotFoundError(f"Setup file {setup_path} not found")
 
@@ -254,6 +258,8 @@ def parse_args(argv):
     setup_path = None
 
     args = argv[1:]
+    # Do not mix flagged arguments with non-flagged arguments
+    i = 0
     while args:
         arg = args.pop(0)
         if arg.startswith('--working_dir='):
@@ -263,8 +269,14 @@ def parse_args(argv):
         elif arg.startswith('--setup='):
             setup_path = arg.split('=', 1)[1]
         else:
-            print(f"Error: Argument not recognized {arg}")
-            sys.exit(1)
+            print(f"Using arguments without flags")
+            if i == 0:
+                working_dir = arg
+            elif i == 1:
+                path_data = arg
+            elif i == 2:
+                setup_path = arg
+        i += 1
 
     # Check paths
     if not working_dir:
@@ -276,7 +288,7 @@ def parse_args(argv):
             raise FileNotFoundError(
                 f"Working directory {working_dir} not found")
         else:
-            print("Working directory: ", working_dir)
+            print("Working directory:", working_dir)
     if not path_data:
         path_data = get_data_path()
         print(f"Path data not specified. Using default path: {path_data}")
@@ -284,7 +296,7 @@ def parse_args(argv):
         if not os.path.exists(path_data):
             raise FileNotFoundError(f"Path data {path_data} not found")
         else:
-            print("Path data: ", path_data)
+            print("Path data:", path_data)
 
     return working_dir, path_data, setup_path
 
