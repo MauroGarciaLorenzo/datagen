@@ -1,4 +1,3 @@
-
 from unittest import TestCase
 
 from datagen import *
@@ -137,7 +136,7 @@ class Test(TestCase):
 
         # (Dim1: 10-70, Dim2: 40-70, Dim3: 10-40)
         self.assertEqual(len(total_cases_df[2]), 0)
-        
+
         # (Dim1: 10-70, Dim2: 40-70, Dim3: 40-70)
         self.assertEqual(len(total_cases_df[3]), 0)
 
@@ -150,7 +149,7 @@ class Test(TestCase):
         dim3 = Dimension(variable_borders= variables, n_cases=3, divs=2, borders=(0, 70),
                          label="Dim3")
         dims = [dim1, dim2, dim3]
-        
+
         for dim in dims:
             dim.tolerance = (dim.borders[1] - dim.borders[0]) * 0.1
 
@@ -179,3 +178,39 @@ class Test(TestCase):
         self.assertEqual(dims_parab_divs, [1, 2, 1])
         self.assertEqual(dims_dim0_divs, [2, 1, 1])
 
+    def test_concat_total_dataframes(self):
+        """
+        Test the 'concat_total_dataframes()' function in a nested dictionary of
+        dataframes so that the recursive feature is tested.
+        """
+        df1 = pd.DataFrame({
+            'A': [1, 2, 3, 4, 5],
+            'B': ['alpha', 'beta', 'gamma', 'delta', 'epsilon'],
+            'C': [10.5, 20.1, 30.3, 40.2, 50.0]
+        })
+        df2 = pd.DataFrame({
+            'D': [101, 102, 103, 104],
+            'E': [1.1, 2.2, 3.3, 4.4],
+            'F': ['A', 'B', 'C', 'D']
+        })
+        df_dict = {'df1': df1, 'dfs': {'df2': df2}}
+
+        # Concatentate df_dict with itself
+        df_dict = concat_total_dataframes(df_dict, df_dict)
+
+        # Run assertions
+        self.assertEqual(df_dict['df1'].shape, (2 * len(df1), df1.shape[1]),
+                         msg=f'Shape of df1: {df_dict["df1"].shape} differs '
+                             f'from the expected shape of df1: '
+                             f'{(2 * len(df1), df1.shape[1])}')
+        self.assertEqual(df_dict['dfs']['df2'].shape,
+                         (2 * len(df2), df2.shape[1]),
+                         msg=f'Shape of df2: {df_dict['dfs']['df2'].shape}'
+                             f'differs from the expected shape of df2: '
+                             f'{(2 * len(df2), df2.shape[1])}')
+        self.assertListEqual(
+            df_dict['dfs']['df2']['E'].tolist(),
+            [1.1, 2.2, 3.3, 4.4, 1.1, 2.2, 3.3, 4.4],
+            msg=f'Nested df_dict["dfs"]["df2"]\n {df_dict["dfs"]["df2"]}\n'
+                f'is not as expected')
+        print(df_dict)

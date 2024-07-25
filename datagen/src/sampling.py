@@ -89,6 +89,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
     stabilities = []
+    output_dataframes_list = []
     feasible_cases = 0
     for _, case in cases_df.iterrows():
         # TODO: Gestionar casos no convergidos en OPF
@@ -97,21 +98,23 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                                                       func_params=func_params,
                                                       dimensions=dimensions,
                                                       generator=generator)
-        if stability == None: continue
+        if stability is None:
+            # TODO: now considering unfeasible case as unstable for simplicity
+            stability = 0
         feasible_cases += 1
         stabilities.append(stability)
-        output_dataframes = compss_wait_on(output_dataframes)
-        if total_dataframes:
-            for label, df in output_dataframes.items():
-                total_dataframes[label] = (
-                    pd.concat(
-                        [total_dataframes[label], output_dataframes[label]],
-                        axis=0, ignore_index=True))
-        else:
-            total_dataframes = output_dataframes
+        output_dataframes_list.append(output_dataframes)
 
     stabilities = compss_wait_on(stabilities)
+    output_dataframes_list = compss_wait_on(output_dataframes_list)
     cases_df["Stability"] = stabilities
+    # Collect each cases dictionary of dataframes into total_dataframes
+    for output_dfs in output_dataframes_list:
+        if total_dataframes:
+            total_dataframes = concat_total_dataframes(total_dataframes,
+                                                       output_dfs)
+        else:
+            total_dataframes = output_dfs
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:
@@ -148,6 +151,40 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                          generator=generator, feasible_rate=feasible_rate,
                          func_params=func_params, dataframes=total_dataframes))
         return children_total, cases_df, dims_df, total_dataframes
+
+
+def concat_total_dataframes(total_dataframes, output_dataframes):
+    """
+    Concatenate dataframes or look for dataframes inside dictionaries. Assume
+    total_dataframes is already initialized with at least one instance.
+    If output_dataframes is None, it means the current case is unfeasible. In
+    such case, we should append rows of NaN values to the total dataframes.
+    Currently only keeping dataframes with one row per case. More complex cases
+    are not handled.
+    """
+    labels_to_remove = []
+    # Loop over items of the dictionary
+    for label, item in total_dataframes.items():
+        if isinstance(item, pd.DataFrame):
+            # Concatenate dataframes
+            if output_dataframes is None:
+                to_append = pd.DataFrame([[np.nan] * len(item.columns)],
+                                         columns=item.columns)
+            else:
+                to_append = output_dataframes[label]
+            total_dataframes[label] = pd.concat(
+                [item, to_append], axis=0, ignore_index=True)
+        elif isinstance(item, dict) or 'Series' in str(type(item)):
+            # Skipping dictionaries with inner dataframes
+            labels_to_remove.append(label)
+        else:
+            # Items in the dictionary should be dataframes
+            raise NotImplementedError(f"Type {type(item)} not implemented")
+
+    # Remove components that are not dataframes
+    for label in labels_to_remove:
+        total_dataframes.pop(label)
+    return total_dataframes
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
@@ -271,7 +308,7 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
             # Compose g_for dimension
             # Pick bounds of each variable. The min value is p_cig dimension's
             # min bound, and max is the value sampled for ith p_cig's variable
-            
+
             # g_for_variables = np.array([
             #     (p_cig.variable_borders[x, 0], cases_p_cig_df.iloc[i, x])
             #     for x in range(len(p_cig.variable_borders))])
@@ -303,9 +340,9 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
                 dims_g_fol.append(g_fol_sample)
                 cases_g_fol.append(np.array(case_g_fol).ravel())
 
-                        
-                        
-                    
+
+
+
 
         cases_g_for_df = pd.DataFrame(
             cases_g_for,
@@ -689,7 +726,7 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
 
 
 def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,generator):
-    
+
     # Find Index of slack bus
     i_slack_bus= d_raw_data['results_bus'].query('I==@slack_bus').index[0]
 
@@ -730,7 +767,7 @@ def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,gene
     # Initialize a row to store de voltages calculated, with a length equal to the number of nodes
     voltages = [0]*len(indx_id)
     voltages[start_node]=V
-    
+
     while len(pending)>0:
         to_calculate = []
         current_node = pending[0]
@@ -746,7 +783,7 @@ def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,gene
                     pending.append(adjacent_node)
                     distances[adjacent_node]=[current_node_distance+1,0]
                 elif adjacent_node_distance[0] > current_node_distance:
-                    to_calculate.append(adjacent_node)            
+                    to_calculate.append(adjacent_node)
         for adjacent_node in to_calculate:
             calculate_voltage(adjacent_node, current_node, delta_v, distances, generators_index_list, voltages, vmin, vmax, generator)
     #    print(f"El node {current_node} donara a {to_calculate}")
@@ -756,7 +793,7 @@ def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,gene
         pending.pop(0)
         # print(voltages)
     # print(distances)
-    
+
     return voltages, indx_id
 
 def calculate_voltage(adjacent_node, current_node, delta_v, distances, generators_index_list, voltages, vmin, vmax, generator):
@@ -778,4 +815,4 @@ def calculate_voltage(adjacent_node, current_node, delta_v, distances, generator
             voltages[adjacent_node]=V_adjacent_node
     else:
         voltages[adjacent_node]=voltages[current_node]
-         
+
