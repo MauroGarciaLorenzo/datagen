@@ -371,36 +371,36 @@ output_dataframes_array = compss_wait_on(output_dataframes_array)
 
 #%%
 
-path_interc='C:/Users/Francesca/miniconda3/envs/gridcal_original/hp2c-dt/interconnect_test/'
-path_aec='C:/Users/Francesca/miniconda3/envs/gridcal_original/hp2c-dt/append_and_connect_test/'
+# path_interc='C:/Users/Francesca/miniconda3/envs/gridcal_original/hp2c-dt/interconnect_test/'
+# path_aec='C:/Users/Francesca/miniconda3/envs/gridcal_original/hp2c-dt/append_and_connect_test/'
 
-def list_csv_files(folder_path):
-    excel_files = []
-    # List all files in the directory
-    files = os.listdir(folder_path)
-    # Filter Excel files
-    for file in files:
-        if file.endswith('.csv'):
-            excel_files.append(file)
-    return excel_files
+# def list_csv_files(folder_path):
+#     excel_files = []
+#     # List all files in the directory
+#     files = os.listdir(folder_path)
+#     # Filter Excel files
+#     for file in files:
+#         if file.endswith('.csv'):
+#             excel_files.append(file)
+#     return excel_files
 
-list_interc=list_csv_files(path_interc)
-list_aec=list_csv_files(path_aec)
+# list_interc=list_csv_files(path_interc)
+# list_aec=list_csv_files(path_aec)
 
-diff_shape=[]
-diff_val=[]
-miss_block=[]
-for file in list_interc:
-    mat_int=np.array(pd.read_csv(path_interc+file))
-    try:
-        mat_aec=np.array(pd.read_csv(path_aec+file))
-    except:
-        miss_block.append(file)
-    shape_inc=mat_int.shape
-    shape_aec=mat_aec.shape
+# diff_shape=[]
+# diff_val=[]
+# miss_block=[]
+# for file in list_interc:
+#     mat_int=np.array(pd.read_csv(path_interc+file))
+#     try:
+#         mat_aec=np.array(pd.read_csv(path_aec+file))
+#     except:
+#         miss_block.append(file)
+#     shape_inc=mat_int.shape
+#     shape_aec=mat_aec.shape
     
-    if shape_inc!=shape_aec:
-        diff_shape.append(file)
-    if np.isclose(mat_int.sum(),mat_aec.sum(),atol=1e-4)==False:
-        diff_val.append(file)
+#     if shape_inc!=shape_aec:
+#         diff_shape.append(file)
+#     if np.isclose(mat_int.sum(),mat_aec.sum(),atol=1e-4)==False:
+#         diff_val.append(file)
     
