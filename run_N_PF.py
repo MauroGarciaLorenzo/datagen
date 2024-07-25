@@ -20,9 +20,8 @@ except ImportError:
 
 
 @task()
-def main(dst_dir=None):
+def main(working_dir=None, path_data=None, setup_path=None):
     # %% Parse arguments
-    working_dir, path_data, setup_path = parse_args(sys.argv)
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
      max_depth) = \
@@ -185,7 +184,7 @@ def main(dst_dir=None):
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        dst_dir=dst_dir
+        dst_dir=path_results
     )
 
     stability_array = compss_wait_on(stability_array)
@@ -193,4 +192,5 @@ def main(dst_dir=None):
 
 
 if __name__ == "__main__":
-    main()
+    main(".",
+         "../stability_analysis/stability_analysis/data")

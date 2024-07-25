@@ -44,7 +44,7 @@ do
   --log_dir=${working_dir} \
   -d \
   --agents \
-  run_N_PF.py --working_dir="${current_dir}" --path_data="${input_data}" --setup="${yaml_file}"
+  run_N_PF.py "${current_dir}" "${input_data}" "${yaml_file}"
 
   num_nodes=$((num_nodes * 2))
 done
