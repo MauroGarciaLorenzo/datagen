@@ -12,6 +12,7 @@ gOPTION=${11}
 tOPTION=${12}
 dOPTION=${13}
 PROJECT_NAME=${14}
+NAME_SIM=${15}
 
 echo "USER: $USER"
 echo "NAMEFILE: $NAMEFILE"
@@ -44,7 +45,7 @@ fi
 cd $EXECUTION_FOLDER
 
 # Construct the enqueue_compss command based on user options
-enqueue_compss_cmd="enqueue_compss --project_name=$PROJECT_NAME --keep_workingdir --job_name=$NAMEFILE --agents --scheduler=es.bsc.compss.scheduler.orderstrict.fifo.FifoTS --job_execution_dir=$EXECUTION_FOLDER --log_dir=$EXECUTION_FOLDER --qos=$QOS --exec_time=$EXEC_TIME --pythonpath=$PYTHONPATH --num_nodes=$NUM_NODES --worker_in_master_cpus=112"
+enqueue_compss_cmd="enqueue_compss --project_name=$PROJECT_NAME --keep_workingdir --job_name=$NAME_SIM --agents --scheduler=es.bsc.compss.scheduler.orderstrict.fifo.FifoTS --job_execution_dir=$EXECUTION_FOLDER --log_dir=$EXECUTION_FOLDER --qos=$QOS --exec_time=$EXEC_TIME --pythonpath=$PYTHONPATH --num_nodes=$NUM_NODES --worker_in_master_cpus=112"
 
 # Add -g option if specified
 if [ "$gOPTION" = "true" ]; then
