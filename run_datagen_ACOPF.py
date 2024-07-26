@@ -18,6 +18,8 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
+import warnings
+warnings.filterwarnings("ignore")
 
 @task()
 def main(working_dir='', path_data='', setup_path=''):

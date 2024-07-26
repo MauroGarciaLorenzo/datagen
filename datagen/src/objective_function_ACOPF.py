@@ -35,10 +35,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     voltage_profile = func_params.get("voltage_profile", None)
     v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
     v_set = func_params.get("v_set", None)
-
-
+    
     computing_times=dict()
-
 
     if voltage_profile != None and v_min_v_max_delta_v == None:
         print('Error: Voltage profile option selected but v_min, v_max, and delta_v are missing')
@@ -97,7 +95,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     nc.generator_data.cost_1[:] = 0
     nc.generator_data.cost_2[:] = 0
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)#, tolerance=1e-8, max_iter=100)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=1, ips_tolerance=1e-8)#, max_iter=100)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-8)#, max_iter=100)
 
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
 

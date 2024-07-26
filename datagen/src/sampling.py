@@ -50,7 +50,8 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator, feasible_rate, func_params,
-                total_dataframes=None):
+                 total_dataframes=None
+                 ):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -97,7 +98,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         stability, output_dataframes = eval_stability(case=case, f=func,
                                                       func_params=func_params,
                                                       dimensions=dimensions,
-                                                      generator=generator)
+                                                      generator=generator
+                                                      )
         if stability is None:
             # TODO: now considering unfeasible case as unstable for simplicity
             stability = 0
@@ -789,7 +791,7 @@ def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,gene
     #    print(f"El node {current_node} donara a {to_calculate}")
         current_bus=d_raw_data['results_bus'].loc[current_node,'I']
         to_calculate_bus=list(d_raw_data['results_bus'].loc[to_calculate,'I'])
-        print(f"El bus {current_bus} donara a {to_calculate_bus}")
+        # print(f"El bus {current_bus} donara a {to_calculate_bus}")
         pending.pop(0)
         # print(voltages)
     # print(distances)
