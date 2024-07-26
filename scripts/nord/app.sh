@@ -39,4 +39,3 @@ enqueue_compss_cmd="$enqueue_compss_cmd $INSTALL_DIR/$BRANCH/ACOPF_standalone.py
 # Execute the command
 $enqueue_compss_cmd
 echo $enqueue_compss_cmd
-echo DONEEE
