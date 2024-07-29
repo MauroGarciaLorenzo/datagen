@@ -109,6 +109,8 @@ def write_dataframes_to_excel(df_dict, path, filename):
 def save_dataframes(output_dataframes_array, path_results, seed):
     index = 0
     for dataframe in output_dataframes_array:
+        if dataframe is None:
+            continue
         for key, value in dataframe.items():
             cu = os.environ.get("COMPUTING_UNITS")
             filename = f"cu{cu}_case_{str(index)}_{key}_seed{str(seed)}"
