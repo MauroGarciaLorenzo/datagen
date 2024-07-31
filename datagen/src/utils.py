@@ -19,10 +19,14 @@ list, which is useful for processing the list of logs generated during the
 exploration.
 """
 import os
+
+import numpy as np
 import yaml
 import sys
 
 import pandas as pd
+
+from collections.abc import Sequence
 from stability_analysis.data import get_data_path
 
 def combine_columns_by_prefix(df, sum_columns):
@@ -199,17 +203,62 @@ def get_case_results(T_EIG, d_grid):
     return df_op, df_real, df_imag, df_freq, df_damp
 
 
-def concat_dataframes(dict_list):
-    result_dict = {}
+def concat_df_dict(*dicts):
+    """
+    Receive a list of dictionaries of dataframes and concatenate the dataframes
+    to return a unique dictionary of dataframes. Only deal with dataframes
+    inside the dictionary, do not handle other types of data.
+    Example:
+      >> dict_list = [{'a': df1, 'b': df2}, {'a': df3, 'b': df4}]
+      >> result_dict = {'a': pd.concat([df1, df3]), 'b': pd.concat([df2, df4])}
+    """
+    # Consider case of list inside a list
+    if isinstance(dicts, Sequence):
+        if len(dicts) == 1 and isinstance(dicts[0], Sequence):
+            dicts = dicts[0]
 
-    for d in dict_list:
-        for key, value in d.items():
-            if key not in result_dict:
-                result_dict[key] = value
+    # Collect columns of the different dataframes from the first correct
+    # item in the sequence
+    cols_dict = {}
+    for d in dicts:
+        if d is None:
+            continue
+        if isinstance(d, dict):
+            for df_label, df in d.items():
+                if isinstance(df, pd.DataFrame):
+                    cols_dict[df_label] = df.columns
+            break
+        else:
+            raise ValueError("Input must be a list of dictionaries")
+
+    if not cols_dict:
+        # There is no non-null value in the input sequence
+        return {'none_values': [None] * len(dicts)}
+
+    # Concat dataframes
+    output_dict = {}
+    for d in dicts:
+        for df_label, cols in cols_dict.items():
+            # Get row to be appended
+            if not d:
+                # d is None or empty
+                to_append = pd.DataFrame([[np.nan] * len(cols)],
+                                         columns=cols)
+            elif isinstance(d, dict):
+                to_append = d[df_label]
             else:
-                result_dict[key] = pd.concat([result_dict[key], value])
+                raise ValueError(f"Input must be a list of dictionaries, "
+                                 f"received type {type(d)} instead of dict.")
 
-    return result_dict
+            # Concatenate dataframes
+            if df_label not in output_dict:
+                output_dict[df_label] = to_append
+            else:
+                output_dict[df_label] = pd.concat(
+                    [output_dict[df_label], to_append], axis=0,
+                    ignore_index=True)
+
+    return output_dict
 
 
 def parse_setup_file(setup_path):

@@ -31,7 +31,7 @@ from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import qmc
 from sklearn.preprocessing import StandardScaler
 
-from .utils import check_dims, flatten_list, get_dimension, concat_dataframes
+from .utils import check_dims, flatten_list, get_dimension, concat_df_dict
 from .dimensions import Cell, Dimension
 from .viz import plot_divs, plot_stabilities, plot_importances_and_divisions
 from ..tests.utils import unique
@@ -113,10 +113,18 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     # Collect each cases dictionary of dataframes into total_dataframes
     for output_dfs in output_dataframes_list:
         if total_dataframes:
-            total_dataframes = concat_total_dataframes(total_dataframes,
-                                                       output_dfs)
+            total_dataframes = concat_df_dict(total_dataframes,
+                                              output_dfs)
         else:
             total_dataframes = output_dfs
+    # Remove elements of the dict of dataframes that are not a dataframe
+    labels_to_remove = []
+    if total_dataframes:
+        for label, df in total_dataframes.items():
+            if type(df) is not pd.DataFrame:
+                labels_to_remove.append(label)
+        for label in labels_to_remove:
+            total_dataframes.pop(label)
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:
@@ -153,40 +161,6 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
                          generator=generator, feasible_rate=feasible_rate,
                          func_params=func_params, dataframes=total_dataframes))
         return children_total, cases_df, dims_df, total_dataframes
-
-
-def concat_total_dataframes(total_dataframes, output_dataframes):
-    """
-    Concatenate dataframes or look for dataframes inside dictionaries. Assume
-    total_dataframes is already initialized with at least one instance.
-    If output_dataframes is None, it means the current case is unfeasible. In
-    such case, we should append rows of NaN values to the total dataframes.
-    Currently only keeping dataframes with one row per case. More complex cases
-    are not handled.
-    """
-    labels_to_remove = []
-    # Loop over items of the dictionary
-    for label, item in total_dataframes.items():
-        if isinstance(item, pd.DataFrame):
-            # Concatenate dataframes
-            if output_dataframes is None:
-                to_append = pd.DataFrame([[np.nan] * len(item.columns)],
-                                         columns=item.columns)
-            else:
-                to_append = output_dataframes[label]
-            total_dataframes[label] = pd.concat(
-                [item, to_append], axis=0, ignore_index=True)
-        elif isinstance(item, dict) or 'Series' in str(type(item)):
-            # Skipping dictionaries with inner dataframes
-            labels_to_remove.append(label)
-        else:
-            # Items in the dictionary should be dataframes
-            raise NotImplementedError(f"Type {type(item)} not implemented")
-
-    # Remove components that are not dataframes
-    for label in labels_to_remove:
-        total_dataframes.pop(label)
-    return total_dataframes
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
@@ -249,7 +223,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     cases_df = pd.concat(list_cases_children_df, ignore_index=True)
     dims_df = pd.concat(list_dims_children_df, ignore_index=True)
     children_total_params = flatten_list(children_total_params)
-    dataframes = concat_dataframes(list_dataframes_children)
+    dataframes = concat_df_dict(list_dataframes_children)
 
     return cases_df, dims_df, children_total_params, dataframes
 
