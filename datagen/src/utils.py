@@ -135,31 +135,28 @@ def save_dataframes(output_dataframes_array, path_results, seed):
         index += 1
 
 
-def save_results(cases_df, dims_df, execution_logs, output_dataframes, seed, dst_dir):
-    if dst_dir is None: dst_dir = ""
-    if dst_dir != "":
-        dst_dir += "/"
-    result_dir = f"{dst_dir}results/seed{str(seed)}"
+def save_results(cases_df, dims_df, execution_logs, output_dataframes,
+                 dst_dir):
+    if dst_dir is None:
+        dst_dir = ""
 
-    if not os.path.exists(result_dir):
-        os.makedirs(result_dir)
+    if not os.path.exists(dst_dir):
+        os.makedirs(dst_dir)
 
-    cases_df.to_csv(os.path.join(result_dir, "cases_df.csv"), index=False)
-    dims_df.to_csv(os.path.join(result_dir, "dims_df.csv"), index=False)
+    cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"), index=False)
+    dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"), index=False)
 
-    case = 0
     for key, value in output_dataframes.items():
         if isinstance(value, pd.DataFrame):
-            value.to_csv(os.path.join(result_dir, f"case{case}_{key}.csv"))
+            value.to_csv(os.path.join(dst_dir, f"case_{key}.csv"))
         else:
             for k, v in value.items():
                 if isinstance(v, pd.DataFrame):
-                    value.to_csv(os.path.join(result_dir, f"case{case}_{k}.csv"))
+                    value.to_csv(os.path.join(dst_dir, f"case_{k}.csv"))
                 else:
                     print("Wrong format for output dataframes")
-        case += 1
 
-    with open(os.path.join(result_dir, "execution_logs.txt"), "w") as log_file:
+    with open(os.path.join(dst_dir, "execution_logs.txt"), "w") as log_file:
         for log_entry in execution_logs:
             log_file.write("Dimensions:\n")
             for dim in log_entry[0]:
