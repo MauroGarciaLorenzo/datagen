@@ -669,14 +669,14 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
                 cases.append(cases_heritage_df.iloc[[idx], :])
                 dims.append(dims_heritage_df.iloc[[idx], :])
                 if heritage_dataframes:
-                    if len(dataframes) != 0:
-                        for label in heritage_dataframes.keys():
+                    for label in heritage_dataframes.keys():
+                        # If the dataframe is not empty, concatenate it
+                        if label in dataframes.keys():
                             dataframes[label] = (
                                 pd.concat([dataframes[label],
                                            heritage_dataframes[label].iloc[[idx], :]],
                                           axis=0))
-                    else:
-                        for label in heritage_dataframes.keys():
+                        else:
                             dataframes[label] = heritage_dataframes[label].iloc[
                                                 [idx], :]
 
