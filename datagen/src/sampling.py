@@ -121,7 +121,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     labels_to_remove = []
     if total_dataframes:
         for label, df in total_dataframes.items():
-            if type(df) is not pd.DataFrame:
+            if df is not None and type(df) is not pd.DataFrame:
+                # Keep None values that work as a placeholder
                 labels_to_remove.append(label)
         for label in labels_to_remove:
             total_dataframes.pop(label)

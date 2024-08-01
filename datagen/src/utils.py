@@ -238,14 +238,20 @@ def concat_df_dict(*dicts):
         for df_label, cols in cols_dict.items():
             # Get row to be appended
             if not d:
+                raise ValueError(
+                    f"Input must be a list of non-empty dictionaries "
+                    f"that contain dataframes. Received type {type(d)}.")
+            elif d[df_label] is None:
                 # d is None or empty
                 to_append = pd.DataFrame([[np.nan] * len(cols)],
                                          columns=cols)
             elif isinstance(d, dict):
                 to_append = d[df_label]
-            else:
-                raise ValueError(f"Input must be a list of dictionaries, "
-                                 f"received type {type(d)} instead of dict.")
+            else:    
+                raise ValueError(
+                    f"Input must be a list of dictionaries of dataframes. "
+                    f"Received type {type(d)} with entry '{df_label}' of "
+                    f"type {type(d[df_label])}.")
 
             # Concatenate dataframes
             if df_label not in output_dict:

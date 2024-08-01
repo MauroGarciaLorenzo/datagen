@@ -21,6 +21,14 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_p
 
 
 def feasible_power_flow_ACOPF(case, **kwargs):
+    """
+    Runs the alternating current optimal power flow (ACOPF) stability analysis.
+    :param case: pandas DataFrame with the case parameters
+    :param kwargs: dictionary with additional parameters
+    :return: stability: 0 if the system is stable, 1 otherwise
+    :return: output_dataframes: Mandatory dictionary with at least the
+        entries that contain dataframes (None entries if feasibility fails)
+    """
     func_params = kwargs.get("func_params", None)
     generator = kwargs.get("generator", None)
     dimensions = kwargs.get("dimensions", None)
@@ -35,20 +43,25 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     voltage_profile = func_params.get("voltage_profile", None)
     v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
     v_set = func_params.get("v_set", None)
-    
+
+    # Initialize essential output dataframes to None
     computing_times=dict()
+    output_dataframes = {}
+    output_dataframes['df_op'] = None
+    output_dataframes['df_real'] = None
+    output_dataframes['df_imag'] = None
+    output_dataframes['df_freq'] = None
+    output_dataframes['df_damp'] = None
 
-    if voltage_profile != None and v_min_v_max_delta_v == None:
-        print('Error: Voltage profile option selected but v_min, v_max, and delta_v are missing')
-        return None, None
-
-    if voltage_profile != None and v_set != None:
-        print('Error: Both Voltage profile and v_set option is selected. Choose only one of them')
-        return None, None
-
-    if voltage_profile == None and v_set == None:
-        print('Error: Neither Voltage profile or v_set option is selected. Choose one of them')
-        return None, None
+    if voltage_profile is not None and v_min_v_max_delta_v is None:
+        raise ValueError('Voltage profile option selected but v_min, v_max, '
+                         'and delta_v are missing')
+    if voltage_profile is not None and v_set is not None:
+        raise ValueError('Both Voltage profile and v_set option is selected. '
+                         'Choose only one of them')
+    if voltage_profile is None and v_set is None:
+        raise ValueError('Neither Voltage profile or v_set option is selected. '
+                         'Choose one of them')
 
     d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
                                                             d_op)
@@ -123,8 +136,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
 
     if d_opf_results.converged == False:
-        return None, None
-
+        return None, output_dataframes
 
     #########################################################################
 
@@ -149,7 +161,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
             if d.label == "perc_gfor":
                 if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
                     valid_point = False
-        if not valid_point: return None, None
+        if not valid_point:
+            return None, output_dataframes
 
     # %% READ PARAMETERS
 
@@ -246,7 +259,6 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     end = time.perf_counter()
     computing_times['time_partfact'] = end - start
 
-    output_dataframes = {}
     df_op, df_real, df_imag, df_freq, df_damp = (
         get_case_results(T_EIG=T_EIG, d_grid=d_grid))
     output_dataframes['df_op'] = df_op
