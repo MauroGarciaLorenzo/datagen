@@ -47,11 +47,12 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # Initialize essential output dataframes to None
     computing_times=dict()
     output_dataframes = {}
-    output_dataframes['df_op'] = None
-    output_dataframes['df_real'] = None
-    output_dataframes['df_imag'] = None
-    output_dataframes['df_freq'] = None
-    output_dataframes['df_damp'] = None
+    undefined_col = 'undefined'
+    output_dataframes['df_op'] = pd.DataFrame({undefined_col: [np.nan]})
+    output_dataframes['df_real'] = pd.DataFrame({undefined_col: [np.nan]})
+    output_dataframes['df_imag'] = pd.DataFrame({undefined_col: [np.nan]})
+    output_dataframes['df_freq'] = pd.DataFrame({undefined_col: [np.nan]})
+    output_dataframes['df_damp'] = pd.DataFrame({undefined_col: [np.nan]})
 
     if voltage_profile is not None and v_min_v_max_delta_v is None:
         raise ValueError('Voltage profile option selected but v_min, v_max, '

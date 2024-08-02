@@ -223,43 +223,54 @@ def concat_df_dict(*dicts):
         if isinstance(d, dict):
             for df_label, df in d.items():
                 if isinstance(df, pd.DataFrame):
+                    if df.columns[0] == 'undefined':
+                        continue
                     cols_dict[df_label] = df.columns
             break
         else:
             raise ValueError("Input must be a list of dictionaries")
 
-    if not cols_dict:
-        # There is no non-null value in the input sequence
-        return {'none_values': [None] * len(dicts)}
-
     # Concat dataframes
     output_dict = {}
-    for d in dicts:
-        for df_label, cols in cols_dict.items():
-            # Get row to be appended
-            if not d:
-                raise ValueError(
-                    f"Input must be a list of non-empty dictionaries "
-                    f"that contain dataframes. Received type {type(d)}.")
-            elif d[df_label] is None:
-                # d is None or empty
-                to_append = pd.DataFrame([[np.nan] * len(cols)],
-                                         columns=cols)
-            elif isinstance(d, dict):
-                to_append = d[df_label]
-            else:    
-                raise ValueError(
-                    f"Input must be a list of dictionaries of dataframes. "
-                    f"Received type {type(d)} with entry '{df_label}' of "
-                    f"type {type(d[df_label])}.")
+    if not cols_dict:
+        # All items in the input dictionaries are NaN dataframes. Concatenate
+        for d in dicts:
+            for df_label, df in d.items():
+                if df_label not in output_dict:
+                    output_dict[df_label] = df
+                else:
+                    output_dict[df_label] = pd.concat(
+                        [output_dict[df_label], df], axis=0,
+                        ignore_index=True)
+    else:
+        # Normal concatenation case with some well-formed dataframes
+        for d in dicts:
+            for df_label, cols in cols_dict.items():
+                # Get row to be appended
+                if not d:
+                    raise ValueError(
+                        f"Input must be a list of non-empty dictionaries "
+                        f"that contain dataframes. Received type {type(d)}.")
+                elif d[df_label].columns[0] == 'undefined':
+                    # d is None or empty
+                    to_append = pd.DataFrame([[np.nan] * len(cols)],
+                                             columns=cols)
+                elif isinstance(d, dict):
+                    # Normal case: directly append the content of the input df
+                    to_append = d[df_label]
+                else:
+                    raise ValueError(
+                        f"Input must be a list of dictionaries of dataframes. "
+                        f"Received type {type(d)} with entry '{df_label}' of "
+                        f"type {type(d[df_label])}.")
 
-            # Concatenate dataframes
-            if df_label not in output_dict:
-                output_dict[df_label] = to_append
-            else:
-                output_dict[df_label] = pd.concat(
-                    [output_dict[df_label], to_append], axis=0,
-                    ignore_index=True)
+                # Concatenate dataframes
+                if df_label not in output_dict:
+                    output_dict[df_label] = to_append
+                else:
+                    output_dict[df_label] = pd.concat(
+                        [output_dict[df_label], to_append], axis=0,
+                        ignore_index=True)
 
     return output_dict
 
