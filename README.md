@@ -27,3 +27,9 @@ pip install -r requirements.txt --target=packages/
 pip install -e ../GridCal/src/GridCalEngine
 pip install -e ../stability_analysis
 ```
+
+#### Preferred configuration for distributed performance
+
+- Use `@constraint(local=True)` for the main agent task
+- Tipology `tree` instead of `plain`
+- Use scheduler `orderstrict.FIFOts`
