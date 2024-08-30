@@ -222,11 +222,13 @@ def concat_df_dict(*dicts):
             continue
         if isinstance(d, dict):
             for df_label, df in d.items():
-                if isinstance(df, pd.DataFrame):
-                    if df.columns[0] == 'undefined':
-                        continue
-                    cols_dict[df_label] = df.columns
-            break
+                # Skip if columns were already filled
+                if df_label in cols_dict:
+                    continue
+                # Store columns if the dataframe is not empty/undefined
+                if isinstance(df, pd.DataFrame) and not df.empty:
+                    if df.columns[0] != 'undefined':
+                        cols_dict[df_label] = df.columns.to_list()
         else:
             raise ValueError("Input must be a list of dictionaries")
 
@@ -252,8 +254,10 @@ def concat_df_dict(*dicts):
                         f"Input must be a list of non-empty dictionaries "
                         f"that contain dataframes. Received type {type(d)}.")
                 elif d[df_label].columns[0] == 'undefined':
-                    # d is None or empty
-                    to_append = pd.DataFrame([[np.nan] * len(cols)],
+                    # 'd' only contains NaN dataframes with no column names
+                    n = len(d[df_label])
+                    m = len(cols)
+                    to_append = pd.DataFrame(np.full((n, m), np.nan),
                                              columns=cols)
                 elif isinstance(d, dict):
                     # Normal case: directly append the content of the input df
