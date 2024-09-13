@@ -143,8 +143,8 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
-    cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"), index=False)
-    dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"), index=False)
+    cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"))
+    dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"))
 
     for key, value in output_dataframes.items():
         if isinstance(value, pd.DataFrame):

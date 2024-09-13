@@ -29,7 +29,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     :return: output_dataframes: Mandatory dictionary with at least the
         entries that contain dataframes (None entries if feasibility fails)
     """
-    func_params = kwargs.get("func_params", None)
+    func_params = kwargs.get("func_params")
     generator = kwargs.get("generator", None)
     dimensions = kwargs.get("dimensions", None)
 
@@ -45,14 +45,13 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     v_set = func_params.get("v_set", None)
 
     # Initialize essential output dataframes to None
+    output_df_names = ['df_op', 'df_real', 'df_imag', 'df_freq', 'df_damp',
+                       'df_computing_times']
+    undefined_col = 'undefined'
     computing_times=dict()
     output_dataframes = {}
-    undefined_col = 'undefined'
-    output_dataframes['df_op'] = pd.DataFrame({undefined_col: [np.nan]})
-    output_dataframes['df_real'] = pd.DataFrame({undefined_col: [np.nan]})
-    output_dataframes['df_imag'] = pd.DataFrame({undefined_col: [np.nan]})
-    output_dataframes['df_freq'] = pd.DataFrame({undefined_col: [np.nan]})
-    output_dataframes['df_damp'] = pd.DataFrame({undefined_col: [np.nan]})
+    for df_name in output_df_names:
+        output_dataframes[df_name] = pd.DataFrame({undefined_col: [np.nan]})
 
     if voltage_profile is not None and v_min_v_max_delta_v is None:
         raise ValueError('Voltage profile option selected but v_min, v_max, '
@@ -61,8 +60,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
         raise ValueError('Both Voltage profile and v_set option is selected. '
                          'Choose only one of them')
     if voltage_profile is None and v_set is None:
-        raise ValueError('Neither Voltage profile or v_set option is selected. '
-                         'Choose one of them')
+        raise ValueError('Neither Voltage profile or v_set option is selected.'
+                         ' Choose one of them')
 
     d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
                                                             d_op)
@@ -260,6 +259,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     end = time.perf_counter()
     computing_times['time_partfact'] = end - start
 
+    # Collect output dataframes
     df_op, df_real, df_imag, df_freq, df_damp = (
         get_case_results(T_EIG=T_EIG, d_grid=d_grid))
     output_dataframes['df_op'] = df_op
@@ -267,10 +267,18 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     output_dataframes['df_imag'] = df_imag
     output_dataframes['df_freq'] = df_freq
     output_dataframes['df_damp'] = df_damp
-    output_dataframes['d_grid'] = d_grid
-    output_dataframes['d_opf'] = d_opf
-    output_dataframes['d_pf_original'] = d_pf_original
-    output_dataframes['computing_times'] = pd.Series(computing_times)
+    output_dataframes['df_computing_times'] = \
+        pd.DataFrame(computing_times, index=[0])
+    # Do not include objects that are not dataframes and are not single-row
+    # output_dataframes['d_grid'] = d_grid
+    # output_dataframes['d_opf'] = d_opf
+    # output_dataframes['d_pf_original'] = d_pf_original
+
+    # Check that the keys of df_names and output_dataframes match
+    if set(output_df_names) != set(output_dataframes.keys()):
+        raise ValueError(
+            'The keys of "output_dataframes" do not match the expected keys.')
+
     return stability, output_dataframes
 
 def return_d_opf(d_raw_data, d_opf_results):
