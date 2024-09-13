@@ -233,7 +233,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     start = time.perf_counter()
 
 
-    T_EIG = small_signal.FEIG(ss_sys, True)
+    T_EIG = small_signal.FEIG(ss_sys, False)
     T_EIG.head
 
     end = time.perf_counter()
@@ -255,7 +255,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # # Obtain the participation factors >= tol, for the selected modes
     start = time.perf_counter()
 
-    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,23), tol = 0.3)
+    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=False, modeID = np.arange(1,23), tol = 0.3)
 
     end = time.perf_counter()
     computing_times['time_partfact'] = end - start
