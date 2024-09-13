@@ -27,9 +27,9 @@ rm ${app_log_file}
 
 # Loop through all combinations of max_depth, n_cases, and n_samples
 failed_runs=""
-for max_depth in 1; do
-  for n_cases in 1 2; do
-    for n_samples in 1 2; do
+for max_depth in 1 2 3; do
+  for n_cases in 1 2 3; do
+    for n_samples in 1 2 3; do
       echo -e "\n=======================================================================" | tee -a ${app_log_file}
       echo -e "=== Running case with max_depth=$max_depth, n_cases=$n_cases, n_samples=$n_samples" | tee -a ${app_log_file}
       echo -e "=======================================================================\n" | tee -a ${app_log_file}
@@ -44,7 +44,7 @@ for max_depth in 1; do
       compss_clean_procs
 
       # Run the test
-      timeout 2m compss_agent_start_service \
+      timeout 20m compss_agent_start_service \
         --lang=PYTHON \
         --num_agents=3 \
         --hostname=localhost \

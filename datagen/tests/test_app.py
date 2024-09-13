@@ -24,7 +24,7 @@ class Test(TestCase):
         # Init
         yaml_path = '../../setup/test_setup.yaml'
         working_dir = '../../'
-        min_n = 3
+        min_n = 1
         max_n = 3
         n_samples, n_cases, max_depth = \
             [np.arange(min_n, max_n + 1).tolist()] * 3
