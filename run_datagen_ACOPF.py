@@ -1,5 +1,6 @@
-import sys
+import random
 import os
+from datetime import datetime
 
 from datagen import parse_args, parse_setup_file
 from datagen.src.dimensions import Dimension
@@ -37,8 +38,12 @@ def main(working_dir='', path_data='', setup_path=''):
     cu = os.environ.get("COMPUTING_UNITS")
 
     # CASE CONFIGURATION
+    # Create unique directory name for results
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    rnd_num = random.randint(1000, 9999)
+    dir_name = f"datagen_ACOPF_seed{seed}_cu{cu}_{timestamp}_{rnd_num}"
     path_results = os.path.join(
-        working_dir, "results", f'datagen_ACOPF_seed{seed}_cu{cu}')
+        working_dir, "results", dir_name)
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
 

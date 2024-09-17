@@ -10,19 +10,18 @@ IFS='/' read -ra parts <<< "$HOME"
 username="${parts[-1]}"
 
 # Set up variables and directories
-cd ..
-current_dir=$(pwd)
-datagen_root_dir="${current_dir}/.."
+cd ../..
+datagen_root_dir=$(pwd)
 stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
 yaml_file="${datagen_root_dir}/setup/default_setup.yaml"
 working_dir="/gpfs/scratch/bsc19/$username"
-export PYTHONPATH="${current_dir}/../packages/:${PYTHONPATH}:${current_dir}/../:${current_dir}"
+export PYTHONPATH="${datagen_root_dir}/packages/:${PYTHONPATH}:${datagen_root_dir}"
 
 # Print user information
 echo "Username is: $username"
 echo "Using $working_dir as the working directory"
-echo "Current directory is ${current_dir}"
+echo "Current directory is $(pwd)"
 
 # Run COMPSs execution
 num_nodes=1
@@ -33,7 +32,7 @@ do
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
   --num_nodes=${num_nodes} \
-  --job_execution_dir="${current_dir}/.." \
+  --job_execution_dir="${datagen_root_dir}" \
   --worker_working_dir=${working_dir} \
   --master_working_dir=${working_dir} \
   --lang=python \
@@ -44,7 +43,7 @@ do
   --log_dir=${working_dir} \
   -d \
   --agents \
-  run_datagen_ACOPF.py "${current_dir}" "${input_data}" "${yaml_file}"
+  run_datagen_ACOPF.py "${datagen_root_dir}" "${input_data}" "${yaml_file}"
 
   num_nodes=$((num_nodes * 2))
 done
