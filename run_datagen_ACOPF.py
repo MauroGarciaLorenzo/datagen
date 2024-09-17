@@ -41,7 +41,8 @@ def main(working_dir='', path_data='', setup_path=''):
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    dir_name = f"datagen_ACOPF_seed{seed}_cu{cu}_{timestamp}_{rnd_num}"
+    dir_name = f"datagen_ACOPF_seed{seed}_nc{n_cases}_ns{n_samples}" \
+               f"_d{max_depth}_{timestamp}_{rnd_num}"
     path_results = os.path.join(
         working_dir, "results", dir_name)
     if not os.path.isdir(path_results):

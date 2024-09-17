@@ -27,6 +27,8 @@ import sys
 import pandas as pd
 
 from collections.abc import Sequence
+
+from .viz import print_dict_as_yaml
 from stability_analysis.data import get_data_path
 
 def combine_columns_by_prefix(df, sum_columns):
@@ -305,17 +307,12 @@ def parse_setup_file(setup_path):
     max_depth = setup["max_depth"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]
-    print(f'N_PF: {n_pf}')
-    print(f'Voltage profile: {voltage_profile}')
-    print(f'V min, V max, Delta V: {v_min_v_max_delta_v}')
-    print(f'Loads power factor: {loads_power_factor}')
-    print(f'Generators power factor: {generators_power_factor}')
-    print(f'Number of samples: {n_samples}')
-    print(f'Number of cases: {n_cases}')
-    print(f'Relative tolerance: {rel_tolerance}')
-    print(f'Max depth: {max_depth}')
-    print(f'Seed: {seed}')
-    print(f'Grid name: {grid_name}')
+    # Print case configuration
+    print(f"\n{''.join(['='] * 30)}\n"
+          f"Running application with the following parameters:"
+          f"\n{''.join(['='] * 30)}")
+    print_dict_as_yaml(setup)
+    print()
     return generators_power_factor, grid_name, loads_power_factor, n_cases, \
         n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile, \
         rel_tolerance, max_depth
@@ -329,6 +326,7 @@ def parse_args(argv):
     args = argv[1:]
     # Do not mix flagged arguments with non-flagged arguments
     i = 0
+    use_flag_args = True
     while args:
         arg = args.pop(0)
         if arg.startswith('--working_dir='):
@@ -338,7 +336,7 @@ def parse_args(argv):
         elif arg.startswith('--setup='):
             setup_path = arg.split('=', 1)[1]
         else:
-            print(f"Using arguments without flags")
+            use_flag_args = False
             if i == 0:
                 working_dir = arg
             elif i == 1:
@@ -346,6 +344,8 @@ def parse_args(argv):
             elif i == 2:
                 setup_path = arg
         i += 1
+    if not use_flag_args:
+        print("Using arguments without flags")
 
     # Check paths
     if not working_dir:
