@@ -45,10 +45,25 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     v_set = func_params.get("v_set", None)
 
     # Initialize essential output dataframes to None
-    output_df_names = ['df_op', 'df_real', 'df_imag', 'df_freq', 'df_damp',
-                       'df_computing_times']
+    output_df_names = [
+        'df_op',
+        'df_real',
+        'df_imag',
+        'df_freq',
+        'df_damp',
+        'df_computing_times'
+    ]
+    computing_time_names = [
+        'time_powerflow',
+        'time_generate_SS_net',
+        'time_generate_SS_elem',
+        'time_connect',
+        'time_eig',
+        'time_partfact'
+    ]
     undefined_col = 'undefined'
-    computing_times=dict()
+    computing_times = pd.DataFrame(
+        {name: np.nan for name in computing_time_names}, index=[0])
     output_dataframes = {}
     for df_name in output_df_names:
         output_dataframes[df_name] = pd.DataFrame({undefined_col: [np.nan]})
@@ -134,8 +149,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     d_opf['info']=pd.DataFrame()
     d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
 
-
-    if d_opf_results.converged == False:
+    if not d_opf_results.converged:
+        output_dataframes['df_computing_times'] = computing_times
         return None, output_dataframes
 
     #########################################################################
@@ -162,6 +177,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                 if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
                     valid_point = False
         if not valid_point:
+            output_dataframes['df_computing_times'] = computing_times
             return None, output_dataframes
 
     # %% READ PARAMETERS
@@ -267,8 +283,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     output_dataframes['df_imag'] = df_imag
     output_dataframes['df_freq'] = df_freq
     output_dataframes['df_damp'] = df_damp
-    output_dataframes['df_computing_times'] = \
-        pd.DataFrame(computing_times, index=[0])
+    output_dataframes['df_computing_times'] = computing_times
     # Do not include objects that are not dataframes and are not single-row
     # output_dataframes['d_grid'] = d_grid
     # output_dataframes['d_opf'] = d_opf
@@ -280,6 +295,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
             'The keys of "output_dataframes" do not match the expected keys.')
 
     return stability, output_dataframes
+
 
 def return_d_opf(d_raw_data, d_opf_results):
     df_opf_bus = pd.DataFrame(

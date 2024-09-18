@@ -219,7 +219,21 @@ def concat_df_dict(*dicts):
     # Collect columns of the different dataframes from the first correct
     # item in the sequence
     cols_dict = {}
+    n_subdicts = None
     for d in dicts:
+        # Null check
+        if not d:
+            raise ValueError(
+                f"Input must be a list of non-empty dictionaries "
+                f"that contain dataframes. Received type {type(d)}.")
+        # Check all cases have the same number of sub-dictionaries
+        if n_subdicts is not None:
+            if n_subdicts != len(d):
+                raise ValueError("Differing number of sub-dictionaries while "
+                                 "concatenating.")
+        else:
+            n_subdicts = len(d)
+        # Get number of columns from each sub-dict
         if d is None:
             continue
         if isinstance(d, dict):
@@ -234,28 +248,28 @@ def concat_df_dict(*dicts):
         else:
             raise ValueError("Input must be a list of dictionaries")
 
-    # Concat dataframes
+    # Concatenate items missing in cols_dict that are all NaN dataframes
     output_dict = {}
-    if not cols_dict:
-        # All items in the input dictionaries are NaN dataframes. Concatenate
+    if len(cols_dict) != n_subdicts:
         for d in dicts:
             for df_label, df in d.items():
+                # Skip if already in cols_dict: next loop will deal with it
+                if df_label in cols_dict:
+                    continue
+                # Concatenate
                 if df_label not in output_dict:
                     output_dict[df_label] = df
                 else:
                     output_dict[df_label] = pd.concat(
                         [output_dict[df_label], df], axis=0,
                         ignore_index=True)
-    else:
-        # Normal concatenation case with some well-formed dataframes
+
+    # Do normal concatenation case with well-formed dataframes
+    if len(cols_dict) != 0:
         for d in dicts:
             for df_label, cols in cols_dict.items():
                 # Get row to be appended
-                if not d:
-                    raise ValueError(
-                        f"Input must be a list of non-empty dictionaries "
-                        f"that contain dataframes. Received type {type(d)}.")
-                elif d[df_label].columns[0] == 'undefined':
+                if d[df_label].columns[0] == 'undefined':
                     # 'd' only contains NaN dataframes with no column names
                     n = len(d[df_label])
                     m = len(cols)
