@@ -10,7 +10,8 @@ IFS='/' read -ra parts <<< "$HOME"
 username="${parts[-1]}"
 
 # Set up variables and directories
-cd ../..
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "${SCRIPT_DIR}"/../.. || exit
 datagen_root_dir=$(pwd)
 stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
@@ -36,10 +37,10 @@ do
   --worker_working_dir=${working_dir} \
   --master_working_dir=${working_dir} \
   --lang=python \
-  --exec_time=1000 \
+  --exec_time=120 \
   --tracing \
   --project_name=bsc19 \
-  --qos=gp_bsccs \
+  --qos=gp_debug \
   --log_dir=${working_dir} \
   -d \
   --agents \

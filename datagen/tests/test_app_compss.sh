@@ -12,18 +12,18 @@ datagen_root_dir=$(pwd)
 stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
 
+# Logging configuration
+mkdir logs
+app_log_file="${datagen_root_dir}/logs/log_test_app_compss.txt"
+compss_log_dir="$HOME/logs"
+rm ${app_log_file}
+
 # Path to your YAML file
 yaml_file="${datagen_root_dir}/setup/test_setup.yaml"
 if [ ! -f "$yaml_file" ]; then
   echo "Error: YAML file not found at $yaml_file" | tee -a ${app_log_file}
   exit 1
 fi
-
-# Logging configuration
-mkdir logs
-app_log_file="${datagen_root_dir}/logs/log_test_app_compss.txt"
-compss_log_dir="$HOME/logs"
-rm ${app_log_file}
 
 # Loop through all combinations of max_depth, n_cases, and n_samples
 failed_runs=""
