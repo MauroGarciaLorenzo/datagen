@@ -34,6 +34,7 @@ stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
 base_yaml_file="${datagen_root_dir}/setup/default_setup.yaml"
 working_dir="/gpfs/scratch/bsc19/$username"
+mkdir -p "${datagen_root_dir}/setup/tmp/"
 export PYTHONPATH="${datagen_root_dir}/packages/:${PYTHONPATH}:${datagen_root_dir}"
 
 # Path to your YAML file
@@ -57,7 +58,7 @@ for case in "${cases[@]}"; do
   echo "seed: $seed"
 
   # Set up a config file for each run
-  yaml_file="${datagen_root_dir}/setup/setup_mn5_${n_samples}${n_cases}${max_depth}${seed}.yaml"
+  yaml_file="${datagen_root_dir}/setup/tmp/setup_mn5_${n_samples}${n_cases}${max_depth}${seed}.yaml"
   cp $base_yaml_file $yaml_file
 
   # Use sed to update the values in the YAML file

@@ -172,3 +172,4 @@ logs/
 *.code-workspace
 **/results/*
 packages/
+**/tmp/*
