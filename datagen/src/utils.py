@@ -27,6 +27,8 @@ import sys
 import pandas as pd
 
 from collections.abc import Sequence
+
+from .viz import print_dict_as_yaml
 from stability_analysis.data import get_data_path
 
 def combine_columns_by_prefix(df, sum_columns):
@@ -143,8 +145,8 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
-    cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"), index=False)
-    dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"), index=False)
+    cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"))
+    dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"))
 
     for key, value in output_dataframes.items():
         if isinstance(value, pd.DataFrame):
@@ -217,7 +219,21 @@ def concat_df_dict(*dicts):
     # Collect columns of the different dataframes from the first correct
     # item in the sequence
     cols_dict = {}
+    n_subdicts = None
     for d in dicts:
+        # Null check
+        if not d:
+            raise ValueError(
+                f"Input must be a list of non-empty dictionaries "
+                f"that contain dataframes. Received type {type(d)}.")
+        # Check all cases have the same number of sub-dictionaries
+        if n_subdicts is not None:
+            if n_subdicts != len(d):
+                raise ValueError("Differing number of sub-dictionaries while "
+                                 "concatenating.")
+        else:
+            n_subdicts = len(d)
+        # Get number of columns from each sub-dict
         if d is None:
             continue
         if isinstance(d, dict):
@@ -232,28 +248,28 @@ def concat_df_dict(*dicts):
         else:
             raise ValueError("Input must be a list of dictionaries")
 
-    # Concat dataframes
+    # Concatenate items missing in cols_dict that are all NaN dataframes
     output_dict = {}
-    if not cols_dict:
-        # All items in the input dictionaries are NaN dataframes. Concatenate
+    if len(cols_dict) != n_subdicts:
         for d in dicts:
             for df_label, df in d.items():
+                # Skip if already in cols_dict: next loop will deal with it
+                if df_label in cols_dict:
+                    continue
+                # Concatenate
                 if df_label not in output_dict:
                     output_dict[df_label] = df
                 else:
                     output_dict[df_label] = pd.concat(
                         [output_dict[df_label], df], axis=0,
                         ignore_index=True)
-    else:
-        # Normal concatenation case with some well-formed dataframes
+
+    # Do normal concatenation case with well-formed dataframes
+    if len(cols_dict) != 0:
         for d in dicts:
             for df_label, cols in cols_dict.items():
                 # Get row to be appended
-                if not d:
-                    raise ValueError(
-                        f"Input must be a list of non-empty dictionaries "
-                        f"that contain dataframes. Received type {type(d)}.")
-                elif d[df_label].columns[0] == 'undefined':
+                if d[df_label].columns[0] == 'undefined':
                     # 'd' only contains NaN dataframes with no column names
                     n = len(d[df_label])
                     m = len(cols)
@@ -305,17 +321,12 @@ def parse_setup_file(setup_path):
     max_depth = setup["max_depth"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]
-    print(f'N_PF: {n_pf}')
-    print(f'Voltage profile: {voltage_profile}')
-    print(f'V min, V max, Delta V: {v_min_v_max_delta_v}')
-    print(f'Loads power factor: {loads_power_factor}')
-    print(f'Generators power factor: {generators_power_factor}')
-    print(f'Number of samples: {n_samples}')
-    print(f'Number of cases: {n_cases}')
-    print(f'Relative tolerance: {rel_tolerance}')
-    print(f'Max depth: {max_depth}')
-    print(f'Seed: {seed}')
-    print(f'Grid name: {grid_name}')
+    # Print case configuration
+    print(f"\n{''.join(['='] * 30)}\n"
+          f"Running application with the following parameters:"
+          f"\n{''.join(['='] * 30)}")
+    print_dict_as_yaml(setup)
+    print()
     return generators_power_factor, grid_name, loads_power_factor, n_cases, \
         n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile, \
         rel_tolerance, max_depth
@@ -329,6 +340,7 @@ def parse_args(argv):
     args = argv[1:]
     # Do not mix flagged arguments with non-flagged arguments
     i = 0
+    use_flag_args = True
     while args:
         arg = args.pop(0)
         if arg.startswith('--working_dir='):
@@ -338,7 +350,7 @@ def parse_args(argv):
         elif arg.startswith('--setup='):
             setup_path = arg.split('=', 1)[1]
         else:
-            print(f"Using arguments without flags")
+            use_flag_args = False
             if i == 0:
                 working_dir = arg
             elif i == 1:
@@ -346,6 +358,8 @@ def parse_args(argv):
             elif i == 2:
                 setup_path = arg
         i += 1
+    if not use_flag_args:
+        print("Using arguments without flags")
 
     # Check paths
     if not working_dir:
