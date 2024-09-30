@@ -1,7 +1,6 @@
 #!/bin/bash
-#
 # Run batches of different configurations of datagen in slurm
-#
+
 export COMPSS_PYTHON_VERSION="3.12.1"
 module load hdf5
 module load sqlite3
