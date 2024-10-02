@@ -2,15 +2,17 @@
 Standalone execution of the stability analysis function
 (objective_function_ACOPF.py)
 
-Usage: python3 ACOPF_standalone.py [--working_dir=<dir>] [--path_data=<path>]
+Usage: python3 ACOPF_standalone.py path/to/yaml [--results_dir=<dir>] 
 [--setup=<yaml>]
 Options:
-  --working_dir=<dir>: Path where results will be stored (default: "")
-  --path_data=<path>: Path to input_data (where the grid setup is stored)
-        (default: stability_analysis/stability_analysis/data)
-  --setup=<yaml>: Yaml or path to a yaml file (refer to the setup directory for
-  examples)
-        User can specify:
+  --results_dir=<dir>: Path where results will be stored (default: "")
+  
+path/to/yamlYaml or path to a yaml file (refer to the setup directory for
+examples)
+    User can specify:
+        *setup section*
+            -data dir
+        *application section*
             -n_pf
             -voltage_profile
             -v_min_v_max_delta_v
@@ -23,13 +25,13 @@ Options:
             -max_depth: Maximum number of subdivisions
             -seed: Seed
             -grid_name: Grid name
-        (default: "setup/default_setup.yaml")
+    (default: "setup/default_setup.yaml")
 """
 
 import os
 import sys
 
-from datagen.src.utils import save_dataframes, parse_setup_file, parse_args
+from datagen.src.utils import *
 from datagen.src.dimensions import Dimension
 from datagen.src.objective_function_ACOPF import *
 from datagen.src.sampling import gen_samples
@@ -48,14 +50,13 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
-
+# Usage: ACOPF_standalone.py path/to/yaml [--results_dir=path/to/working/dir]
 def main():
     # %% Parse arguments
-    working_dir, path_data, setup_path = parse_args(sys.argv)
+    application_dict, working_dir, path_data = parse_yaml(sys.argv)
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile,
-     _, _) = \
-        parse_setup_file(setup_path)
+     _, _) = parse_application_dict(application_dict)
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))

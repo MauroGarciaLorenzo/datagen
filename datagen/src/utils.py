@@ -19,6 +19,7 @@ list, which is useful for processing the list of logs generated during the
 exploration.
 """
 import os
+import subprocess
 
 import numpy as np
 import yaml
@@ -295,93 +296,113 @@ def concat_df_dict(*dicts):
     return output_dict
 
 
-def parse_setup_file(setup_path):
-    # Check setup file path
-    if not setup_path:
-        current_directory = os.path.dirname(__file__)
-        setup_path = os.path.join(current_directory,
-                                  "../../setup/default_setup.yaml")
-        print (f"Setup file not specified. Using default setup file: "
-                f"{setup_path}")
-    else:
-        print(f"Setup file: {setup_path}")
-    if not os.path.exists(setup_path):
-        raise FileNotFoundError(f"Setup file {setup_path} not found")
-
-    # Load case parameters
-    setup = load_yaml(setup_path)
-    n_pf = setup["n_pf"]
-    voltage_profile = setup["voltage_profile"]
-    v_min_v_max_delta_v = setup["v_min_v_max_delta_v"]
-    loads_power_factor = setup["loads_power_factor"]
-    generators_power_factor = setup["generators_power_factor"]
-    n_samples = setup["n_samples"]
-    n_cases = setup["n_cases"]
-    rel_tolerance = setup["rel_tolerance"]
-    max_depth = setup["max_depth"]
-    seed = setup["seed"]
-    grid_name = setup["grid_name"]
+def parse_application_dict(application_dict):
+    n_pf = application_dict["n_pf"]
+    voltage_profile = application_dict["voltage_profile"]
+    v_min_v_max_delta_v = application_dict["v_min_v_max_delta_v"]
+    loads_power_factor = application_dict["loads_power_factor"]
+    generators_power_factor = application_dict["generators_power_factor"]
+    n_samples = application_dict["n_samples"]
+    n_cases = application_dict["n_cases"]
+    rel_tolerance = application_dict["rel_tolerance"]
+    max_depth = application_dict["max_depth"]
+    seed = application_dict["seed"]
+    grid_name = application_dict["grid_name"]
     # Print case configuration
     print(f"\n{''.join(['='] * 30)}\n"
           f"Running application with the following parameters:"
           f"\n{''.join(['='] * 30)}")
-    print_dict_as_yaml(setup)
+    print_dict_as_yaml(application_dict)
     print()
     return generators_power_factor, grid_name, loads_power_factor, n_cases, \
         n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile, \
         rel_tolerance, max_depth
 
 
-def parse_args(argv):
-    working_dir = None
-    path_data = None
-    setup_path = None
-
+# Usage: main.py --results_dir=path/to/working/dir path/to/yaml
+def parse_yaml(argv):
     args = argv[1:]
-    # Do not mix flagged arguments with non-flagged arguments
-    i = 0
-    use_flag_args = True
+    working_dir = None
+    path_to_yaml = None
+
     while args:
         arg = args.pop(0)
-        if arg.startswith('--working_dir='):
+        if arg.startswith('--results_dir='):
             working_dir = arg.split('=', 1)[1]
-        elif arg.startswith('--path_data='):
-            path_data = arg.split('=', 1)[1]
-        elif arg.startswith('--setup='):
-            setup_path = arg.split('=', 1)[1]
         else:
-            use_flag_args = False
-            if i == 0:
-                working_dir = arg
-            elif i == 1:
-                path_data = arg
-            elif i == 2:
-                setup_path = arg
-        i += 1
-    if not use_flag_args:
-        print("Using arguments without flags")
+            path_to_yaml = arg
 
-    # Check paths
-    if not working_dir:
-        working_dir = ""
+    try:
+        with open(path_to_yaml, 'r') as file:
+            yaml_content = yaml.safe_load(file)
+
+        application_dict = yaml_content.get('application', {})
+        setup_dict = yaml_content.get('setup', {})
+
+        print("Application Section:", application_dict)
+        print("Setup Section:", setup_dict)
+
+    except FileNotFoundError as e:
+        print(f"Error: File not found - {e}")
+
+    except yaml.YAMLError as e:
+        print(f"Error parsing the YAML file - {e}")
+
+    except Exception as e:
+        print(f"An unexpected error occurred - {e}")
+
+    # Get application parameters
+    application = yaml_content.get('application', {})
+    application_args = [
+        "generators_power_factor", "grid_name", "loads_power_factor",
+        "n_cases",
+        "n_pf", "n_samples", "seed", "v_min_v_max_delta_v", "voltage_profile",
+        "rel_tolerance", "max_depth"
+    ]
+
+    application_dict = {}
+    for arg in application_args:
+        p = application.get(arg, None)
+        if p is None:
+            print(
+                f"Error: Argument {arg} not specified in the setup file ({path_to_yaml})")
+        else:
+            application_dict[arg] = p
+
+    print("Parsed Application Parameters:", application_dict)
+
+    # Get setup parameters
+    setup = yaml_content.get('setup', {})
+    path_data = setup.get("Data Dir", None)
+
+    print(working_dir, type(working_dir))
+    if not working_dir or working_dir is None:
+        working_dir = os.getcwd()
         print(f"Working directory not specified. Using current directory: "
               f"{os.getcwd()}")
     else:
+        if not working_dir.startswith("/"):
+            home_dir = subprocess.run("echo $HOME", shell=True, capture_output=True, text=True).stdout.strip()
+            working_dir = os.path.join(home_dir, working_dir)
         if not os.path.exists(working_dir):
             raise FileNotFoundError(
                 f"Working directory {working_dir} not found")
         else:
             print("Working directory:", working_dir)
+
     if not path_data:
         path_data = get_data_path()
         print(f"Path data not specified. Using default path: {path_data}")
     else:
+        if not path_data.startswith("/"):
+            home_dir = subprocess.run("echo $HOME", shell=True, capture_output=True, text=True).stdout.strip()
+            path_data = os.path.join(home_dir, path_data)
         if not os.path.exists(path_data):
             raise FileNotFoundError(f"Path data {path_data} not found")
         else:
             print("Path data:", path_data)
 
-    return working_dir, path_data, setup_path
+    return application_dict, working_dir, path_data
 
 
 def load_yaml(content):

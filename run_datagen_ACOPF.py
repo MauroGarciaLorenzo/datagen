@@ -1,8 +1,39 @@
+"""
+Execution of the datagen using objective function
+(objective_function_ACOPF.py)
+
+Usage: python3 ACOPF_standalone.py path/to/yaml [--results_dir=<dir>] 
+
+Options:
+  --results_dir=<dir>: Path where results will be stored (default: "")
+  
+path/to/yamlYaml or path to a yaml file (refer to the setup directory for
+examples)
+    User can specify:
+        *setup section*
+            -data dir
+        *application section*
+            -n_pf
+            -voltage_profile
+            -v_min_v_max_delta_v
+            -loads_power_factor
+            -generators_power_factor
+            -n_samples: Number of samples to produce for each cell
+            -n_cases: Number of different combinations of cases for each sample
+            -rel_tolerance: Indicates the minimum size of a cell as pu (related
+            to the initial size of the cell)
+            -max_depth: Maximum number of subdivisions
+            -seed: Seed
+            -grid_name: Grid name
+    (default: "setup/default_setup.yaml")
+"""
+
 import random
 import os
+import sys
 from datetime import datetime
 
-from datagen import parse_args, parse_setup_file
+from datagen import parse_yaml, parse_application_dict
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
 from datagen.src.objective_function_ACOPF import feasible_power_flow_ACOPF
@@ -23,14 +54,12 @@ import warnings
 warnings.filterwarnings("ignore")
 
 @task()
-def main(working_dir='', path_data='', setup_path=''):
-    # %% Parse arguments (emulate sys.argv list as input)
-    working_dir, path_data, setup_path = parse_args(
-        [None, working_dir, path_data, setup_path])
+# Usage: run_datagen_ACOPF.py path/to/yaml [--results_dir=path/to/results/dir]
+def main(setup_path, results_dir=None):
+    application_dict, results_dir, path_data = parse_yaml([None, setup_path, f"--results_dir={results_dir}"])
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
-     n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
-     max_depth) = \
-        parse_setup_file(setup_path)
+     n_samples, seed, v_min_v_max_delta_v, voltage_profile,
+     rel_tolerance, max_depth) = parse_application_dict(application_dict)
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
@@ -44,7 +73,7 @@ def main(working_dir='', path_data='', setup_path=''):
     dir_name = f"datagen_ACOPF_seed{seed}_nc{n_cases}_ns{n_samples}" \
                f"_d{max_depth}_{timestamp}_{rnd_num}"
     path_results = os.path.join(
-        working_dir, "results", dir_name)
+        results_dir, dir_name)
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
 
@@ -204,4 +233,10 @@ def main(working_dir='', path_data='', setup_path=''):
 
 
 if __name__ == "__main__":
-    main()
+    setup_path = sys.argv[1]
+
+    results_dir = None
+    if len(sys.argv) > 2 and sys.argv[2].startswith("--results_dir="):
+        results_dir = sys.argv[2].split("=", 1)[1]
+
+    main(setup_path, results_dir)

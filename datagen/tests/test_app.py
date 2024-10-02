@@ -23,7 +23,7 @@ class Test(TestCase):
         """
         # Init
         yaml_path = '../../setup/test_setup.yaml'
-        working_dir = '../../'
+        results_dir = '../../'
         min_n = 1
         max_n = 3
         n_samples, n_cases, max_depth = \
@@ -58,7 +58,7 @@ class Test(TestCase):
                       f"=== Running with n_samples={n_samples}, "
                       f"n_cases={n_cases}, max_depth={max_depth} ==="
                       f'\n{"".join(["="] * 60)}\n', flush=True)
-                main(setup_path=yaml_path, working_dir=working_dir)
+                main(setup_path=yaml_path, results_dir=results_dir)
                 print(f"\n=== Evertything went fine ===\n", flush=True)
             except Exception as e:
                 passed = False
