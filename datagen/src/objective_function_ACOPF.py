@@ -33,6 +33,8 @@ except ImportError:
 
 import time
 
+from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+
 @task(returns=7)
 def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_raw_data = kwargs.get("d_raw_data", None)
@@ -105,19 +107,34 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     nc.generator_data.cost_2[:] = 0
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, max_iter=100)
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
-    
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-8, ips_iterations=100)
+
     start = time.time()
     
-    d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True, use_autodiff=True)
-    # TODO: poner un check para verificar error y ver si ha convergido
-    #  hay un atributo d_opf_results.converged
+    #d_opf_results = ac_optimal_power_flow(nc=nc, pf_options=pf_options, plot_error=True, use_autodiff=True)
+    
+    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
+    d_opf_results = ac_optimal_power_flow(nc= nc,
+                                          pf_options= pf_options,
+                                          opf_options= opf_options,
+                                          # debug: bool = False,
+                                          #use_autodiff = True,
+                                          pf_init= True,
+                                          Sbus_pf= pf_results.Sbus,
+                                          voltage_pf= pf_results.voltage,
+                                          plot_error= False)
+    
     end = time.time()
     computing_times['time_powerflow']=end - start
     
     d_opf = process_optimal_power_flow.update_OP(GridCal_grid, d_opf_results, d_raw_data)
     d_opf = additional_info_OPF_results(d_opf,i_slack, N_pf)
 
+    
+    if not d_opf_results.converged:
+        output_dataframes['df_computing_times'] = computing_times
+        return None, output_dataframes
                                         
     #########################################################################33
 
@@ -208,7 +225,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     
     start = time.time()
 
-    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,23), tol = 0.3)
+    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=True, modeID = np.arange(1,8), tol = 0.3)
 
     end = time.time()
     computing_times['time_partfact']=end - start
@@ -221,7 +238,7 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
         "df_freq": df_freq, "df_damp": df_damp
     }
     # TODO: limpiar T_EIG
-    return stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times
+    return stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, df_PF, computing_times
 
 def return_d_opf(d_raw_data, d_opf_results):
     df_opf_bus = pd.DataFrame(

@@ -73,7 +73,7 @@ raw_file = path.join(path_raw, raw + ".raw")
 # excel_raw = path.join(path_raw, raw + ".xlsx")
 excel_sys = path.join(path_data, "cases/" + excel + ".xlsx") #empty 
 excel_sg = path.join(path_data, "cases/" + excel_data + "_data_sg.xlsx") 
-excel_vsc = path.join(path_data, "cases/" + excel_data + "_data_vsc.xlsx") 
+excel_vsc = path.join(path_data, "cases/" + excel_data + "_data_vsc_IPlug.xlsx") 
 excel_op = path.join(path_data, "cases/" + excel_op + ".xlsx") 
 
 if gridname == 'IEEE118':
@@ -145,6 +145,10 @@ d_grid = read_data.tempTables(d_grid)
 d_sg = read_data.read_data(excel_sg)
 
 d_vsc = read_data.read_data(excel_vsc)
+
+# d_vsc['UserGFOL'].loc[0,'k_droop_f']=0.02
+# d_vsc['UserGFOL'].loc[0,'k_droop_u']=20
+# d_vsc['UserGFOL'].loc[0,'tau_s']=0.001
 
 # %%
 # @task()
@@ -231,8 +235,8 @@ dimensions = [
                 d_op['Generators']['Pmax_CIG'].sum()),
                 independent_dimension=True,
                 cosphi=generators_power_factor),
-      Dimension(label="perc_g_for", variable_borders=[(0.9,1)],
-                n_cases=n_cases, divs=1, borders=(0.9, 1),
+      Dimension(label="perc_g_for", variable_borders=[(1,1)],
+                n_cases=n_cases, divs=1, borders=(1, 1),
                 independent_dimension=True, cosphi=None),
       Dimension(label="p_load", values=p_loads,
                 n_cases=n_cases, divs=1,
@@ -263,22 +267,22 @@ dimensions = [
     
 for d in list(d_op['Generators']['BusNum']):
     dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.2,0.2),
+                                divs=1, borders=(0.1,0.1),
                                 independent_dimension=True,
                                 cosphi=None))
     
     dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.2,0.2),
+                                divs=1, borders=(0.1,0.1),
                                 independent_dimension=True,
                                 cosphi=None))
     
     dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.2,0.2),
+                                divs=1, borders=(0.1,0.1),
                                 independent_dimension=True,
                                 cosphi=None))
     
     dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.2,0.2),
+                                divs=1, borders=(0.1,0.1),
                                 independent_dimension=True,
                                 cosphi=None))
  
@@ -313,7 +317,7 @@ d_grid_array = []
 T_EIG_array = []
 computing_times_array = []
 for _, case in cases_df.iterrows():
-    stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times = feasible_power_flow_ACOPF(case=case,
+    stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, df_PF, computing_times = feasible_power_flow_ACOPF(case=case,
                                                                                     N_pf=N_pf,
                                                                                     d_raw_data=d_raw_data,
                                                                                     d_op=d_op,
@@ -341,44 +345,44 @@ d_grid_array = compss_wait_on(d_grid_array)
 T_EIG_array = compss_wait_on(T_EIG_array)
 computing_times_array = compss_wait_on(computing_times_array)
 
-for stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times in zip(
-        stability_array, output_dataframes_array, d_pf_original_array,
-        d_opf_array, d_grid_array, T_EIG_array, computing_times_array):
-    control = '_my_k_kf50_kv50_tau_upper_limit_min_perc_gfor_90_noGFOL_at_slack'
-    path = './datagen/src/results/'
+# for stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times in zip(
+#         stability_array, output_dataframes_array, d_pf_original_array,
+#         d_opf_array, d_grid_array, T_EIG_array, computing_times_array):
+#     control = '_my_k_kf50_kv50_tau_upper_limit_min_perc_gfor_90_noGFOL_at_slack'
+#     path = './datagen/src/results/'
 
-    if not os.path.exists(path):
-        os.makedirs(path)
+#     if not os.path.exists(path):
+#         os.makedirs(path)
 
-    write_csv(d_pf_original, path, seed, 'PF_orig' + control)
-    write_xlsx(d_opf, path, 'OPF_' + str(seed) + control)
-    write_csv(output_dataframes, path, seed, 'OPF' + control)
-    write_xlsx(d_grid, path, 'd_grid_' + str(seed) + control)
+#     write_csv(d_pf_original, path, seed, 'PF_orig' + control)
+#     write_xlsx(d_opf, path, 'OPF_' + str(seed) + control)
+#     write_csv(output_dataframes, path, seed, 'OPF' + control)
+#     write_xlsx(d_grid, path, 'd_grid_' + str(seed) + control)
 
-    pcig = np.zeros([len(d_grid['T_VSC']['bus'].unique()), 1])
-    for bb in range(0, len(d_grid['T_VSC']['bus'].unique())):
-        bus = d_grid['T_VSC']['bus'].unique()[bb]
-        pcig[bb, 0] = d_grid['T_VSC'].query('bus == @bus')['P'].sum()
+#     pcig = np.zeros([len(d_grid['T_VSC']['bus'].unique()), 1])
+#     for bb in range(0, len(d_grid['T_VSC']['bus'].unique())):
+#         bus = d_grid['T_VSC']['bus'].unique()[bb]
+#         pcig[bb, 0] = d_grid['T_VSC'].query('bus == @bus')['P'].sum()
 
-    check_perc = np.array(
-        d_grid['T_VSC'].query('mode == "GFOR"')['P']) / pcig.ravel()
+#     check_perc = np.array(
+#         d_grid['T_VSC'].query('mode == "GFOR"')['P']) / pcig.ravel()
 
-    # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
-    #                                          d_raw_data=d_raw_data,
-    #                                          d_op=d_op,
-    #                                          GridCal_grid=GridCal_grid,
-    #                                          d_grid=d_grid, d_sg=d_sg,
-    #                                          d_vsc=d_vsc,
-    #                                          # voltage_profile=voltage_profile,
-    #                                          # v_min_v_max_delta_v=v_min_v_max_delta_v
-    #                                          V_set=V_set
-    #                                          )
+#     # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
+#     #                                          d_raw_data=d_raw_data,
+#     #                                          d_op=d_op,
+#     #                                          GridCal_grid=GridCal_grid,
+#     #                                          d_grid=d_grid, d_sg=d_sg,
+#     #                                          d_vsc=d_vsc,
+#     #                                          # voltage_profile=voltage_profile,
+#     #                                          # v_min_v_max_delta_v=v_min_v_max_delta_v
+#     #                                          V_set=V_set
+#     #                                          )
 
-# stability, output_dataframes= small_signal_stability(case=case, d_raw_data = d_raw_data,
-#                                                      d_op = d_op,
-#                                                      GridCal_grid = GridCal_grid,
-#                                                      d_grid = d_grid,
-#                                                      d_sg = d_sg,
-#                                                      d_vsc = d_vsc,
-#                                                      d_pf = d_pf,
-#                                                      )
+# # stability, output_dataframes= small_signal_stability(case=case, d_raw_data = d_raw_data,
+# #                                                      d_op = d_op,
+# #                                                      GridCal_grid = GridCal_grid,
+# #                                                      d_grid = d_grid,
+# #                                                      d_sg = d_sg,
+# #                                                      d_vsc = d_vsc,
+# #                                                      d_pf = d_pf,
+# #                                                      )
