@@ -50,10 +50,10 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
-# Usage: ACOPF_standalone.py path/to/yaml [--results_dir=path/to/working/dir]
+# Usage: ACOPF_standalone.py path/to/yaml [--results_dir=path/to/results/dir]
 def main():
     # %% Parse arguments
-    application_dict, working_dir, path_data = parse_yaml(sys.argv)
+    application_dict, results_dir, path_data = parse_yaml(sys.argv)
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile,
      _, _) = parse_application_dict(application_dict)
@@ -62,10 +62,6 @@ def main():
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
 
-    # CASE CONFIGURATION
-    path_results = os.path.join(working_dir, "results")
-    if not os.path.isdir(path_results):
-        os.makedirs(path_results)
 
     # %% SET FILE NAMES AND PATHS
     if grid_name == 'IEEE9':

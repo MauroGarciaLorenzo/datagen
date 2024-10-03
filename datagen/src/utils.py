@@ -322,13 +322,13 @@ def parse_application_dict(application_dict):
 # Usage: main.py --results_dir=path/to/working/dir path/to/yaml
 def parse_yaml(argv):
     args = argv[1:]
-    working_dir = None
+    results_dir = None
     path_to_yaml = None
 
     while args:
         arg = args.pop(0)
         if arg.startswith('--results_dir='):
-            working_dir = arg.split('=', 1)[1]
+            results_dir = arg.split('=', 1)[1]
         else:
             path_to_yaml = arg
 
@@ -375,20 +375,18 @@ def parse_yaml(argv):
     setup = yaml_content.get('setup', {})
     path_data = setup.get("Data Dir", None)
 
-    print(working_dir, type(working_dir))
-    if not working_dir or working_dir is None:
-        working_dir = os.getcwd()
+    if not results_dir or results_dir is None:
+        results_dir = os.getcwd()
         print(f"Working directory not specified. Using current directory: "
               f"{os.getcwd()}")
     else:
-        if not working_dir.startswith("/"):
+        if not results_dir.startswith("/"):
             home_dir = subprocess.run("echo $HOME", shell=True, capture_output=True, text=True).stdout.strip()
-            working_dir = os.path.join(home_dir, working_dir)
-        if not os.path.exists(working_dir):
-            raise FileNotFoundError(
-                f"Working directory {working_dir} not found")
+            results_dir = os.path.join(home_dir, results_dir)
+        if not os.path.exists(results_dir):
+            os.makedirs(results_dir)
         else:
-            print("Working directory:", working_dir)
+            print("Working directory:", results_dir)
 
     if not path_data:
         path_data = get_data_path()
@@ -402,7 +400,7 @@ def parse_yaml(argv):
         else:
             print("Path data:", path_data)
 
-    return application_dict, working_dir, path_data
+    return application_dict, results_dir, path_data
 
 
 def load_yaml(content):

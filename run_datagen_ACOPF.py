@@ -72,10 +72,6 @@ def main(setup_path, results_dir=None):
     rnd_num = random.randint(1000, 9999)
     dir_name = f"datagen_ACOPF_seed{seed}_nc{n_cases}_ns{n_samples}" \
                f"_d{max_depth}_{timestamp}_{rnd_num}"
-    path_results = os.path.join(
-        results_dir, dir_name)
-    if not os.path.isdir(path_results):
-        os.makedirs(path_results)
 
     # %% SET FILE NAMES AND PATHS
     if grid_name == 'IEEE9':
@@ -225,7 +221,7 @@ def main(setup_path, results_dir=None):
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        dst_dir=path_results
+        dst_dir=results_dir
     )
 
     stability_array = compss_wait_on(stability_array)
