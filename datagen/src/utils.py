@@ -113,7 +113,7 @@ def write_dataframes_to_excel(df_dict, path, filename):
                       f'Not a DataFrame or Series')
 
 
-def save_dataframes(output_dataframes_array, path_results, seed):
+def save_dataframes(output_dataframes_array, results_dir, seed):
     index = 0
     for dataframe in output_dataframes_array:
         if dataframe is None:
@@ -127,14 +127,14 @@ def save_dataframes(output_dataframes_array, path_results, seed):
             print(value, flush=True)
             print("", flush=True)
             print("", flush=True)
-            if not os.path.exists(path_results):
-                os.makedirs(path_results)
+            if not os.path.exists(results_dir):
+                os.makedirs(results_dir)
             if isinstance(value, dict):
                 write_dataframes_to_excel(
-                    value, path_results, f"{filename}.xlsx")
+                    value, results_dir, f"{filename}.xlsx")
             else:
                 pd.DataFrame.to_csv(
-                    value, os.path.join(path_results, f"{filename}.csv"))
+                    value, os.path.join(results_dir, f"{filename}.csv"))
         index += 1
 
 

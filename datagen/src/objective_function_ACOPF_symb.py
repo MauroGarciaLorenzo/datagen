@@ -186,7 +186,7 @@ def feasible_power_flow_ACOPF(case,N_pf, tau_droop_f_gfor_12, **kwargs):
  
 
     # write to excel
-    # T_EIG.to_excel(path.join(path_results, "EIG_" + excel + ".xlsx"))
+    # T_EIG.to_excel(path.join(results_dir, "EIG_" + excel + ".xlsx"))
 
     if max(T_EIG['real'] >= 0):
         stability = 0

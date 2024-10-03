@@ -227,7 +227,7 @@ def main():
     # %% SAVE RESULTS
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
-    save_dataframes(output_dataframes_array, path_results, seed)
+    save_dataframes(output_dataframes_array, results_dir, seed)
 
 
 if __name__ == "__main__":
