@@ -319,8 +319,12 @@ def parse_application_dict(application_dict):
         rel_tolerance, max_depth
 
 
-# Usage: main.py --results_dir=path/to/working/dir path/to/yaml
 def parse_yaml(argv):
+    """
+    Function used to obtain the application dictionary from the yaml file.
+    It also parses the arguments of the main method (results dir and path/to/yaml):
+    Usage: main.py --results_dir=path/to/working/dir path/to/yaml
+    """
     args = argv[1:]
     results_dir = None
     path_to_yaml = None
@@ -388,6 +392,10 @@ def parse_yaml(argv):
         else:
             print("Working directory:", results_dir)
 
+    # Path data can be an environment variable. If the environment variable
+    # does not exist, it will get the default path (stability_anañaysis_path/data)
+    if path_data.startswith("$"):
+        path_data = os.getenv(path_data.split("$")[1])
     if not path_data:
         path_data = get_data_path()
         print(f"Path data not specified. Using default path: {path_data}")

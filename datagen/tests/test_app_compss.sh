@@ -9,18 +9,16 @@ source venv/bin/activate
 
 # Set up variables and directories
 datagen_root_dir=$(pwd)
-stability_dir="${datagen_root_dir}/../stability_analysis"
-input_data="${stability_dir}/stability_analysis/data"
 
 # Path to your YAML file
-yaml_file="${datagen_root_dir}/setup/test_setup.yaml"
+yaml_file="${datagen_root_dir}/setup/setup_example.yaml"
 if [ ! -f "$yaml_file" ]; then
   echo "Error: YAML file not found at $yaml_file" | tee -a ${app_log_file}
   exit 1
 fi
 
 # Logging configuration
-mkdir logs
+mkdir -p logs
 app_log_file="${datagen_root_dir}/logs/log_test_app_compss.txt"
 compss_log_dir="$HOME/logs"
 rm ${app_log_file}
@@ -54,7 +52,7 @@ for max_depth in 1 2 3; do
         --topology=tree \
         --log_dir="$compss_log_dir" \
         --verbose \
-        run_datagen_ACOPF "$(pwd)" "${input_data}" "${yaml_file}" 2>&1 | tee -a "$app_log_file"
+        run_datagen_ACOPF "${yaml_file}" "--results_dir=$(pwd)" 2>&1 | tee -a "$app_log_file"
 
       # Check exit status
       if [ "${PIPESTATUS[0]}" -eq 124 ]; then
