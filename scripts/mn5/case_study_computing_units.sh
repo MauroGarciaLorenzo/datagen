@@ -41,6 +41,7 @@ do
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
   --num_nodes=${num_nodes} \
+  --job_name="comp_units_${computing_units}_case_study" \
   --job_execution_dir="${datagen_root_dir}" \
   --worker_working_dir=${working_dir} \
   --master_working_dir=${working_dir} \

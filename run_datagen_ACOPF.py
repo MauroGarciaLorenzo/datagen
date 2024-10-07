@@ -1,5 +1,6 @@
 import random
 import os
+import yaml
 from datetime import datetime
 
 from datagen import parse_args, parse_setup_file
@@ -29,7 +30,7 @@ def main(working_dir='', path_data='', setup_path=''):
         [None, working_dir, path_data, setup_path])
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
-     max_depth) = \
+     max_depth, setup_dict) = \
         parse_setup_file(setup_path)
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -41,12 +42,20 @@ def main(working_dir='', path_data='', setup_path=''):
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    dir_name = f"datagen_ACOPF_seed{seed}_nc{n_cases}_ns{n_samples}" \
-               f"_d{max_depth}_{timestamp}_{rnd_num}"
+    slurm_job_id = os.getenv("SLURM_JOB_ID", default=None)
+    slurm_str = ""
+    if slurm_job_id:
+        slurm_str = f"_slurm{slurm_job_id}"
+    dir_name = f"datagen_ACOPF{slurm_str}_seed{seed}_nc{n_cases}" \
+               f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
     path_results = os.path.join(
         working_dir, "results", dir_name)
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
+
+    # Save yaml setup in the results directory
+    with open(os.path.join(path_results, 'case_setup.yaml'), 'w') as f:
+        yaml.dump(setup_dict, f)
 
     # %% SET FILE NAMES AND PATHS
     if grid_name == 'IEEE9':
