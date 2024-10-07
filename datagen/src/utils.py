@@ -392,13 +392,13 @@ def parse_yaml(argv):
         else:
             print("Working directory:", results_dir)
 
+    if not path_data:
+        path_data = get_data_path()
+        print(f"Path data not specified. Using default path: {path_data}")
     # Path data can be an environment variable. If the environment variable
     # does not exist, it will get the default path (stability_anañaysis_path/data)
     if path_data.startswith("$"):
         path_data = os.getenv(path_data.split("$")[1])
-    if not path_data:
-        path_data = get_data_path()
-        print(f"Path data not specified. Using default path: {path_data}")
     else:
         if not path_data.startswith("/"):
             home_dir = subprocess.run("echo $HOME", shell=True, capture_output=True, text=True).stdout.strip()
