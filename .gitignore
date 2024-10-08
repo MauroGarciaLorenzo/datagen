@@ -174,3 +174,6 @@ logs/
 packages/
 **/tmp/*
 *.yaml
+
+# Exceptions
+!figures/*.png
