@@ -1,13 +1,23 @@
 #!/bin/bash
 # Execute the whole data generator in a medium sized run with 1 node and
 # changing the number computing units used in the objective function to
-# evaluate which configuration is better globally.
+# evaluate which configuration is better globally. Use 1 node if no argument
+# provided
+#
+# Usage: ./script.sh [num_nodes]
 
 export COMPSS_PYTHON_VERSION="3.12.1"
 module load hdf5
 module load sqlite3
 module load python/3.12.1
 module load COMPSs/3.3
+
+# Check arguments
+if [ $# -eq 0 ]; then
+    num_nodes=1
+else
+    num_nodes=$1
+fi
 
 # Parse username splitting the string by delimiter "/"
 IFS='/' read -ra parts <<< "$HOME"
@@ -20,7 +30,7 @@ cd "${SCRIPT_DIR}"/../.. || exit
 datagen_root_dir=$(pwd)
 stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
-yaml_file="${datagen_root_dir}/setup/setup_seed17_nc5_ns5_d5.yaml"
+yaml_file="${datagen_root_dir}/setup/setup_seed17_nc10_ns10_d5.yaml"
 working_dir="/gpfs/scratch/bsc19/$username"
 export PYTHONPATH="${datagen_root_dir}/packages/:${PYTHONPATH}:${datagen_root_dir}"
 
@@ -30,9 +40,7 @@ echo "Using $working_dir as the working directory"
 echo "Current directory is $(pwd)"
 
 # Variables initialization
-num_nodes=1
 computing_units=1
-
 # Run COMPSs execution
 while [ ${computing_units} -le 112 ]
 do
@@ -41,7 +49,7 @@ do
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
   --num_nodes=${num_nodes} \
-  --job_name="comp_units_${computing_units}_case_study" \
+  --job_name="cu${computing_units}_nodes${num_nodes}_case_study" \
   --job_execution_dir="${datagen_root_dir}" \
   --worker_working_dir=${working_dir} \
   --master_working_dir=${working_dir} \
