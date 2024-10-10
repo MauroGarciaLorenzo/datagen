@@ -57,10 +57,11 @@ def cu_perf_datagen(analysis_name, results_dir=None, compss_dir=None,
 
     # Prepare lists for job_id, total_time, and n_cpus
     job_ids = []
-    total_times = []
+    execution_time = []
+    total_times_obj_func = []
     n_cases = []
     n_cpus_list = []
-    times_per_case = []
+    times_per_func_call = []
 
     # Loop through subdirectories in the results directory
     for subdir in os.listdir(results_dir):
@@ -71,7 +72,6 @@ def cu_perf_datagen(analysis_name, results_dir=None, compss_dir=None,
             match = re.search(r'slurm(\d+)_', subdir)
             if match:
                 job_id = match.group(1)
-                job_ids.append(job_id)
 
                 # Read the case_df_computing_times.csv file
                 csv_file = os.path.join(subdir_path,
@@ -84,12 +84,23 @@ def cu_perf_datagen(analysis_name, results_dir=None, compss_dir=None,
                     n_case = len(df)
                     time_per_case = total_time / n_case
 
-                    total_times.append(total_time)
+                    job_ids.append(job_id)
+                    total_times_obj_func.append(total_time)
                     n_cases.append(n_case)
-                    times_per_case.append(time_per_case)
+                    times_per_func_call.append(time_per_case)
 
-                    # Look for the job_id folder in .COMPSs and search n_cpus
+                    # Look for the job_id folder in .COMPSs
                     job_dir = os.path.join(compss_dir, job_id)
+
+                    # Get total execution time checking traces
+                    trace_file = find_prv_file(job_dir)
+                    if trace_file:
+                        raw_time = search_total_time_in_trace(trace_file)
+                        if raw_time:
+                            # Raw time in nanoseconds
+                            execution_time.append(raw_time / 1e9)
+
+                    # Now search n_cpus
                     for root, dirs, files in os.walk(job_dir):
                         for file in files:
                             if file == 'job1_NEW.out':
@@ -110,64 +121,79 @@ def cu_perf_datagen(analysis_name, results_dir=None, compss_dir=None,
                             continue
                         break
 
-    # Sort lists based on n_cpus (1, 2, 4, 8, ...)
-    sorted_lists = sorted(zip(
-        n_cpus_list, total_times, n_cases, times_per_case, job_ids))
-    n_cpus_list_sorted, total_times_sorted, n_cases_sorted, \
-        times_per_case_sorted, job_ids_sorted = zip(
-        *sorted_lists)
-
-    # Convert back to lists (if needed)
-    n_cpus_list = list(n_cpus_list_sorted)
-    total_times = list(total_times_sorted)
-    n_cases = list(n_cases_sorted)
-    times_per_case = list(times_per_case_sorted)
-    job_ids = list(job_ids_sorted)
+    # Save dataframe with results
+    df = pd.DataFrame({
+        'job ID': job_ids,
+        'n_cpus': n_cpus_list,
+        'n_cases': n_cases,
+        'times per func call': times_per_func_call,
+        'execution time': execution_time
+    })
+    df.sort_values(by='n_cpus', axis=0, ignore_index=True, inplace=True)
 
     # Other metrics
-    parallel_efficiency = times_per_case[0] / (
-            np.array(times_per_case) * np.array(n_cpus_list)) * 100
+    parallel_efficiency = df['times per func call'][0] / (
+            df['times per func call'] * df['n_cpus']) * 100
+    df['parallel efficiency'] = parallel_efficiency
+    effective_time_per_case = df['execution time'] / df['n_cases']
+    df['effective time per case'] = effective_time_per_case
 
     # Ensure results directory for the figure exists
     os.makedirs(figures_dir, exist_ok=True)
 
     # Create plot of n_cpus vs total_time/n_cases
     fig, ax1 = plt.subplots(figsize=(8, 6))
-    ax1.plot(n_cpus_list, times_per_case, 'bo-')
+    ax1.plot(df['n_cpus'], df['effective time per case'], 'bo-')
     ax1.set_xlabel('Number of CPUs')
     ax1.set_ylabel('Time per Case (s)', color='b')
     ax1.set_title(
-        'Time per Case vs Number of CPUs assigned to Obj. Func.')
+        'Effective Time per Case vs Number of CPUs assigned to Obj. Func.')
     ax2 = ax1.twinx()
-    ax2.plot(n_cpus_list, n_cases, 'gx--')
+    ax2.plot(df['n_cpus'], df['n_cases'], 'gx--')
     ax2.set_ylabel('Number of cases', color='g')
     # Save the figure
     output_figure = os.path.join(figures_dir,
                                  'ncpus_vs_time_per_case')
+    plt.show()
     fig.savefig(f"{output_figure}.png", dpi=300)
     fig.savefig(f"{output_figure}.pdf")
 
     # Create plot for parallel efficiency
     fig, ax1 = plt.subplots(figsize=(8, 6))
-    ax1.plot(n_cpus_list, parallel_efficiency, 'bo-')
+    ax1.plot(df['n_cpus'], df['parallel efficiency'], 'bo-')
     ax1.set_xlabel('Number of CPUs')
     ax1.set_ylabel('Parallel Efficiency (\%)')
     ax1.set_title('Parallel Efficiency')
     output_figure = os.path.join(figures_dir,
                                  'ncpus_vs_parallel_efficiency')
+    plt.show()
     fig.savefig(f"{output_figure}.png", dpi=300)
     fig.savefig(f"{output_figure}.pdf")
 
-    # Save dataframe with results
-    df = pd.DataFrame({
-        'job ID': job_ids,
-        'n_cpus': n_cpus_list,
-        'n_cases': n_cases,
-        'times per case': times_per_case,
-        'parallel efficiency': parallel_efficiency
-    })
     output_file = os.path.join(figures_dir, 'raw_data.csv')
     df.to_csv(output_file, index=False)
+
+
+def find_prv_file(job_dir):
+    # Loop through all files in the directory
+    traces_dir = os.path.join(job_dir, 'trace')
+    for file_name in os.listdir(traces_dir):
+        # Check if the file has a .prv extension
+        if file_name.endswith('.prv'):
+            return os.path.join(traces_dir, file_name)
+    return None
+
+
+def search_total_time_in_trace(file_path):
+    with open(file_path, 'r') as file:
+        # Loop through each line in the file
+        for line in file:
+            # Use regex to find the number between ':' and '_ns'
+            match = re.search(r':([0-9]+)_ns', line)
+            if match:
+                # Return the first occurrence of the number
+                return int(match.group(1))
+    return None
 
 
 if __name__ == "__main__":

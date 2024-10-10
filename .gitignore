@@ -174,6 +174,8 @@ logs/
 packages/
 **/tmp/*
 *.yaml
+**/.DS_Store
 
 # Exceptions
-!figures/*.png
+!figures/**/*.png
+!figures/**/*.csv
