@@ -35,6 +35,7 @@ import time
 
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
+
 @task(returns=7)
 def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
     d_raw_data = kwargs.get("d_raw_data", None)
@@ -133,8 +134,13 @@ def feasible_power_flow_ACOPF(case,N_pf, **kwargs):
 
     
     if not d_opf_results.converged:
+        stability =-1
+        output_dataframes = {
+            "df_op": None, "df_real": None, "df_imag": None,
+            "df_freq": None, "df_damp": None
+        }
         output_dataframes['df_computing_times'] = computing_times
-        return None, output_dataframes
+        return stability, output_dataframes, d_pf_original, d_opf, fill_d_grid_after_powerflow.clean_d_grid_df(d_grid), None, None, computing_times 
                                         
     #########################################################################33
 

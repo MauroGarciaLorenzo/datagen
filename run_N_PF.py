@@ -61,7 +61,7 @@ elif gridname=='IEEE118':
     # excel = "IEEE_118_01" # SG
     excel = "IEEE_118_FULL_headers" 
     excel_data = "IEEE_118_FULL" 
-    excel_op = "OperationData_IEEE_118"
+    excel_op = "OperationData_IEEE_118_NCIG10"
     excel_lines_ratings = "IEEE_118_Lines"
 
 # TEXAS 2000 bus
@@ -145,6 +145,7 @@ d_grid = read_data.tempTables(d_grid)
 d_sg = read_data.read_data(excel_sg)
 
 d_vsc = read_data.read_data(excel_vsc)
+d_vsc['UserGFOL'].loc[0,'Bac']=0
 
 # d_vsc['UserGFOL'].loc[0,'k_droop_f']=0.02
 # d_vsc['UserGFOL'].loc[0,'k_droop_u']=20
@@ -217,7 +218,7 @@ generators_power_factor = 0.98
 # tau_p_g_for = [(0., 2)]
 # tau_q_g_for = [(0., 2)]
 
-n_samples = 1
+n_samples = 5
 n_cases = 1
 
 rel_tolerance = 0.01
@@ -235,8 +236,8 @@ dimensions = [
                 d_op['Generators']['Pmax_CIG'].sum()),
                 independent_dimension=True,
                 cosphi=generators_power_factor),
-      Dimension(label="perc_g_for", variable_borders=[(1,1)],
-                n_cases=n_cases, divs=1, borders=(1, 1),
+      Dimension(label="perc_g_for", variable_borders=[(0,1)],
+                n_cases=n_cases, divs=1, borders=(0, 1),
                 independent_dimension=True, cosphi=None),
       Dimension(label="p_load", values=p_loads,
                 n_cases=n_cases, divs=1,
@@ -267,22 +268,22 @@ dimensions = [
     
 for d in list(d_op['Generators']['BusNum']):
     dimensions.append(Dimension(label='tau_droop_f_gfor_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.1,0.1),
+                                divs=1, borders=(0.01,0.2),
                                 independent_dimension=True,
                                 cosphi=None))
     
     dimensions.append(Dimension(label='tau_droop_u_gfor_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.1,0.1),
+                                divs=1, borders=(0.01,0.2),
                                 independent_dimension=True,
                                 cosphi=None))
     
     dimensions.append(Dimension(label='tau_droop_f_gfol_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.1,0.1),
+                                divs=1, borders=(0.01,0.2),
                                 independent_dimension=True,
                                 cosphi=None))
     
     dimensions.append(Dimension(label='tau_droop_u_gfol_'+str(d), n_cases=n_cases,
-                                divs=1, borders=(0.1,0.1),
+                                divs=1, borders=(0.01,0.2),
                                 independent_dimension=True,
                                 cosphi=None))
  
@@ -308,7 +309,7 @@ v_min_v_max_delta_v=[0.95,1.05,0.02]
 # V_set=0.95
 
 #%%
-N_pf=1
+N_pf=n_cases*n_samples
 stability_array = []
 output_dataframes_array = []
 d_pf_original_array = []
@@ -345,6 +346,55 @@ d_grid_array = compss_wait_on(d_grid_array)
 T_EIG_array = compss_wait_on(T_EIG_array)
 computing_times_array = compss_wait_on(computing_times_array)
 
+
+#%%
+from datetime import datetime
+import random 
+import os
+
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+rnd_num = random.randint(1000, 9999)
+dir_name = f"run_N_PF_seed{seed}_nc{n_cases}_ns{n_samples}" \
+           f"{timestamp}_{rnd_num}"
+path_results = os.path.join("results", dir_name)
+if not os.path.isdir(path_results):
+    os.makedirs(path_results)
+
+from datagen.src.utils import *
+save_results(cases_df, dims_df, None, output_dataframes_array,path_results,seed)
+                
+
+#%%
+# Define the path to the folder
+folder_path = './Fecamp Test Case - SSTool/01_data/cases/seed'+str(seed)+'_GFOL_RL_percgfor01_PyUnstable'
+
+# Create the folder if it doesn't exist
+os.makedirs(folder_path, exist_ok=True)
+
+T_PF=d_opf['pf_bus'][['bus','Vm','theta']]
+with pd.ExcelWriter(folder_path+'/IEEE118_FULL.xlsx', engine='openpyxl') as writer:
+    for key in d_grid:
+        if key!='gen_names':
+            if key=='T_NET':
+                d_grid[key].to_excel(writer, sheet_name='AC-NET', index=False)
+            elif key=='T_DC_NET':
+                d_grid[key].to_excel(writer, sheet_name='DC-NET', index=False)
+            else:
+                d_grid[key].to_excel(writer, sheet_name=key.replace('T_',''), index=False)
+    T_PF.to_excel(writer, sheet_name='PF', index=False)            
+    
+    
+with pd.ExcelWriter(folder_path+'/IEEE118_FULL_data_vsc.xlsx', engine='openpyxl') as writer:
+    for mode in ['GFOR','GFOL']:
+        try:
+            T_VSC_data=d_grid['T_VSC'].query('mode ==@mode')[['number','bus']+list(set(d_vsc['User'+mode].columns)-set(['Bac', 'tau_s']))]
+            T_VSC_data['Bac']=d_vsc['User'+mode].loc[0,'Bac']
+            T_VSC_data['tau_s']=d_vsc['User'+mode].loc[0,'tau_s']
+        except:
+              T_VSC_data=pd.DataFrame(columns=['number','bus']+list(d_vsc['User'+mode].columns))
+        T_VSC_data.to_excel(writer, sheet_name=mode, index=False)         
+              
+   
 # for stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times in zip(
 #         stability_array, output_dataframes_array, d_pf_original_array,
 #         d_opf_array, d_grid_array, T_EIG_array, computing_times_array):
