@@ -162,7 +162,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     p_sg = np.sum(d_grid['T_gen'].query('element == "SG"')['P']) * 100
     p_cig = np.sum(d_grid['T_gen'].query('element != "SG"')['P']) * 100
-    perc_gfor = np.sum(d_grid['T_gen'].query('element == "GFOR"')['P']) / p_cig
+    perc_gfor = np.sum(d_grid['T_gen'].query('element == "GFOR"')['P']) / p_cig*100
 
     if dimensions:
         valid_point = True
@@ -173,7 +173,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
             if d.label == "p_cig":
                 if p_cig < d.borders[0] or p_cig > d.borders[1]:
                     valid_point = False
-            if d.label == "perc_gfor":
+            if d.label == "perc_g_for":
                 if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
                     valid_point = False
         if not valid_point:
