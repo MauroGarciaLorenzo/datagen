@@ -363,76 +363,76 @@ if not os.path.isdir(path_results):
 from datagen.src.utils import *
 save_results(cases_df, dims_df, None, output_dataframes_array,path_results,seed)
                 
-
 #%%
-# Define the path to the folder
-folder_path = './Fecamp Test Case - SSTool/01_data/cases/seed'+str(seed)+'_GFOL_RL_percgfor01_PyUnstable'
+# #%%
+# # Define the path to the folder
+# folder_path = './Fecamp Test Case - SSTool/01_data/cases/seed'+str(seed)+'_GFOL_RL_percgfor01_PyUnstable'
 
-# Create the folder if it doesn't exist
-os.makedirs(folder_path, exist_ok=True)
+# # Create the folder if it doesn't exist
+# os.makedirs(folder_path, exist_ok=True)
 
-T_PF=d_opf['pf_bus'][['bus','Vm','theta']]
-with pd.ExcelWriter(folder_path+'/IEEE118_FULL.xlsx', engine='openpyxl') as writer:
-    for key in d_grid:
-        if key!='gen_names':
-            if key=='T_NET':
-                d_grid[key].to_excel(writer, sheet_name='AC-NET', index=False)
-            elif key=='T_DC_NET':
-                d_grid[key].to_excel(writer, sheet_name='DC-NET', index=False)
-            else:
-                d_grid[key].to_excel(writer, sheet_name=key.replace('T_',''), index=False)
-    T_PF.to_excel(writer, sheet_name='PF', index=False)            
+# T_PF=d_opf['pf_bus'][['bus','Vm','theta']]
+# with pd.ExcelWriter(folder_path+'/IEEE118_FULL.xlsx', engine='openpyxl') as writer:
+#     for key in d_grid:
+#         if key!='gen_names':
+#             if key=='T_NET':
+#                 d_grid[key].to_excel(writer, sheet_name='AC-NET', index=False)
+#             elif key=='T_DC_NET':
+#                 d_grid[key].to_excel(writer, sheet_name='DC-NET', index=False)
+#             else:
+#                 d_grid[key].to_excel(writer, sheet_name=key.replace('T_',''), index=False)
+#     T_PF.to_excel(writer, sheet_name='PF', index=False)            
     
     
-with pd.ExcelWriter(folder_path+'/IEEE118_FULL_data_vsc.xlsx', engine='openpyxl') as writer:
-    for mode in ['GFOR','GFOL']:
-        try:
-            T_VSC_data=d_grid['T_VSC'].query('mode ==@mode')[['number','bus']+list(set(d_vsc['User'+mode].columns)-set(['Bac', 'tau_s']))]
-            T_VSC_data['Bac']=d_vsc['User'+mode].loc[0,'Bac']
-            T_VSC_data['tau_s']=d_vsc['User'+mode].loc[0,'tau_s']
-        except:
-              T_VSC_data=pd.DataFrame(columns=['number','bus']+list(d_vsc['User'+mode].columns))
-        T_VSC_data.to_excel(writer, sheet_name=mode, index=False)         
+# with pd.ExcelWriter(folder_path+'/IEEE118_FULL_data_vsc.xlsx', engine='openpyxl') as writer:
+#     for mode in ['GFOR','GFOL']:
+#         try:
+#             T_VSC_data=d_grid['T_VSC'].query('mode ==@mode')[['number','bus']+list(set(d_vsc['User'+mode].columns)-set(['Bac', 'tau_s']))]
+#             T_VSC_data['Bac']=d_vsc['User'+mode].loc[0,'Bac']
+#             T_VSC_data['tau_s']=d_vsc['User'+mode].loc[0,'tau_s']
+#         except:
+#               T_VSC_data=pd.DataFrame(columns=['number','bus']+list(d_vsc['User'+mode].columns))
+#         T_VSC_data.to_excel(writer, sheet_name=mode, index=False)         
               
    
-# for stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times in zip(
-#         stability_array, output_dataframes_array, d_pf_original_array,
-#         d_opf_array, d_grid_array, T_EIG_array, computing_times_array):
-#     control = '_my_k_kf50_kv50_tau_upper_limit_min_perc_gfor_90_noGFOL_at_slack'
-#     path = './datagen/src/results/'
+# # for stability, output_dataframes, d_pf_original, d_opf, d_grid, T_EIG, computing_times in zip(
+# #         stability_array, output_dataframes_array, d_pf_original_array,
+# #         d_opf_array, d_grid_array, T_EIG_array, computing_times_array):
+# #     control = '_my_k_kf50_kv50_tau_upper_limit_min_perc_gfor_90_noGFOL_at_slack'
+# #     path = './datagen/src/results/'
 
-#     if not os.path.exists(path):
-#         os.makedirs(path)
+# #     if not os.path.exists(path):
+# #         os.makedirs(path)
 
-#     write_csv(d_pf_original, path, seed, 'PF_orig' + control)
-#     write_xlsx(d_opf, path, 'OPF_' + str(seed) + control)
-#     write_csv(output_dataframes, path, seed, 'OPF' + control)
-#     write_xlsx(d_grid, path, 'd_grid_' + str(seed) + control)
+# #     write_csv(d_pf_original, path, seed, 'PF_orig' + control)
+# #     write_xlsx(d_opf, path, 'OPF_' + str(seed) + control)
+# #     write_csv(output_dataframes, path, seed, 'OPF' + control)
+# #     write_xlsx(d_grid, path, 'd_grid_' + str(seed) + control)
 
-#     pcig = np.zeros([len(d_grid['T_VSC']['bus'].unique()), 1])
-#     for bb in range(0, len(d_grid['T_VSC']['bus'].unique())):
-#         bus = d_grid['T_VSC']['bus'].unique()[bb]
-#         pcig[bb, 0] = d_grid['T_VSC'].query('bus == @bus')['P'].sum()
+# #     pcig = np.zeros([len(d_grid['T_VSC']['bus'].unique()), 1])
+# #     for bb in range(0, len(d_grid['T_VSC']['bus'].unique())):
+# #         bus = d_grid['T_VSC']['bus'].unique()[bb]
+# #         pcig[bb, 0] = d_grid['T_VSC'].query('bus == @bus')['P'].sum()
 
-#     check_perc = np.array(
-#         d_grid['T_VSC'].query('mode == "GFOR"')['P']) / pcig.ravel()
+# #     check_perc = np.array(
+# #         d_grid['T_VSC'].query('mode == "GFOR"')['P']) / pcig.ravel()
 
-#     # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
-#     #                                          d_raw_data=d_raw_data,
-#     #                                          d_op=d_op,
-#     #                                          GridCal_grid=GridCal_grid,
-#     #                                          d_grid=d_grid, d_sg=d_sg,
-#     #                                          d_vsc=d_vsc,
-#     #                                          # voltage_profile=voltage_profile,
-#     #                                          # v_min_v_max_delta_v=v_min_v_max_delta_v
-#     #                                          V_set=V_set
-#     #                                          )
+# #     # d_pf_original, d_pf, d_raw_data = feasible_power_flow(case=case,
+# #     #                                          d_raw_data=d_raw_data,
+# #     #                                          d_op=d_op,
+# #     #                                          GridCal_grid=GridCal_grid,
+# #     #                                          d_grid=d_grid, d_sg=d_sg,
+# #     #                                          d_vsc=d_vsc,
+# #     #                                          # voltage_profile=voltage_profile,
+# #     #                                          # v_min_v_max_delta_v=v_min_v_max_delta_v
+# #     #                                          V_set=V_set
+# #     #                                          )
 
-# # stability, output_dataframes= small_signal_stability(case=case, d_raw_data = d_raw_data,
-# #                                                      d_op = d_op,
-# #                                                      GridCal_grid = GridCal_grid,
-# #                                                      d_grid = d_grid,
-# #                                                      d_sg = d_sg,
-# #                                                      d_vsc = d_vsc,
-# #                                                      d_pf = d_pf,
-# #                                                      )
+# # # stability, output_dataframes= small_signal_stability(case=case, d_raw_data = d_raw_data,
+# # #                                                      d_op = d_op,
+# # #                                                      GridCal_grid = GridCal_grid,
+# # #                                                      d_grid = d_grid,
+# # #                                                      d_sg = d_sg,
+# # #                                                      d_vsc = d_vsc,
+# # #                                                      d_pf = d_pf,
+# # #                                                      )
