@@ -158,15 +158,16 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
                 else:
                     print("Wrong format for output dataframes")
 
-    with open(os.path.join(dst_dir, "execution_logs.txt"), "w") as log_file:
-        for log_entry in execution_logs:
-            log_file.write("Dimensions:\n")
-            for dim in log_entry[0]:
-                log_file.write(f"{dim}\n")
-            log_file.write(f"Entropy: {log_entry[1]}\n")
-            log_file.write(f"Delta Entropy: {log_entry[2]}\n")
-            log_file.write(f"Depth: {log_entry[3]}\n")
-            log_file.write("\n")
+    if execution_logs!=None:
+        with open(os.path.join(dst_dir, "execution_logs.txt"), "w") as log_file:
+            for log_entry in execution_logs:
+                log_file.write("Dimensions:\n")
+                for dim in log_entry[0]:
+                    log_file.write(f"{dim}\n")
+                log_file.write(f"Entropy: {log_entry[1]}\n")
+                log_file.write(f"Delta Entropy: {log_entry[2]}\n")
+                log_file.write(f"Depth: {log_entry[3]}\n")
+                log_file.write("\n")
 
 
 def get_case_results(T_EIG, d_grid):

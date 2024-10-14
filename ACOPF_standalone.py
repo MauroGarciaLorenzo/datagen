@@ -28,8 +28,11 @@ Options:
 
 import os
 import sys
+import random
+from datetime import datetime
 
-from datagen.src.utils import save_dataframes, parse_setup_file, parse_args
+
+from datagen.src.utils import save_dataframes, parse_setup_file, parse_args, concat_df_dict
 from datagen.src.dimensions import Dimension
 from datagen.src.objective_function_ACOPF import *
 from datagen.src.sampling import gen_samples
@@ -65,6 +68,23 @@ def main():
     path_results = os.path.join(working_dir, "results")
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
+        
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+    print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+    cu = os.environ.get("COMPUTING_UNITS")
+
+    # CASE CONFIGURATION
+    # Create unique directory name for results
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    rnd_num = random.randint(1000, 9999)
+    dir_name = f"ACOPF_standalone_seed{seed}_nc{n_cases}_ns{n_samples}" \
+               f"_{timestamp}_{rnd_num}"
+    path_results = os.path.join(
+        working_dir, "results", dir_name)
+    if not os.path.isdir(path_results):
+        os.makedirs(path_results)
+
 
     # %% SET FILE NAMES AND PATHS
     if grid_name == 'IEEE9':
@@ -80,7 +100,7 @@ def main():
         # excel_headers = "IEEE_118_01"  # SG
         excel_headers = "IEEE_118_FULL_headers"
         excel_data = "IEEE_118_FULL"
-        excel_op = "OperationData_IEEE_118"
+        excel_op = "OperationData_IEEE_118_NCIG10"
         excel_lines_ratings = "IEEE_118_Lines"
     else:
         raise ValueError(f"Grid {grid_name} not implemented")
@@ -230,8 +250,27 @@ def main():
     # %% SAVE RESULTS
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
-    save_dataframes(output_dataframes_array, path_results, seed)
+    
+    # Collect each cases dictionary of dataframes into total_dataframes
+    total_dataframes=None
+    for output_dfs in output_dataframes_array:
+        if total_dataframes:
+            total_dataframes = concat_df_dict(total_dataframes,
+                                              output_dfs)
+        else:
+            total_dataframes = output_dfs
+    # Remove elements of the dict of dataframes that are not a dataframe
+    labels_to_remove = []
+    if total_dataframes:
+        for label, df in total_dataframes.items():
+            if df is not None and type(df) is not pd.DataFrame:
+                # Keep None values that work as a placeholder
+                labels_to_remove.append(label)
+        for label in labels_to_remove:
+            total_dataframes.pop(label)
+            
+    save_results(cases_df, dims_df, None, total_dataframes, path_results)
 
-
+            
 if __name__ == "__main__":
     main()
