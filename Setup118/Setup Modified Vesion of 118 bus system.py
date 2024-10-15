@@ -574,90 +574,95 @@ gen_GC_cig
 
 
 #%% put the added cig capacity in the general Generators_GC df
-for bus in gen_GC_cig['BusNum']:
-    bus= int(bus)
+for ibus in gen_GC_cig.index[~gen_GC_cig['Added Gens'].isna()]:#gen_GC_cig['BusNum']:
+    bus= int(gen_GC_cig.loc[ibus,'BusNum'])
     Generators_GC.loc[Generators_GC.query('BusNum == @bus').index,'Solar (MW)']=gen_GC_cig.loc[gen_GC_cig.query('BusNum == @bus').index[0],'Solar (MW)']
     Generators_GC.loc[Generators_GC.query('BusNum == @bus').index,'Wind (MW)']=gen_GC_cig.loc[gen_GC_cig.query('BusNum == @bus').index[0],'Wind (MW)']
     
-Generators_GC['Pmax_CIG']=Generators_GC[CIG].sum(axis=1)
-Generators_GC['Pmax_TOT']=Generators_GC['Pmax_CIG']+Generators_GC['Pmax_TOT_SG']
-Generators_GC
+    Generators_GC['Pmax_CIG']=Generators_GC[CIG].sum(axis=1)
+    Generators_GC['Pmax_TOT']=Generators_GC['Pmax_CIG']+Generators_GC['Pmax_TOT_SG']
+    Generators_GC
 
 
-# In[90]:
-
-
-headers=regions_GC_gen_perc.columns
-headers2=[i.replace('(MW)','[%]') for i in headers]
-regions_GC_gen_perc.columns=headers2
-regions_GC_gen_perc
-
+    # In[90]:
+    
+    
+    headers=regions_GC_gen_perc.columns
+    headers2=[i.replace('(MW)','[%]') for i in headers]
+    regions_GC_gen_perc.columns=headers2
+    regions_GC_gen_perc
+    
 
 # In[91]:
-
-
-#%% Summary of NREL regions
-regions
-
-
-# Proporcionate the load peak and minimum demand od NREL system to the capacity of the REE system.
-
-# In[92]:
-
-
-#%% reduced capacity in percentage
-regions_GC = adjust_demand(regions_GC, regions)
-
-
-# In[70]:
-
-
-title='Peak Load (MW)'
-y = regions_GC[title]
-mylabels = regions_GC['Region']
-
-pie_plot(y,mylabels,title,labels_flag=1)
-
-title='Capacity (MW)'
-y = regions_GC[title]
-mylabels = regions_GC['Region']
-
-pie_plot(y,mylabels,title,labels_flag=1)
-types_of_gens=[i.replace('(MW)','[%]') for i in TOT_SG+CIG]
-for r in range(1,len(reg_list)+1):
-    title='Region '+str(r)
-    y = regions_GC_gen_perc.loc[r-1,types_of_gens][regions_GC_gen_perc.loc[r-1,types_of_gens]!=0]
-    mylabels = y.index
     
-    pie_plot(y,mylabels,title,labels_flag=0)
+    
+    #%% Summary of NREL regions
+    regions
+    
+    
+    # Proporcionate the load peak and minimum demand od NREL system to the capacity of the REE system.
+    
+    # In[92]:
+    
+    
+    #%% reduced capacity in percentage
+    regions_GC = adjust_demand(regions_GC, regions)
 
 
-# In[71]:
+    # In[70]:
+    
+    
+    # title='Peak Load (MW)'
+    # y = regions_GC[title]
+    # mylabels = regions_GC['Region']
+    
+    # pie_plot(y,mylabels,title,labels_flag=1)
+    
+    # title='Capacity (MW)'
+    # y = regions_GC[title]
+    # mylabels = regions_GC['Region']
+    
+    # pie_plot(y,mylabels,title,labels_flag=1)
+    # types_of_gens=[i.replace('(MW)','[%]') for i in TOT_SG+CIG]
+    # for r in range(1,len(reg_list)+1):
+    #     title='Region '+str(r)
+    #     y = regions_GC_gen_perc.loc[r-1,types_of_gens][regions_GC_gen_perc.loc[r-1,types_of_gens]!=0]
+    #     mylabels = y.index
+        
+    #     pie_plot(y,mylabels,title,labels_flag=0)
+    
+    
+    # In[71]:
+    
+    
+    Generators_GC
+    
 
+    # ## Summary
+    # ### NREL System
+    
+    # In[72]:
+    
+    
+    regions
+    
+    
+    # ## Our System
+    
+    # In[93]:
+    
+    
+    regions_GC=regions_GC[regions.columns]
+    regions_GC
+    
+    
+    # In[ ]:
+    
+    columns_order=['BusName','BusNum','Snom_SG','Snom_CIG','Snom','Pmax','Pmin','Qmax','Qmin','Region','Pmax_SG','Pmax_CIG','Pmin_SG','Pmin_CIG']
+    path='../../stability_analysis/stability_analysis/data/cases/'
 
-Generators_GC
+    T_Gen = create_OpDataExcel(Buses, columns_order, path)
+    # T_Gen
 
-
-# ## Summary
-# ### NREL System
-
-# In[72]:
-
-
-regions
-
-
-# ## Our System
-
-# In[93]:
-
-
-regions_GC=regions_GC[regions.columns]
-regions_GC
-
-
-# In[ ]:
-
-
-
+    
 
