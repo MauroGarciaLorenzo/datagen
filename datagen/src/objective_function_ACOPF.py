@@ -151,7 +151,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     if not d_opf_results.converged:
         output_dataframes['df_computing_times'] = computing_times
-        return None, output_dataframes
+        return -1, output_dataframes
 
     #########################################################################
 
@@ -178,7 +178,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                     valid_point = False
         if not valid_point:
             output_dataframes['df_computing_times'] = computing_times
-            return None, output_dataframes
+            return -2, output_dataframes
 
     # %% READ PARAMETERS
 

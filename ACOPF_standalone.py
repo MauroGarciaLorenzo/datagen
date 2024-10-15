@@ -32,7 +32,7 @@ import random
 from datetime import datetime
 
 
-from datagen.src.utils import save_dataframes, parse_setup_file, parse_args, concat_df_dict
+from datagen.src.utils import save_dataframes, parse_setup_file, parse_args, concat_df_dict, save_results
 from datagen.src.dimensions import Dimension
 from datagen.src.objective_function_ACOPF import *
 from datagen.src.sampling import gen_samples
@@ -59,15 +59,6 @@ def main():
      n_samples, seed, v_min_v_max_delta_v, voltage_profile,
      _, _) = \
         parse_setup_file(setup_path)
-
-    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-    print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
-    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-
-    # CASE CONFIGURATION
-    path_results = os.path.join(working_dir, "results")
-    if not os.path.isdir(path_results):
-        os.makedirs(path_results)
         
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
@@ -268,7 +259,8 @@ def main():
                 labels_to_remove.append(label)
         for label in labels_to_remove:
             total_dataframes.pop(label)
-            
+    
+    total_dataframes['df_op']['Stable']=stability_array
     save_results(cases_df, dims_df, None, total_dataframes, path_results)
 
             
