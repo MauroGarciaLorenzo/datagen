@@ -14,6 +14,9 @@ Each folder contains:
 - case_df_computing_times.csv: with the computing times of each data set instance
 - dims_df.csv: for each data set instance, the sampled quantities in the multidimensional space
 - cases_df.csv: for each data set instance, all the sampled quantities, not only of the dimensions but also of all the variables 
+- case_df_op.csv: for each data set instance, collects the quantities obtained by power flow calculation and the result of the stability assessment
 - case_df_real.csv, case_df_image.csv, case_df_freq.csv, case_df_damping.csv: real parts, imaginary parts, frequency and damping of the eigenvalues obtained for each data set instance.
 
-- 
+## Files
+### case_df_computing_times.csv
+
