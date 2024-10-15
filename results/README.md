@@ -19,4 +19,16 @@ Each folder contains:
 
 ## Files
 ### case_df_computing_times.csv
+Files collecting the computing times of each data set instance specifying the time (in seconds) required for
+- power flow calculation: time_powerflow
+- generation of the network state-space: time_generate_SS_net
+- generation of the synchronous generators (SGs) and voltage source converters (VSC) state-spaces: time_generate_SS_elem
+- connect all the state-spaces: time_connect
+- calculate the eigenvalues of the system matrix: time_eig
+- calculate the participation factors of each eigenvalue: time_partfact
+
+### dims_df.csv
+File collecting the sampled quantities in the multidimensional space, for each data set instance.
+
+
 
