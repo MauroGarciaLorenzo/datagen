@@ -173,4 +173,4 @@ logs/
 **/results/*
 packages/
 **/tmp/*
-.yalm
+*.yaml
