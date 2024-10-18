@@ -355,30 +355,6 @@ def parse_yaml(argv):
     except Exception as e:
         print(f"An unexpected error occurred - {e}")
 
-    # Get application parameters
-    application = yaml_content.get('application', {})
-    application_args = [
-        "generators_power_factor", "grid_name", "loads_power_factor",
-        "n_cases",
-        "n_pf", "n_samples", "seed", "v_min_v_max_delta_v", "voltage_profile",
-        "rel_tolerance", "max_depth"
-    ]
-
-    application_dict = {}
-    for arg in application_args:
-        p = application.get(arg, None)
-        if p is None:
-            print(
-                f"Error: Argument {arg} not specified in the setup file ({path_to_yaml})")
-        else:
-            application_dict[arg] = p
-
-    print("Parsed Application Parameters:", application_dict)
-
-    # Get setup parameters
-    setup = yaml_content.get('setup', {})
-    path_data = setup.get("Data Dir", None)
-
     if not results_dir or results_dir is None:
         results_dir = os.getcwd()
         print(f"Working directory not specified. Using current directory: "
@@ -392,13 +368,15 @@ def parse_yaml(argv):
         else:
             print("Working directory:", results_dir)
 
+    path_data = setup_dict.get("Data Dir", None)
+
+    # Path data can be an environment variable. If the environment variable
+    # does not exist, it will get the default path (stability_anañaysis_path/data)
+    if path_data and path_data.startswith("$"):
+        path_data = os.getenv(path_data.split("$")[1])
     if not path_data:
         path_data = get_data_path()
         print(f"Path data not specified. Using default path: {path_data}")
-    # Path data can be an environment variable. If the environment variable
-    # does not exist, it will get the default path (stability_anañaysis_path/data)
-    if path_data.startswith("$"):
-        path_data = os.getenv(path_data.split("$")[1])
     else:
         if not path_data.startswith("/"):
             home_dir = subprocess.run("echo $HOME", shell=True, capture_output=True, text=True).stdout.strip()
