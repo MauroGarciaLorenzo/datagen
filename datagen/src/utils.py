@@ -328,6 +328,8 @@ def parse_yaml(argv):
     args = argv[1:]
     results_dir = None
     path_to_yaml = None
+    setup_dict = None
+    application_dict = None
 
     while args:
         arg = args.pop(0)
@@ -337,6 +339,11 @@ def parse_yaml(argv):
             path_to_yaml = arg
 
     try:
+        if not path_to_yaml:
+            dirname = os.path.dirname(os.path.abspath(__file__))
+            path_to_yaml = os.path.join(dirname, "..", "..",
+                                        "setup", "setup_example.yaml")
+
         with open(path_to_yaml, 'r') as file:
             yaml_content = yaml.safe_load(file)
 
