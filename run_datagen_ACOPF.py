@@ -1,3 +1,33 @@
+"""
+Execution of the datagen using objective function
+(objective_function_ACOPF.py)
+
+Usage: python3 run_datagen_ACOPF.py path/to/yaml [--results_dir=<dir>]
+
+Options:
+    --results_dir=<dir>: Path where results will be stored (default: "")
+
+    path/to/yaml: Yaml or path to a yaml file (refer to the setup directory for
+    examples)
+        User can specify:
+            *setup section*
+                -Data Dir (from user home)
+            *application section*
+                -n_pf
+                -voltage_profile
+                -v_min_v_max_delta_v
+                -loads_power_factor
+                -generators_power_factor
+                -n_samples: Number of samples to produce for each cell
+                -n_cases: Number of different combinations of cases for each sample
+                -rel_tolerance: Indicates the minimum size of a cell as pu (related
+                to the initial size of the cell)
+                -max_depth: Maximum number of subdivisions
+                -seed: Seed
+                -grid_name: Grid name
+        (default: "setup/default_setup.yaml")
+"""
+
 import random
 import os
 import sys
@@ -25,37 +55,8 @@ warnings.filterwarnings("ignore")
 
 
 @task()
-def main(setup_path, results_dir=None):
-    """
-    Execution of the datagen using objective function
-    (objective_function_ACOPF.py)
-
-    Usage: python3 ACOPF_standalone.py path/to/yaml [--results_dir=<dir>]
-
-    Options:
-      --results_dir=<dir>: Path where results will be stored (default: "")
-
-    path/to/yaml: Yaml or path to a yaml file (refer to the setup directory for
-    examples)
-        User can specify:
-            *setup section*
-                -Data Dir (from user home)
-            *application section*
-                -n_pf
-                -voltage_profile
-                -v_min_v_max_delta_v
-                -loads_power_factor
-                -generators_power_factor
-                -n_samples: Number of samples to produce for each cell
-                -n_cases: Number of different combinations of cases for each sample
-                -rel_tolerance: Indicates the minimum size of a cell as pu (related
-                to the initial size of the cell)
-                -max_depth: Maximum number of subdivisions
-                -seed: Seed
-                -grid_name: Grid name
-        (default: "setup/default_setup.yaml")
-    """
-    application_dict, results_dir, path_data = parse_yaml([None, setup_path, f"--results_dir={results_dir}"])
+def main():
+    application_dict, results_dir, path_data = parse_yaml(sys.argv)
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile,
      rel_tolerance, max_depth) = parse_application_dict(application_dict)
@@ -228,10 +229,4 @@ def main(setup_path, results_dir=None):
 
 
 if __name__ == "__main__":
-    setup_path = sys.argv[1]
-
-    results_dir = None
-    if len(sys.argv) > 2 and sys.argv[2].startswith("--results_dir="):
-        results_dir = sys.argv[2].split("=", 1)[1]
-
-    main(setup_path, results_dir)
+    main()
