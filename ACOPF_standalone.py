@@ -69,7 +69,7 @@ def main():
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    dir_name = f"ACOPF_standalone_seed{seed}_nc{n_cases}_ns{n_samples}" \
+    dir_name = f"ACOPF_standalone_NREL_seed{seed}_nc{n_cases}_ns{n_samples}" \
                f"_{timestamp}_{rnd_num}"
     path_results = os.path.join(
         working_dir, "results", dir_name)
@@ -86,12 +86,12 @@ def main():
         excel_op = "OperationData_IEEE_9"
     elif grid_name == 'IEEE118':
         # IEEE 118
-        raw = "IEEE118busREE_Winter_Solved_mod_PQ_91Loads"
+        raw = "IEEE118busNREL"
         # excel_headers = "IEEE_118bus_TH"  # THÉVENIN
         # excel_headers = "IEEE_118_01"  # SG
         excel_headers = "IEEE_118_FULL_headers"
         excel_data = "IEEE_118_FULL"
-        excel_op = "OperationData_IEEE_118_NCIG10"
+        excel_op = "OperationData_IEEE_118_NREL"
         excel_lines_ratings = "IEEE_118_Lines"
     else:
         raise ValueError(f"Grid {grid_name} not implemented")
