@@ -123,7 +123,15 @@ for i in range(len(Generators)):
 
 Generators
 
+#%% Hydro data from plexos xsl
+plexos_data=pd.read_excel('plexos-export.xls',sheet_name='Properties')
+hydro_plants=[hydro for hydro in plexos_data['child_object'].unique() if hydro.startswith('Hydro')]
+Generators=Generators.rename(columns={'Generator Name':'GeneratorName'})
 
+for hydro_plant in hydro_plants:
+    max_capacity= plexos_data.query('child_object == @hydro_plant and property == "Max Capacity"')['value'].max()
+    Generators.loc[Generators.query('GeneratorName == @hydro_plant').index[0],'Max Capacity (MW)']=max_capacity
+    
 # In[7]:
 
 
