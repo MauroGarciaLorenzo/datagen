@@ -69,12 +69,12 @@ def main():
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    dir_name = f"ACOPF_standalone_NREL_seed{seed}_nc{n_cases}_ns{n_samples}" \
+    dir_name = f"ACOPF_standalone_NREL_LF095_seed{seed}_nc{n_cases}_ns{n_samples}" \
                f"_{timestamp}_{rnd_num}"
     path_results = os.path.join(
         working_dir, "results", dir_name)
-    if not os.path.isdir(path_results):
-        os.makedirs(path_results)
+    # if not os.path.isdir(path_results):
+    #     os.makedirs(path_results)
 
 
     # %% SET FILE NAMES AND PATHS
@@ -155,6 +155,7 @@ def main():
     # %% READ EXEC FILES WITH SG AND VSC CONTROLLERS PARAMETERS
     d_sg = read_data.read_data(excel_sg)
     d_vsc = read_data.read_data(excel_vsc)
+    # d_vsc['UserGFOL'].loc[0,'ts_pll']=0.1
 
     # %% CONFIGURATION OF DIMENSIONS FOR THE DATA GENERATOR
     # Set up dimensions for generators, converters and loads
