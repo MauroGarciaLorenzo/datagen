@@ -187,9 +187,6 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     d_grid = update_control(case, d_grid)
 
-    # d_grid['T_VSC'].loc[d_grid['T_VSC'].query('mode == "GFOL"').index,'k_droop_u']=0.1
-    # d_grid['T_VSC'].loc[d_grid['T_VSC'].query('mode == "GFOL"').index,'k_droop_f']=0.01
-
     # Assign slack bus and slack element
     d_grid = slack_bus.assign_slack(d_grid)
 
