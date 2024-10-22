@@ -59,7 +59,7 @@ class Test(TestCase):
                       f"n_cases={n_cases}, max_depth={max_depth} ==="
                       f'\n{"".join(["="] * 60)}\n', flush=True)
                 main(setup_path=yaml_path, working_dir=working_dir)
-                print(f"\n=== Evertything went fine ===\n", flush=True)
+                print(f"\n=== Everything went fine ===\n", flush=True)
             except Exception as e:
                 passed = False
                 print(f"\n=== Error with n_samples={n_samples}, "
