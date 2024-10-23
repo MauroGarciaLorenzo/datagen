@@ -362,10 +362,13 @@ def parse_yaml(argv):
     except Exception as e:
         print(f"An unexpected error occurred - {e}")
 
-    if not results_dir or results_dir is None:
-        results_dir = os.getcwd()
-        print(f"Working directory not specified. Using current directory: "
-              f"{os.getcwd()}")
+    if not results_dir:
+        results_dir = os.path.join(os.path.dirname(__file__), "..", "..",
+                                   "results")
+        if not os.path.exists(results_dir):
+            os.makedirs(results_dir)
+        print(f"Results directory not specified. Using default directory: "
+              f"{results_dir}")
     else:
         if not results_dir.startswith("/"):
             home_dir = subprocess.run("echo $HOME", shell=True, capture_output=True, text=True).stdout.strip()
@@ -373,7 +376,7 @@ def parse_yaml(argv):
         if not os.path.exists(results_dir):
             os.makedirs(results_dir)
         else:
-            print("Working directory:", results_dir)
+            print("Results dir:", results_dir)
 
     path_data = setup_dict.get("Data Dir", None)
 
@@ -409,3 +412,4 @@ def load_yaml(content):
         except yaml.YAMLError as exc:
             print(f"Error parsing YAML content: {exc}")
             sys.exit(1)
+

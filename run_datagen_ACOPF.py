@@ -55,8 +55,9 @@ warnings.filterwarnings("ignore")
 
 
 @task()
-def main():
-    application_dict, results_dir, path_data = parse_yaml(sys.argv)
+def main(path_to_yaml, results_dir="--results_dir="):
+    application_dict, results_dir, path_data = parse_yaml([None, path_to_yaml,
+                                                           results_dir])
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile,
      rel_tolerance, max_depth) = parse_application_dict(application_dict)
@@ -229,4 +230,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 2:
+        path_to_yaml = os.path.join(os.path.dirname(__file__),
+                                    "setup", "setup_example.yaml")
+        main(path_to_yaml=path_to_yaml)
+    elif len(sys.argv) == 3:
+        main(sys.argv[1], sys.argv[2])
+    else:
+        raise Exception("Wrong number of arguments")
