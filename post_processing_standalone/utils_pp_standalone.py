@@ -9,8 +9,11 @@ def open_csv(path_results):
     
     return results_dataframes, csv_files 
 
-def perc_stability(df):
+def perc_stability(df,dir_name):
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+    print(dir_name)
     print('Feasible cases: '+str(len(df.query('Stable>=0'))/len(df))+'%')
     print('Stable cases: '+str(len(df.query('Stable == 1'))/len(df))+'% of total cases')
     print('Stable cases: '+str(len(df.query('Stable == 1'))/len(df.query('Stable>=0')))+'% of feasible cases')
-    
+    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
+
