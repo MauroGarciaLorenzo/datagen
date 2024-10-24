@@ -23,6 +23,46 @@ lp_vsc = cell(1,height(T_VSC));
 
         switch mode
 
+            case 'GFOL_LR'   
+
+                Cac = T_VSC.Cac(vsc);
+                Rac = T_VSC.Rac(vsc);
+                wb = T_VSC.wb(vsc);
+
+                % Calculation of voltages and currents (REF: NET-POC)
+                
+                if T_VSC.Cac(vsc)
+
+                    % RLC filter
+                    Ig       = conj((Pvsc0+1i*Qvsc0)./(3*Vg));  % Transformer current 
+                    phi      = atan2(imag(Ig),real(Ig));        % angle of transformer current
+                    U        = Vg + Ig*(Rtr+1i*Xtr);            % Voltage at capacitor bus
+                    theta_in = atan2(imag(U),real(U));          % angle between POC and capacitor bus
+                    Icap     = U/(Rac-1i/(wb*Cac));             % current through capacitor
+                    Ucap     = U - Rac*Icap;
+                    theta_ucap = atan2(imag(Ucap),real(Ucap));
+                    Is       = Ig + Icap;                       % converter filter current
+                    phi_is   = atan2(imag(Is),real(Is));
+                    Vc       = U + Is*(Rc+1i*Xc);               % voltage applied by the converter
+                    theta_vc = atan2(imag(Vc),real(Vc)); 
+
+                else
+
+                    % RL filter (no capacitor)
+                    Is       = conj((Pvsc0+1i*Qvsc0)./(3*Vg));  % converter filter current
+                    phi_is      = atan2(imag(Is),real(Is));     % angle of converter filter current
+                    U        = Vg + Is*(Rtr+1i*Xtr);            % Voltage at capacitor bus
+                    theta_in = atan2(imag(U),real(U));          % angle between POC and capacitor bus                
+                    Vc       = U + Is*(Rc+1i*Xc);               % voltage applied by the converter
+                    theta_vc = atan2(imag(Vc),real(Vc));
+
+                    % Additional variables
+                    Ig = Is;
+                    phi = phi_is;
+                    Ucap = U;
+                    theta_ucap = 0;
+                end
+
             case 'GFOL'   
 
                 Cac = T_VSC.Cac(vsc);
