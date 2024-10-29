@@ -389,7 +389,7 @@ def parse_yaml(argv):
         print(f"Path data not specified. Using default path: {path_data}")
     else:
         if not path_data.startswith("/"):
-            home_dir = subprocess.run("echo $HOME", shell=True, capture_output=True, text=True).stdout.strip()
+            home_dir = os.path.expanduser("~")
             path_data = os.path.join(home_dir, path_data)
         if not os.path.exists(path_data):
             raise FileNotFoundError(f"Path data {path_data} not found")
