@@ -336,7 +336,7 @@ def create_OpDataExcel(Buses, Generators_sys, columns_order, path):
     T_Gen['Pmin_SG']=T_Gen['Snom_SG']*0.2
     T_Gen['Pmin_CIG']=T_Gen['Snom_CIG']*0.2
     T_Gen['Qmax']=T_Gen['Pmax']*0.33
-    T_Gen['Qmin']=-T_Gen['Pmin']*0.33
+    T_Gen['Qmin']=-T_Gen['Pmax']*0.33
     T_Gen['Region']=Generators_sys['Region']    
     T_Gen=T_Gen[columns_order]
 
@@ -365,42 +365,39 @@ T_Gen
 # In[9]:
 
 
-from os import listdir
-from os.path import isfile, join
+# from os import listdir
+# from os.path import isfile, join
 
-def res_gen(res,df):
-    path='./input-files/Input files/RT/'+res+'/'
-    onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+# def res_gen(res,df):
+#     path='./input-files/Input files/RT/'+res+'/'
+#     onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
 
-    onlyfiles=list(set(onlyfiles)-set(['.DS_Store']))
+#     onlyfiles=list(set(onlyfiles)-set(['.DS_Store']))
     
-    for file in onlyfiles:
-        df_i=pd.read_csv(path+file)
+#     for file in onlyfiles:
+#         df_i=pd.read_csv(path+file)
         
-        df_i["DATETIME"] = pd.to_datetime(df_i["DATETIME"])
+#         df_i["DATETIME"] = pd.to_datetime(df_i["DATETIME"])
         
-        df_i=df_i.set_index(["DATETIME"]).sort_index()
+#         df_i=df_i.set_index(["DATETIME"]).sort_index()
         
-        df[file[:-6]]=df_i
+#         df[file[:-6]]=df_i
         
-    return df
+#     return df
            
-Solar=pd.DataFrame()
-Wind=pd.DataFrame()
-Hydro=pd.DataFrame()
+# Solar=pd.DataFrame()
+# Wind=pd.DataFrame()
+# Hydro=pd.DataFrame()
     
-Solar=res_gen('Solar',Solar)
-Wind=res_gen('Wind',Wind)
-Hydro=res_gen('Hydro',Wind)
+# Solar=res_gen('Solar',Solar)
+# Wind=res_gen('Wind',Wind)
+# Hydro=res_gen('Hydro',Wind)
 
 
-# In[10]:
+# # In[10]:
 
 
-Wind
-
-# ## Additional CIG
-# Some generation units do not have CIG. Therefore, to these unit it is assigned the CIG installed capacity of some CIG of the NREL system, not present in REE system.
+# Wind
 
 
 
