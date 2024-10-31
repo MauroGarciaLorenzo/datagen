@@ -43,8 +43,8 @@ for i in range(len(Generators)):
 
 bus=104
 
-Generators_bus=Generators.query('Num == @bus')
-Generators_name=Generators_bus['Generator Name']
+Generators_bus=Generators.query('Num == @bus').rename(columns={'Generator Name':'Generator_Name'})
+Generators_name=Generators_bus['Generator_Name']
 
 #%%
 
@@ -268,10 +268,53 @@ d_grid['T_SG']=d_grid['T_SG'].iloc[:0]
 folder_path = '../version6/version6/Tool/01_data/cases/TestDyn_2CIGs'
 filename='OP_7'
 
-save_full(folder_path,filename,d_pf,d_grid)
+# save_full(folder_path,filename,d_pf,d_grid)
 
 import copy
 
 d_grid_4CIGs=copy.copy(d_grid)
 cosphi=d_pf['pf_gen']['cosphi'].iloc[1]
 
+d_grid_4CIGs['T_gen']=pd.concat([d_grid_4CIGs['T_gen'],d_grid_4CIGs['T_gen'].query('element == "GFOL"')],axis=0)
+d_grid_4CIGs['T_gen']=pd.concat([d_grid_4CIGs['T_gen'],d_grid_4CIGs['T_gen'].query('element == "GFOR"')],axis=0)
+d_grid_4CIGs['T_gen']=d_grid_4CIGs['T_gen'].sort_values(by='element').reset_index(drop=True)
+
+gfol=d_grid_4CIGs['T_gen'].query('element == "GFOL"')
+
+def change_T_gen(T_gen,table_rows,Generators_name,Generators_bus,OPs,cosphi):
+    gen_count=1
+    for i in table_rows.index:
+        gen_name=Generators_name.iloc[i]
+        table_rows.loc[i,'Sn']=float(Generators_bus.query('Generator_Name==@gen_name')['Max Capacity (MW)'])
+        gen_name=gen_name.replace(' ','')
+        table_rows.loc[i,'P']=OPs.iloc[7][gen_name]/100
+        table_rows.loc[i,'Q']=OPs.iloc[7][gen_name]*np.tan(np.arccos(cosphi))/100
+        T_gen.loc[i]=table_rows.loc[i]
+        T_gen.loc[i,'number']=gen_count
+        gen_count=gen_count+1
+        
+    return T_gen#, gen_count
+
+# gen_count=0
+d_grid_4CIGs['T_gen']=change_T_gen(d_grid_4CIGs['T_gen'],gfol,Generators_name,Generators_bus,OPs,cosphi)
+
+gfor=d_grid_4CIGs['T_gen'].query('element == "GFOR"')
+d_grid_4CIGs['T_gen']=change_T_gen(d_grid_4CIGs['T_gen'],gfor,Generators_name,Generators_bus,OPs,cosphi)
+
+d_grid_4CIGs['T_VSC']=d_grid_4CIGs['T_VSC'].iloc[:0]
+d_grid_4CIGs['T_VSC']=pd.concat([d_grid_4CIGs['T_VSC'],d_grid_4CIGs['T_gen'].query('element!="TH"')],axis=0)
+
+for i in range(0,len(d_grid_4CIGs['T_VSC'])):
+    area=d_grid_4CIGs['T_VSC'].loc[i,'Area']
+    d_grid_4CIGs['T_VSC'].loc[i,'SyncArea']=area
+    d_grid_4CIGs['T_VSC'].loc[i,'Vn']=float(d_grid_4CIGs['T_global'].query('Area==@area')['Vb_kV'])
+    
+d_grid_4CIGs['T_VSC']=d_grid_4CIGs['T_VSC'].drop(['mode'],axis=1)
+d_grid_4CIGs['T_VSC']=d_grid_4CIGs['T_VSC'].rename(columns={'element':'mode'})
+
+d_grid_4CIGs['T_load']['Area']=1
+d_grid_4CIGs['T_load']['SyncArea']=1
+
+folder_path = '../Fecamp Test Case - SSTool/01_data/cases/TestDyn_4CIGs'
+filename='OP_7'
+save_full(folder_path,filename,d_pf,d_grid_4CIGs)

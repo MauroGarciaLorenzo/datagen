@@ -22,6 +22,7 @@ function init_VSC = generate_initialization_VSC(T_VSC,T_global)
 
         mode = T_VSC.mode{vsc};
 
+
         switch mode
 
             case 'GFOL'   

@@ -9,7 +9,8 @@ addpath(genpath(pwd))
 %% SET INPUT DATA
 
 % Case name as in Excel files
-    caseName = './01_data/cases/NREL_seed16/IEEE118_FULL'; 
+    caseName = './01_data/cases/TestDyn_2CIgs/OP_7'
+    %caseName = './01_data/cases/NREL_seed16/IEEE118_FULL'; 
     % caseName_2 = './01_data/cases/seed17_GFOL_RL_percgfor091_PyStable/IEEE118_FULL'; 
 
 % Relative path to the Folder for storing results
@@ -29,8 +30,8 @@ addpath(genpath(pwd))
 % Read excel file and generate tables of grid elements
     run read_data.m
 
-    T_SG.Vn=T_SG.Vn/1e3;
-    T_VSC.Vn=T_VSC.Vn/1e3;
+    % T_SG.Vn=T_SG.Vn/1e3;
+    % T_VSC.Vn=T_VSC.Vn/1e3;
 
     % excel_2    = [caseName_2 '.xlsx']; 
     % T_SG_2     = readtable(excel_2,'Sheet','SG');            %SG table
@@ -47,7 +48,7 @@ addpath(genpath(pwd))
     run PF_results.m;
 
 % Update operation point of generator elements
-    % run update_OP.m
+     run update_OP.m
         
 %% READ PARAMETERS DATA
 
@@ -81,8 +82,6 @@ addpath(genpath(pwd))
 %     run display_io_reduced.m
 %     ss_sys = connect(l_blocks{:}, input, output);
 
-%% NON-LINEAR
-
 
 %% SMALL-SIGNAL ANALYSIS
 
@@ -110,32 +109,33 @@ addpath(genpath(pwd))
     % Obtain the participation factors >= x, for the selected mode
     FMODAL_REDUCED_th(ss_sys,[1:15], 0.2);     
 
+%% NON-LINEAR
 
 % % Initialization
 % 
-%     run NET_initialization.m
+     run NET_initialization.m
 % 
-% % Create simulink nonlinear model
-% 
-%     if ~isfile(['00_tool/Non Linear Models/models/' nonlinear '.slx'])
-%         run NET_layout_FORCE.m % create simulink nonlinear model
-%          newSys = 1;
-%     else
-%         open(nonlinear) % open already existing model
-%         newSys = 0;
-%     end
-% 
-% % Avoid redundant initialization
-%     run dependent_states.m
-% 
-% % Set disturbance
-%     run param_nonlinear.m
-% 
-% % Simulate
-%     out_nolin = sim(nonlinear);  
-% 
-%     MsgBoxH = findall(0,'Type','figure','Name','Initial state conflict');
-%     close(MsgBoxH);
+% Create simulink nonlinear model
+    nonlinear='OP_7';
+    if ~isfile(['00_tool/Non Linear Models/models/' nonlinear '.slx'])
+        run NET_layout_FORCE.m % create simulink nonlinear model
+         newSys = 1;
+    else
+        open(nonlinear) % open already existing model
+        newSys = 0;
+    end
+
+% Avoid redundant initialization
+    run dependent_states.m
+
+% Set disturbance
+    run param_nonlinear.m
+
+% Simulate
+    out_nolin = sim(nonlinear);  
+
+    MsgBoxH = findall(0,'Type','figure','Name','Initial state conflict');
+    close(MsgBoxH);
 % 
 % %% LINEAR MODEL
 % 
