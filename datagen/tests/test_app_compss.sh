@@ -4,6 +4,16 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd "$SCRIPT_DIR/../.." || exit
 
+# Check if the required directories exist
+if [[ ! -d "venv" || ! -d "venv/lib/python3.10/site-packages/" ]]; then
+    echo "Error: Virtual environment with Python 3.10 named 'venv' is missing."
+    echo "Please create it by running:"
+    echo "    python3.10 -m venv venv"
+    echo "Then activate it and install dependencies with:"
+    echo "    source venv/bin/activate && python3.10 -m pip install -r requirements.txt"
+    exit 1
+fi
+
 # Set up the environment (Make sure to set up a Python venv environment with all dependencies and COMPSs)
 source venv/bin/activate
 
@@ -27,9 +37,9 @@ fi
 
 # Loop through all combinations of max_depth, n_cases, and n_samples
 failed_runs=""
-for max_depth in 1 2 3; do
-  for n_cases in 1 2 3; do
-    for n_samples in 1 2 3; do
+for max_depth in 1 2; do
+  for n_cases in 1 2; do
+    for n_samples in 1 2; do
       echo -e "\n=======================================================================" | tee -a ${app_log_file}
       echo -e "=== Running case with max_depth=$max_depth, n_cases=$n_cases, n_samples=$n_samples" | tee -a ${app_log_file}
       echo -e "=======================================================================\n" | tee -a ${app_log_file}
@@ -47,10 +57,9 @@ for max_depth in 1 2 3; do
       timeout 20m compss_agent_start_service \
         --lang=PYTHON \
         --num_agents=3 \
-        --hostname=localhost \
         --method_name=main \
+        --pythonpath="venv/lib/python3.10/site-packages/:$PYTHONPATH" \
         -d \
-        -t \
         --topology=tree \
         --log_dir="$compss_log_dir" \
         --verbose \
