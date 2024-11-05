@@ -170,7 +170,7 @@ logs/
 *.err
 .enqueue_compss
 *.code-workspace
-**/results/*
+**/results_*/*
 packages/
 **/tmp/*
 *.yaml
