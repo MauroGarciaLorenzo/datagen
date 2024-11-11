@@ -10,7 +10,7 @@ def save_full(folder_path,filename,d_pf,d_grid):
     # Create the folder if it doesn't exist
     os.makedirs(folder_path, exist_ok=True)
     
-    T_PF=d_pf['pf_bus'][['bus','Vm','theta']]
+    T_PF=d_pf['pf_bus'][['bus','Area','SyncArea','Vm','theta']]
     with pd.ExcelWriter(folder_path+'/'+filename+'.xlsx', engine='openpyxl') as writer:
         for key in d_grid:
             if key!='gen_names':
