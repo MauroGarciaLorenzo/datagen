@@ -16,6 +16,7 @@ from datagen.src.save_for_matlab import *
 from stability_analysis.preprocess import preprocess_data, read_data, \
     process_raw
 from stability_analysis.powerflow import GridCal_powerflow
+from stability_analysis.powerflow.fill_d_grid_after_powerflow import fill_d_grid
 from stability_analysis.preprocess.utils import *
 
 try:
@@ -27,7 +28,7 @@ except ImportError:
     
 from stability_analysis.operating_point_from_datagenerator import datagen_OP
 from stability_analysis.modify_GridCal_grid import *
-
+from datagen.src.save_for_matlab import save_full
 #%%
 
 Generators_NREL=pd.read_excel('Generators_NREL.xlsx')
@@ -265,11 +266,56 @@ d_grid['T_gen']['element']=d_grid['T_gen']['element'].replace('SG','TH')
 d_grid['T_TH']=d_grid['T_gen'].query('element == "TH"').drop(['Rtr','Xtr'],axis=1)
 d_grid['T_SG']=d_grid['T_SG'].iloc[:0]
 
-folder_path = '../version6/version6/Tool/01_data/cases/TestDyn_2CIGs'
+folder_path = '../version6_original/version6/Tool/01_data/cases/TestDyn_2CIGs'
 filename='OP_7'
 
-# save_full(folder_path,filename,d_pf,d_grid)
+#%% fix d_grid
 
+d_grid['T_buses']['bus']=[1,2]
+d_grid['T_buses']['SyncArea']=1
+
+d_grid['T_gen'].loc[d_grid['T_gen'].query('bus == 103').index,'bus']=1
+d_grid['T_gen'].loc[d_grid['T_gen'].query('bus == 104').index,'bus']=2
+
+d_grid['T_gen'].loc[d_grid['T_gen'].query('element == "GFOL"').index,'Sn']=sum(Generators_bus.query('Generator_Name == "Solar 31" or Generator_Name == "Solar 32"')['Max Capacity (MW)'])/0.95
+d_grid['T_gen'].loc[d_grid['T_gen'].query('element == "GFOR"').index,'Sn']=sum(Generators_bus.query('Generator_Name == "Solar 33" or Generator_Name == "Solar 35"')['Max Capacity (MW)'])/0.95
+d_grid['T_gen']['SyncArea']=1
+
+d_grid['T_global']['SyncArea']=1
+d_grid['T_global'].loc[0,'ref_bus']=1
+
+d_grid['T_NET']['Area']=1
+d_grid['T_NET']['SyncArea']=1
+d_grid['T_NET'].loc[d_grid['T_NET'].query('bus_from==103').index,'bus_from']=1
+d_grid['T_NET'].loc[d_grid['T_NET'].query('bus_from==104').index,'bus_from']=2
+d_grid['T_NET'].loc[d_grid['T_NET'].query('bus_to==103').index,'bus_to']=1
+d_grid['T_NET'].loc[d_grid['T_NET'].query('bus_to==104').index,'bus_to']=2
+
+d_grid['T_TH']['bus']=[1 if bus == 103 else 2 for bus in list(d_grid['T_TH']['bus'])]
+d_grid['T_TH']['SyncArea']=1
+d_grid['T_TH']['R']=0.01
+d_grid['T_TH']['X']=0.1
+
+d_grid['T_VSC']['bus']=[1 if bus == 103 else 2 for bus in list(d_grid['T_VSC']['bus'])]
+d_grid['T_VSC']['SyncArea']=1
+
+for n in list(d_grid['T_VSC']['number']):
+    d_grid['T_VSC'].loc[d_grid['T_VSC'].query('number == @n').index,'Sn']=float(d_grid['T_gen'].query('number == @n and element != "TH"')['Sn'])
+        
+d_pf['pf_bus']['bus']=[1,2]
+d_pf['pf_bus']['Area']=1
+d_pf['pf_bus']['SyncArea']=1
+    
+d_grid['T_load']['bus']=[1 if bus == 103 else 2 for bus in list(d_grid['T_load']['bus'])]
+d_grid['T_load']['SyncArea']=1
+d_grid['T_load']['Area']=1
+
+
+#%%
+
+save_full(folder_path,filename,d_pf,d_grid)
+
+#%%
 import copy
 
 d_grid_4CIGs=copy.copy(d_grid)
@@ -278,6 +324,7 @@ cosphi=d_pf['pf_gen']['cosphi'].iloc[1]
 d_grid_4CIGs['T_gen']=pd.concat([d_grid_4CIGs['T_gen'],d_grid_4CIGs['T_gen'].query('element == "GFOL"')],axis=0)
 d_grid_4CIGs['T_gen']=pd.concat([d_grid_4CIGs['T_gen'],d_grid_4CIGs['T_gen'].query('element == "GFOR"')],axis=0)
 d_grid_4CIGs['T_gen']=d_grid_4CIGs['T_gen'].sort_values(by='element').reset_index(drop=True)
+d_grid_4CIGs['T_gen'].query('element != "TH"')['number']=np.arange(1,len(d_grid_4CIGs['T_gen']))
 
 gfol=d_grid_4CIGs['T_gen'].query('element == "GFOL"')
 
@@ -285,7 +332,7 @@ def change_T_gen(T_gen,table_rows,Generators_name,Generators_bus,OPs,cosphi):
     gen_count=1
     for i in table_rows.index:
         gen_name=Generators_name.iloc[i]
-        table_rows.loc[i,'Sn']=float(Generators_bus.query('Generator_Name==@gen_name')['Max Capacity (MW)'])
+        table_rows.loc[i,'Sn']=float(Generators_bus.query('Generator_Name==@gen_name')['Max Capacity (MW)'])/0.95
         gen_name=gen_name.replace(' ','')
         table_rows.loc[i,'P']=OPs.iloc[7][gen_name]/100
         table_rows.loc[i,'Q']=OPs.iloc[7][gen_name]*np.tan(np.arccos(cosphi))/100
@@ -315,6 +362,6 @@ d_grid_4CIGs['T_VSC']=d_grid_4CIGs['T_VSC'].rename(columns={'element':'mode'})
 d_grid_4CIGs['T_load']['Area']=1
 d_grid_4CIGs['T_load']['SyncArea']=1
 
-folder_path = '../Fecamp Test Case - SSTool/01_data/cases/TestDyn_4CIGs'
+folder_path = '../version6_original/version6/Tool/01_data/cases/TestDyn_4CIGs'
 filename='OP_7'
 save_full(folder_path,filename,d_pf,d_grid_4CIGs)
