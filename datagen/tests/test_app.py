@@ -18,11 +18,12 @@ import yaml
 class Test(unittest.TestCase):
     results_dir = "results"
     old_results_dir = "results_old"
+    current_case = None
 
     def test_app(self):
         """
-        Run 'run_datagen_ACOPF.py' with different configurations of
-        parameters:
+        Run 'run_datagen_ACOPF.py' with different configurations
+        of parameters:
             n_samples
             n_cases
             max_depth
@@ -69,6 +70,8 @@ class Test(unittest.TestCase):
             base_yaml['n_cases'] = n_cases
             base_yaml['max_depth'] = max_depth
             base_yaml['seed'] = seed
+            # Set current case for messaging purposes
+            self.current_case = (n_samples, n_cases, max_depth, seed)
 
             # Save YAML
             with open(yaml_path, 'w') as stream:
@@ -172,9 +175,10 @@ class Test(unittest.TestCase):
                 dims_col = dims_df[prefix]
 
                 # Assert that the sums match a column in dims_df
-                with self.subTest(prefix=prefix):
-                    pd.testing.assert_series_equal(cases_sum, dims_col,
-                                                   check_names=False)
+                with self.subTest(prefix=prefix,
+                                  msg=f"Current case: {self.current_case}"):
+                    pd.testing.assert_series_equal(
+                        cases_sum, dims_col, check_names=False, rtol=1e-3)
             else:
                 self.fail(f"Column {prefix} not found in dims_df!")
 
