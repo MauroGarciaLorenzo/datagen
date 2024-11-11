@@ -9,7 +9,7 @@ addpath(genpath(pwd))
 %% SET INPUT DATA
 
 % Case name as in Excel files
-    caseName =  '/TestDyn_4CIGs/OP_7';%'test_MPC'; %
+    caseName =  '/TestDyn_windfarm/comb1';%'test_MPC'; %
     caseNameNLin =  eraseBetween(regexprep(caseName,{'/'},{'_'}),1,1);%'test_MPC'; %
     caseNameLin =  caseNameNLin;%'OP_7'%'test_MPC'; %
 
@@ -17,7 +17,7 @@ addpath(genpath(pwd))
     path_results = '02_results\'; 
 
 % Set power-flow source (0: Excel, 1: Fanals, 2: MATPOWER, 3: MATACDC) 
-    fanals = 0; 
+    fanals = 2; 
 
 % Flag to indicate if T_case should be used (REE)
     shared_power = 0;
@@ -69,6 +69,12 @@ addpath(genpath(pwd))
     %          'NET.iq_1_2' ,'NET.iq_3_4' ,'NET.vn1d' ,'NET.vn1q' ,'NET.vn2d' ,'NET.vn2q' ,...
     %          'NET.vn3d' ,'NET.vn3q' ,'NET.vn4d' ,'NET.vn4q' ,'SG1.id' ,'SG1.iq' ,'S2.id' ,'TH2.iq'};
     ss_sys = connect(l_blocks{:}, input, output);
+    imp_sys{1} = connect(l_blocks{1},l_blocks{3:end},{"TH1.iq","TH1.id"},{"NET.vn1q","NET.vn1d"});
+
+   abs_and_angle= FIGURE_SENSITIVITY_1ZY(imp_sys,1)
+   writetable(abs_and_angle,[caseNameNLin,'_Y.xlsx'])
+   
+
 %input = {'TH1.vq'};
 %output = {'NET.vn1q' , 'NET.vn1d' , 'NET.vn2q' , 'NET.vn2d' , 'NET.vn3q' , 'NET.vn3d' , 'NET.vn4q' , 'NET.vn4d'};
 % % or ... Display only variables in specified buses 
@@ -106,68 +112,68 @@ addpath(genpath(pwd))
      % FMODAL_REDUCED(ss_sys,[1,2,3,4]); 
 % 
 %     % Obtain the participation factors >= x, for the selected mode
-%     %FMODAL_REDUCED_th(ss_sys,[1,2,4], 0.2);     
+    FMODAL_REDUCED_th(ss_sys,[1,2,4], 0.2);     
 % 
 
- %% NON-LINEAR
-
- % Replace all 'GFOL' with 'GFOL_LR'
- T_VSC.mode(strcmp(T_VSC.mode, 'GFOL')) = {'GFOL_RL'};
-
-    if ~isfile(['00_tool/Non Linear Models/models/' nonlinear '.slx'])
-        newSys = 1;
-    else
-        newSys = 0;
-    end
-% Initialization
-
-     run NET_initialization.m
-
-% Create simulink nonlinear model
-
-    if newSys
-        if fanals==3
-            run NET_layout_FORCE_ACDC0.m % create AC/DC simulink nonlinear model 
-        else
-            run NET_layout_FORCE.m % create simulink nonlinear model
-        end
-    else
-        open(nonlinear) % open already existing model
-    end
-
-% Avoid redundant initialization
-    run dependent_states.m
-
-% Set disturbance
-    run param_nonlinear.m
-
-% Simulate
-    out_nolin = sim(nonlinear);  
-
-    MsgBoxH = findall(0,'Type','figure','Name','Initial state conflict');
-    close(MsgBoxH);
-
-%% LINEAR MODEL
-
-% Set Linear Simulation parameters
-     run param_linear.m
-
-% Create simulink linear model
-     if ~isfile(['00_tool/Linear Model/models/' linear '.slx'])
-         generate_linear(ss_sys,linear,tstep_lin,Tsim_lin,delta_u) % create simulink linear model
-     else
-         open(linear) % open already existing model       
-     end
-
-% Simulate
-
-     %simConfig.Solver = "ode1";
-     %simConfig.StopTime = "Tsim_lin";
-     %simConfig.FixedStep="1e-08";
-     %out_lin = sim(linear,simConfig); 
-     out_lin = sim(linear); 
-
-%% VALIDATE LINEAR MODEL
-
-run validate_linear.m
-
+%  %% NON-LINEAR
+% 
+%  % Replace all 'GFOL' with 'GFOL_LR'
+%  T_VSC.mode(strcmp(T_VSC.mode, 'GFOL')) = {'GFOL_RL'};
+% 
+%     if ~isfile(['00_tool/Non Linear Models/models/' nonlinear '.slx'])
+%         newSys = 1;
+%     else
+%         newSys = 0;
+%     end
+% % Initialization
+% 
+%      run NET_initialization.m
+% 
+% % Create simulink nonlinear model
+% 
+%     if newSys
+%         if fanals==3
+%             run NET_layout_FORCE_ACDC0.m % create AC/DC simulink nonlinear model 
+%         else
+%             run NET_layout_FORCE.m % create simulink nonlinear model
+%         end
+%     else
+%         open(nonlinear) % open already existing model
+%     end
+% 
+% % Avoid redundant initialization
+%     run dependent_states.m
+% 
+% % Set disturbance
+%     run param_nonlinear.m
+% 
+% % Simulate
+%     out_nolin = sim(nonlinear);  
+% 
+%     MsgBoxH = findall(0,'Type','figure','Name','Initial state conflict');
+%     close(MsgBoxH);
+% 
+% %% LINEAR MODEL
+% 
+% % Set Linear Simulation parameters
+%      run param_linear.m
+% 
+% % Create simulink linear model
+%      if ~isfile(['00_tool/Linear Model/models/' linear '.slx'])
+%          generate_linear(ss_sys,linear,tstep_lin,Tsim_lin,delta_u) % create simulink linear model
+%      else
+%          open(linear) % open already existing model       
+%      end
+% 
+% % Simulate
+% 
+%      %simConfig.Solver = "ode1";
+%      %simConfig.StopTime = "Tsim_lin";
+%      %simConfig.FixedStep="1e-08";
+%      %out_lin = sim(linear,simConfig); 
+%      out_lin = sim(linear); 
+% 
+% %% VALIDATE LINEAR MODEL
+% 
+% run validate_linear.m
+% 
