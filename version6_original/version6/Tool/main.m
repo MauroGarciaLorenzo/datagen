@@ -9,7 +9,7 @@ addpath(genpath(pwd))
 %% SET INPUT DATA
 
 % Case name as in Excel files
-    caseName =  '/TestDyn_windfarm/comb1';%'test_MPC'; %
+    caseName =  '/TestDyn_windfarm/comb1_eq';%'test_MPC'; %
     caseNameNLin =  eraseBetween(regexprep(caseName,{'/'},{'_'}),1,1);%'test_MPC'; %
     caseNameLin =  caseNameNLin;%'OP_7'%'test_MPC'; %
 
@@ -73,7 +73,7 @@ addpath(genpath(pwd))
 
    abs_and_angle= FIGURE_SENSITIVITY_1ZY(imp_sys,1)
    writetable(abs_and_angle,[caseNameNLin,'_Y.xlsx'])
-   
+
 
 %input = {'TH1.vq'};
 %output = {'NET.vn1q' , 'NET.vn1d' , 'NET.vn2q' , 'NET.vn2d' , 'NET.vn3q' , 'NET.vn3d' , 'NET.vn4q' , 'NET.vn4d'};
