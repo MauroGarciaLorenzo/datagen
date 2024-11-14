@@ -139,7 +139,7 @@ def save_dataframes(output_dataframes_array, path_results, seed):
         index += 1
 
 
-def sort_df_by_another(df1, df2, column_name):
+def sort_df_rows_by_another(df1, df2, column_name):
     """
     Sorts rows of df2 based on the ordering of values in df1 for a specified
     column.
@@ -157,6 +157,20 @@ def sort_df_by_another(df1, df2, column_name):
     sorted_df2 = df2.set_index(column_name).loc[
         ordered_index].reset_index()
     return sorted_df2
+
+
+def sort_df_last_columns(df):
+    """
+    Sort dataframe columns so that the selected columns appear at the end.
+    """
+    cols = df.columns.tolist()
+    cols_at_the_end = ["case_id", "Stability"]
+    for remove_col in cols_at_the_end:
+        cols.remove(remove_col)
+    for add_col in cols_at_the_end:
+        cols.append(add_col)
+    df = df[cols]
+    return df
 
 
 def save_results(cases_df, dims_df, execution_logs, output_dataframes,
@@ -179,11 +193,9 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
     for key, value in output_dataframes.items():
         if isinstance(value, pd.DataFrame):
             # All dataframes should have the same sorting
-            sorted_df = sort_df_by_another(cases_df, value, "case_id")
-            # Sort columns to put ID at the end
-            cols = sorted_df.columns.tolist()
-            cols = cols[1:] + cols[:1]
-            sorted_df = sorted_df[cols]
+            sorted_df = sort_df_rows_by_another(cases_df, value, "case_id")
+            # Sort columns at the end
+            sorted_df = sort_df_last_columns(sorted_df)
             # Save dataframe
             sorted_df.to_csv(os.path.join(dst_dir, f"case_{key}.csv"))
         else:

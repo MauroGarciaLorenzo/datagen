@@ -312,6 +312,8 @@ def postprocess_obj_func(output_dataframes, case_id, stability,
     for df_name, df in output_dataframes.items():
         # Append unique_id
         df['case_id'] = case_id
+        # Append stability result
+        df['Stability'] = stability
 
     # Check that the keys of df_names and output_dataframes match
     if set(OUTPUT_DF_NAMES) != set(output_dataframes.keys()):
