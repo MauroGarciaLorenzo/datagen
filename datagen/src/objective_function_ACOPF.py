@@ -1,10 +1,11 @@
-import pandas as pd
+
 from stability_analysis.optimal_power_flow import process_optimal_power_flow
 
 from GridCalEngine.Simulations.OPF.NumericalMethods.ac_opf import run_nonlinear_opf, ac_optimal_power_flow
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 import GridCalEngine.api as gce
 
+from .constants import NAN_COLUMN_NAME, OUTPUT_DF_NAMES, COMPUTING_TIME_NAMES
 from .utils_obj_fun import *
 from .sampling import gen_voltage_profile
 
@@ -44,29 +45,17 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
     v_set = func_params.get("v_set", None)
 
+    # Remove the id and make sure case is fully numeric
+    case_id = case["case_id"]
+    case = case.drop("case_id")
+    case = case.astype(float)
+
     # Initialize essential output dataframes to None
-    output_df_names = [
-        'df_op',
-        'df_real',
-        'df_imag',
-        'df_freq',
-        'df_damp',
-        'df_computing_times'
-    ]
-    computing_time_names = [
-        'time_powerflow',
-        'time_generate_SS_net',
-        'time_generate_SS_elem',
-        'time_connect',
-        'time_eig',
-        'time_partfact'
-    ]
-    undefined_col = 'undefined'
     computing_times = pd.DataFrame(
-        {name: np.nan for name in computing_time_names}, index=[0])
+        {name: np.nan for name in COMPUTING_TIME_NAMES}, index=[0])
     output_dataframes = {}
-    for df_name in output_df_names:
-        output_dataframes[df_name] = pd.DataFrame({undefined_col: [np.nan]})
+    for df_name in OUTPUT_DF_NAMES:
+        output_dataframes[df_name] = pd.DataFrame({NAN_COLUMN_NAME: [np.nan]})
 
     if voltage_profile is not None and v_min_v_max_delta_v is None:
         raise ValueError('Voltage profile option selected but v_min, v_max, '
@@ -151,6 +140,9 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     if not d_opf_results.converged:
         output_dataframes['df_computing_times'] = computing_times
+            
+        # Exit function
+        output_dataframes = postprocess_obj_func(output_dataframes, case_id)
         return -1, output_dataframes
 
     #########################################################################
@@ -178,6 +170,10 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                     valid_point = False
         if not valid_point:
             output_dataframes['df_computing_times'] = computing_times
+            
+            # Exit function
+            output_dataframes = postprocess_obj_func(output_dataframes, 
+                                                     case_id)
             return -2, output_dataframes
 
     # %% READ PARAMETERS
@@ -285,13 +281,27 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # output_dataframes['d_grid'] = d_grid
     # output_dataframes['d_opf'] = d_opf
     # output_dataframes['d_pf_original'] = d_pf_original
-
-    # Check that the keys of df_names and output_dataframes match
-    if set(output_df_names) != set(output_dataframes.keys()):
-        raise ValueError(
-            'The keys of "output_dataframes" do not match the expected keys.')
+    
+    # Perform postprocess actions
+    output_dataframes = postprocess_obj_func(output_dataframes, case_id)
 
     return stability, output_dataframes
+
+
+def postprocess_obj_func(output_dataframes, case_id):
+    """
+    Do tasks that always need to be performed before exiting the objective
+    function.
+    """
+    # Append unique_id to extra dataframes
+    for df_name, df in output_dataframes.items():
+        df['case_id'] = case_id
+
+    # Check that the keys of df_names and output_dataframes match
+    if set(OUTPUT_DF_NAMES) != set(output_dataframes.keys()):
+        raise ValueError(
+            'The keys of "output_dataframes" do not match the expected keys.')
+    return output_dataframes
 
 
 def return_d_opf(d_raw_data, d_opf_results):

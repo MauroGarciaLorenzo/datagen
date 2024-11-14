@@ -31,7 +31,8 @@ from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import qmc
 from sklearn.preprocessing import StandardScaler
 
-from .utils import check_dims, flatten_list, get_dimension, concat_df_dict
+from .utils import check_dims, flatten_list, get_dimension, concat_df_dict, \
+    generate_unique_id
 from .dimensions import Cell, Dimension
 from .viz import plot_divs, plot_stabilities, plot_importances_and_divisions
 from ..tests.utils import unique
@@ -453,6 +454,11 @@ def gen_cases(samples_df, dimensions, generator):
 
     total_cases_df = pd.concat(total_cases, axis=1)
     total_dims_df = pd.concat(total_dims, axis=1)
+
+    # Generate unique ID per case
+    id_df = generate_unique_id(len(total_cases_df))
+    total_cases_df = pd.concat((total_cases_df, id_df), axis=1)
+    total_dims_df = pd.concat((total_dims_df, id_df), axis=1)
     return total_cases_df, total_dims_df
 
 
