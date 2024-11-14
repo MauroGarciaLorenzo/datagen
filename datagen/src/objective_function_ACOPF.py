@@ -139,11 +139,12 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
 
     if not d_opf_results.converged:
-        output_dataframes['df_computing_times'] = computing_times
-            
         # Exit function
-        output_dataframes = postprocess_obj_func(output_dataframes, case_id)
-        return -1, output_dataframes
+        stability = -1
+        output_dataframes = postprocess_obj_func(
+            output_dataframes, case_id, stability,
+            df_computing_times=computing_times)
+        return stability, output_dataframes
 
     #########################################################################
 
@@ -169,12 +170,12 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                 if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
                     valid_point = False
         if not valid_point:
-            output_dataframes['df_computing_times'] = computing_times
-            
             # Exit function
-            output_dataframes = postprocess_obj_func(output_dataframes, 
-                                                     case_id)
-            return -2, output_dataframes
+            stability = -2
+            output_dataframes = postprocess_obj_func(
+                output_dataframes,case_id, stability,
+                df_computing_times=computing_times)
+            return stability, output_dataframes
 
     # %% READ PARAMETERS
 
@@ -282,25 +283,41 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # output_dataframes['d_opf'] = d_opf
     # output_dataframes['d_pf_original'] = d_pf_original
     
-    # Perform postprocess actions
-    output_dataframes = postprocess_obj_func(output_dataframes, case_id)
-
+    # Exit function
+    output_dataframes = postprocess_obj_func(output_dataframes, case_id,
+                                             stability)
     return stability, output_dataframes
 
 
-def postprocess_obj_func(output_dataframes, case_id):
+def postprocess_obj_func(output_dataframes, case_id, stability,
+                         **update_output_dataframes):
     """
     Do tasks that always need to be performed before exiting the objective
     function.
+
+    You can pass an arbitrary number of key-value arguments as a utility to
+    update output_dataframes with new dataframes, for instance:
+
+    >> output_dataframes = \
+    >>     postprocess_obj_func(output_dataframes, case_id, stability,
+    >>         df_op=df_op, df_computing_times=computing_times,
+    >>         df_real=df_real, df_imag=df_imag)
+
     """
-    # Append unique_id to extra dataframes
+    # Update output dataframes
+    for df_name, updated_df in update_output_dataframes.items():
+        output_dataframes[df_name] = updated_df
+
+    # Apply operations to extra dataframes
     for df_name, df in output_dataframes.items():
+        # Append unique_id
         df['case_id'] = case_id
 
     # Check that the keys of df_names and output_dataframes match
     if set(OUTPUT_DF_NAMES) != set(output_dataframes.keys()):
         raise ValueError(
             'The keys of "output_dataframes" do not match the expected keys.')
+
     return output_dataframes
 
 
