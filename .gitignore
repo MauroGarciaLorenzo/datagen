@@ -164,7 +164,7 @@ cython_debug/
 logs/
 *.jpg
 #*.png
-#*.csv
+*.csv
 *.txt
 *.out
 *.err
