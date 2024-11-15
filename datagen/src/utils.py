@@ -19,6 +19,7 @@ list, which is useful for processing the list of logs generated during the
 exploration.
 """
 import os
+import uuid
 
 import numpy as np
 import yaml
@@ -28,6 +29,7 @@ import pandas as pd
 
 from collections.abc import Sequence
 
+from .constants import NAN_COLUMN_NAME
 from .viz import print_dict_as_yaml
 from stability_analysis.data import get_data_path
 
@@ -137,8 +139,48 @@ def save_dataframes(output_dataframes_array, path_results, seed):
         index += 1
 
 
+def sort_df_rows_by_another(df1, df2, column_name):
+    """
+    Sorts rows of df2 based on the ordering of values in df1 for a specified
+    column.
+
+    Args:
+        df1 (pd.DataFrame): First DataFrame containing the ordering.
+        df2 (pd.DataFrame): Second DataFrame to be sorted based on df1.
+        column_name (str): The name of the column of interest in both
+            DataFrames.
+
+    Returns:
+        pd.DataFrame: A new DataFrame sorted according to df1's order.
+    """
+    ordered_index = df1.set_index(column_name).index
+    sorted_df2 = df2.set_index(column_name).loc[
+        ordered_index].reset_index()
+    return sorted_df2
+
+
+def sort_df_last_columns(df):
+    """
+    Sort dataframe columns so that the selected columns appear at the end.
+    """
+    cols = df.columns.tolist()
+    cols_at_the_end = ["case_id", "Stability"]
+    for remove_col in cols_at_the_end:
+        cols.remove(remove_col)
+    for add_col in cols_at_the_end:
+        cols.append(add_col)
+    df = df[cols]
+    return df
+
+
 def save_results(cases_df, dims_df, execution_logs, output_dataframes,
                  dst_dir):
+    """
+    Save set of results including the main cases/dims dataframes plus
+    execution logs and all elements inside the output_dataframes dictionary,
+    mostly dataframes. These dataframe rows must follow the same sorting
+    according to the case ids.
+    """
     if dst_dir is None:
         dst_dir = ""
 
@@ -150,7 +192,12 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
 
     for key, value in output_dataframes.items():
         if isinstance(value, pd.DataFrame):
-            value.to_csv(os.path.join(dst_dir, f"case_{key}.csv"))
+            # All dataframes should have the same sorting
+            sorted_df = sort_df_rows_by_another(cases_df, value, "case_id")
+            # Sort columns at the end
+            sorted_df = sort_df_last_columns(sorted_df)
+            # Save dataframe
+            sorted_df.to_csv(os.path.join(dst_dir, f"case_{key}.csv"))
         else:
             for k, v in value.items():
                 if isinstance(v, pd.DataFrame):
@@ -211,6 +258,10 @@ def concat_df_dict(*dicts):
     Example:
       >> dict_list = [{'a': df1, 'b': df2}, {'a': df3, 'b': df4}]
       >> result_dict = {'a': pd.concat([df1, df3]), 'b': pd.concat([df2, df4])}
+
+    TODO: we can simplify this function now that we do not need to preserve
+     the row order on each dataframe, since they are sorted at the end of the
+     run thanks to the use of a unique ID per case
     """
     # Consider case of list inside a list
     if isinstance(dicts, Sequence):
@@ -244,7 +295,7 @@ def concat_df_dict(*dicts):
                     continue
                 # Store columns if the dataframe is not empty/undefined
                 if isinstance(df, pd.DataFrame) and not df.empty:
-                    if df.columns[0] != 'undefined':
+                    if df.columns[0] != NAN_COLUMN_NAME:
                         cols_dict[df_label] = df.columns.to_list()
         else:
             raise ValueError("Input must be a list of dictionaries")
@@ -270,12 +321,17 @@ def concat_df_dict(*dicts):
         for d in dicts:
             for df_label, cols in cols_dict.items():
                 # Get row to be appended
-                if d[df_label].columns[0] == 'undefined':
+                if d[df_label].columns[0] == NAN_COLUMN_NAME:
                     # 'd' only contains NaN dataframes with no column names
                     n = len(d[df_label])
                     m = len(cols)
                     to_append = pd.DataFrame(np.full((n, m), np.nan),
                                              columns=cols)
+                    # Add content of additional columns that may not be NaN
+                    if len(d[df_label].columns) > 1:
+                        missing_cols_df = d[df_label].drop(NAN_COLUMN_NAME,
+                                                           axis=1)
+                        to_append[missing_cols_df.columns] = missing_cols_df
                 elif isinstance(d, dict):
                     # Normal case: directly append the content of the input df
                     to_append = d[df_label]
@@ -330,7 +386,7 @@ def parse_setup_file(setup_path):
     print()
     return generators_power_factor, grid_name, loads_power_factor, n_cases, \
         n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile, \
-        rel_tolerance, max_depth
+        rel_tolerance, max_depth, setup
 
 
 def parse_args(argv):
@@ -398,3 +454,9 @@ def load_yaml(content):
         except yaml.YAMLError as exc:
             print(f"Error parsing YAML content: {exc}")
             sys.exit(1)
+
+
+def generate_unique_id(n):
+    """ Return a column dataframe with n unique ids."""
+    id_list = [str(uuid.uuid4()) for _ in range(n)]
+    return pd.DataFrame(id_list, columns=["case_id"])

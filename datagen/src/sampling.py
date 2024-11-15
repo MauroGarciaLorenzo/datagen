@@ -31,7 +31,8 @@ from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import qmc
 from sklearn.preprocessing import StandardScaler
 
-from .utils import check_dims, flatten_list, get_dimension, concat_df_dict
+from .utils import check_dims, flatten_list, get_dimension, concat_df_dict, \
+    generate_unique_id
 from .dimensions import Cell, Dimension
 from .viz import plot_divs, plot_stabilities, plot_importances_and_divisions
 from ..tests.utils import unique
@@ -93,7 +94,6 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     output_dataframes_list = []
     feasible_cases = 0
     for _, case in cases_df.iterrows():
-        # TODO: Hacer que f_objectivo devuelvan convergencia
         stability, output_dataframes = eval_stability(case=case, f=func,
                                                       func_params=func_params,
                                                       dimensions=dimensions,
@@ -105,9 +105,6 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     stabilities = compss_wait_on(stabilities)
     output_dataframes_list = compss_wait_on(output_dataframes_list)
-    # TODO: Gestionar casos no convergidos en OPF (ahora se ponen como 0)
-    stabilities = [0 if stability is None else stability
-                   for stability in stabilities]
     cases_df["Stability"] = stabilities
     # Collect each cases dictionary of dataframes into total_dataframes
     for output_dfs in output_dataframes_list:
@@ -453,6 +450,11 @@ def gen_cases(samples_df, dimensions, generator):
 
     total_cases_df = pd.concat(total_cases, axis=1)
     total_dims_df = pd.concat(total_dims, axis=1)
+
+    # Generate unique ID per case
+    id_df = generate_unique_id(len(total_cases_df))
+    total_cases_df = pd.concat((total_cases_df, id_df), axis=1)
+    total_dims_df = pd.concat((total_dims_df, id_df), axis=1)
     return total_cases_df, total_dims_df
 
 
