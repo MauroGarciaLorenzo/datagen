@@ -30,7 +30,8 @@ import os
 import sys
 import random
 from datetime import datetime
-
+import warnings
+warnings.filterwarnings('ignore')
 
 from datagen.src.utils import save_dataframes, parse_setup_file, parse_args, concat_df_dict, save_results
 from datagen.src.dimensions import Dimension
