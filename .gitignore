@@ -164,13 +164,18 @@ cython_debug/
 logs/
 *.jpg
 #*.png
-#*.csv
+*.csv
 *.txt
 *.out
 *.err
 .enqueue_compss
 *.code-workspace
-**/results/*
+**/results_*/*
 packages/
 **/tmp/*
 *.yaml
+**/.DS_Store
+
+# Exceptions
+!figures/**/*.png
+!figures/**/*.csv
