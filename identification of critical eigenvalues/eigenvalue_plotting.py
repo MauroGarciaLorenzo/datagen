@@ -1,17 +1,13 @@
 """
-This file ...
-
-
+This file plots the modal map fo the eigenvalues on the real-imaginary axis
+It identifies the critical eigenvalue group and calculates the damping index for the critical eigenvalues
 """
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-from datagen import NAN_COLUMN_NAME
-
-#%% load data
-
+#%% import and clean data
 df_real=pd.read_csv('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464/case_df_real.csv')
 df_imag=pd.read_csv('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464/case_df_imag.csv')
 
@@ -23,9 +19,22 @@ df_imag_clean = df_imag.dropna(subset=['2'])
 df_real_clean = df_real_clean.drop([df_real_clean.columns[0], 'case_id', 'Stability'], axis=1)
 df_imag_clean = df_imag_clean.drop([df_imag_clean.columns[0], 'case_id', 'Stability'], axis=1)
 
-n_cases= len(df_real)
+n_cases_clean= len(df_real_clean)
 
-# plot the full modal map
+#%% Identify the critical eigenvalues
+crit_eig_real = np.full(df_real_clean.shape, np.nan)
+crit_eig_imag = np.full(df_imag_clean.shape, np.nan)
+for ii in range(0,n_cases_clean): # for every row
+    for jj in range(0,df_imag_clean.shape[1]): # for every column
+        # if the point has a real value between -60 and 20  and an imaginary value between 200 and 305 or between -300 ad -200
+        if (-60 < df_real_clean.iloc[ii, jj] < 20) and (
+                (200 < df_imag_clean.iloc[ii, jj] < 305) or (-305 < df_imag_clean.iloc[ii, jj] < -200)
+        ):
+            # then add that to the crit_eig_real and crit_eig_imag
+            crit_eig_real[ii,jj] = df_real_clean.iloc[ii, jj]
+            crit_eig_imag[ii,jj] = df_imag_clean.iloc[ii, jj]
+
+#%% plot the full modal map
 fig=plt.figure()
 ax=fig.add_subplot()
 ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
@@ -39,18 +48,22 @@ plt.grid()
 fig.savefig('Modal_Map.png')
 
 # zoom in
-fig = plt.figure()
+fig = plt.figure(figsize=(10, 15))
 ax=fig.add_subplot()
 ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
+ax.scatter(crit_eig_real,crit_eig_imag, label='Critical Eigenvalues')
 ax.set_xlabel('Real Axis',fontsize=25)
 ax.set_ylabel('Imaginary Axis',fontsize=25)
 ax.set_title('Zoom', fontsize=25)
 ax.tick_params(labelsize=20)
-# ax.set_xlim([-100000,5000])
-ax.set_xlim([-20,20])
-ax.set_ylim([200,300])
+ax.set_xlim([-100,20])
+ax.set_ylim([-400,400])
 ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
 fig.tight_layout()
 plt.grid()
-fig.savefig('Middle_Group_Zoom.png')
+fig.savefig('ToSeeFullMiddleGroup.png')
 
+
+#%% Calculate the damping index
+
+DI_crit_eig=1-(-crit_eig_real[:,0]/np.sqrt(crit_eig_real[:,0]**2+crit_eig_imag[:,0]**2))
