@@ -21,7 +21,7 @@ df_imag_clean = df_imag_clean.drop([df_imag_clean.columns[0], 'case_id', 'Stabil
 
 n_cases_clean= len(df_real_clean)
 
-#%% Identify the critical eigenvalues
+#%% Identify the critical eigenvalues manually
 crit_eig_real = np.full(df_real_clean.shape, np.nan)
 crit_eig_imag = np.full(df_imag_clean.shape, np.nan)
 for ii in range(0,n_cases_clean): # for every row
