@@ -25,18 +25,19 @@ df_imag_clean = df_imag_clean.drop([df_imag_clean.columns[0], 'case_id', 'Stabil
 n_cases_clean= len(df_real_clean)
 
 #%% Filter the data to select only the highest real eigenvalue in each row
-# Step 1: Find the column of the maximum real eigenvalue for each row
-max_real_indices = df_real_clean.idxmax(axis=1)
-
-# Step 2: Create a mask for the imaginary DataFrame
-mask = pd.DataFrame(
-    False, index=df_imag_clean.index, columns=df_imag_clean.columns
-)
-for row_idx, col_idx in max_real_indices.items():
-    mask.at[row_idx, col_idx] = True
-
-# Step 3: Apply the mask to keep only the corresponding imaginary values
-df_imag_clean = df_imag_clean.where(mask, other=np.nan)
+# find the column of the maximum real eigenvalue for each row
+# max_real_indices = df_real_clean.idxmax(axis=1)
+#
+# # create a mask that is the same dimensions as df_real_clean
+# mask = pd.DataFrame(
+#     False, index=df_real_clean.index, columns=df_real_clean.columns
+# )
+# for row_idx, col_idx in max_real_indices.items():
+#     mask.at[row_idx, col_idx] = True
+#
+# # apply the mask to keep only the corresponding real and imaginary values
+# df_real_clean = df_real_clean.where(mask)
+# df_imag_clean = df_imag_clean.where(mask)
 
 
 #%% create plots
@@ -52,25 +53,26 @@ df_imag_clean = df_imag_clean.where(mask, other=np.nan)
 # ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
 # fig.tight_layout()
 # plt.grid()
-# #plt.show()
+# plt.show()
 # #fig.savefig('1-Complete_Modal_Map.png')
 #
-# # zoom in
-# fig = plt.figure(figsize=(10, 15))
-# ax=fig.add_subplot()
-# ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
+# zoom in
+fig = plt.figure(figsize=(10, 15))
+ax=fig.add_subplot()
+ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
 # ax.scatter(crit_eig_real,crit_eig_imag, label='Critical Eigenvalues')
-# ax.set_xlabel('Real Axis',fontsize=25)
-# ax.set_ylabel('Imaginary Axis',fontsize=25)
-# ax.tick_params(labelsize=20)
-# ax.set_xlim([-80,20])
-# ax.set_ylim([200,325])
-# ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
-# fig.tight_layout()
-# plt.grid()
-# #plt.show()
-# ax.set_title('Complete Manual Eigenvalue Selection', fontsize=25, pad=10)
-# #fig.savefig('Complete_Manual_Eigenvalue_Selection.png', bbox_inches='tight')
+ax.set_xlabel('Real Axis',fontsize=25)
+ax.set_ylabel('Imaginary Axis',fontsize=25)
+ax.tick_params(labelsize=20)
+ax.set_xlim([-60,150])
+ax.set_ylim([-3000,400])
+ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
+fig.tight_layout()
+plt.subplots_adjust(top=0.85)
+plt.grid()
+ax.set_title('Title', fontsize=25, pad=0)
+# plt.show()
+# fig.savefig('Title.png', bbox_inches='tight')
 
 
 #%% Identify clustering region
@@ -119,7 +121,7 @@ ax.set_ylabel('Imaginary Axis')
 ax.legend()
 ax.grid()
 fig.tight_layout()
-fig.savefig('Complete_Kmeans_Clustering.png')
+# fig.savefig('Complete_Kmeans_Clustering.png')
 
 #%% Create the SpectralClustering model
 # n_clusters = 3  # Number of clusters you want to identify
