@@ -27,7 +27,7 @@ df_imag_clean = df_imag_clean.drop([df_imag_clean.columns[0], 'case_id', 'Stabil
 n_cases_clean= len(df_real_clean)
 
 # complete is one when want all data, complete is 0 when using only the highest real eigenvalues in each row
-complete = 0
+complete = 1
 
 #%% Filter the data to select only the highest real eigenvalue in each row
 
@@ -56,7 +56,7 @@ else:
 
 #%% create plots
 
-## plot the full modal map
+# plot the full modal map
 # fig=plt.figure()
 # ax=fig.add_subplot()
 # ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
@@ -71,21 +71,21 @@ else:
 # #fig.savefig('1-Complete_Modal_Map.png')
 #
 # # zoom in
-# fig = plt.figure(figsize=(10, 15))
-# ax=fig.add_subplot()
-# ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
-# # ax.scatter(crit_eig_real,crit_eig_imag, label='Critical Eigenvalues')
-# ax.set_xlabel('Real Axis',fontsize=25)
-# ax.set_ylabel('Imaginary Axis',fontsize=25)
-# ax.tick_params(labelsize=20)
-# ax.set_xlim([-80,20])
-# ax.set_ylim([200,325])
-# ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
-# fig.tight_layout()
-# plt.subplots_adjust(top=0.85)
-# plt.grid()
-# ax.set_title('Clustering Region', fontsize=25, pad=0)
-# plt.show()
+fig = plt.figure(figsize=(10, 15))
+ax=fig.add_subplot()
+ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
+# ax.scatter(crit_eig_real,crit_eig_imag, label='Critical Eigenvalues')
+ax.set_xlabel('Real Axis',fontsize=25)
+ax.set_ylabel('Imaginary Axis',fontsize=25)
+ax.tick_params(labelsize=20)
+ax.set_xlim([-500,150])
+ax.set_ylim([2000,3000])
+ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
+fig.tight_layout()
+plt.subplots_adjust(top=0.85)
+plt.grid()
+ax.set_title('Clustering Region', fontsize=25, pad=0)
+plt.show()
 # # # fig.savefig('Title.png', bbox_inches='tight')
 
 #%% clean the data before clustering
