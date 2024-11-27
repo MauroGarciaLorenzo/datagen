@@ -26,69 +26,38 @@ df_imag_clean = df_imag_clean.drop([df_imag_clean.columns[0], 'case_id', 'Stabil
 
 n_cases_clean= len(df_real_clean)
 
-# complete is one when want all data, complete is 0 when using only the highest real eigenvalues in each row
-complete = 1
 
-#%% Filter the data to select only the highest real eigenvalue in each row
+# select the eigenvalues that have the highest real parts in each row 
+df_real_clean_max = df_real_clean[df_real_clean.columns[0:2]]
+df_imag_clean_max = df_imag_clean[df_imag_clean.columns[0:2]]
 
-if complete == 0:
-    # find the column of the maximum real eigenvalue for each row
-    max_real_indices = df_real_clean.idxmax(axis=1)
 
-    # create a mask that is the same dimensions as df_real_clean
-    mask = pd.DataFrame(
-        False, index=df_real_clean.index, columns=df_real_clean.columns
-    )
-    for row_idx, col_idx in max_real_indices.items():
-        mask.at[row_idx, col_idx] = True
+#%% plot the modal map 
 
-    # apply the mask to keep only the corresponding real and imaginary values
-    df_real_clean = df_real_clean.where(mask)
-    df_imag_clean = df_imag_clean.where(mask)
-
-    # clustering region for the highest eigenvalue case
-    x_region = [-1,20]
-    y_region = [-400,400]
-else:
-    # clustering region for the complete case
-    x_region = [-80,20]
-    y_region = [200,325]
-
-#%% create plots
-
-# plot the full modal map
-# fig=plt.figure()
-# ax=fig.add_subplot()
-# ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
-# ax.set_xlabel('Real Axis',fontsize=25)
-# ax.set_ylabel('Imaginary Axis',fontsize=25)
-# ax.set_title('Complete Modal Map', fontsize=25)
-# ax.tick_params(labelsize=20)
-# ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
-# fig.tight_layout()
-# plt.grid()
-# plt.show()
-# #fig.savefig('1-Complete_Modal_Map.png')
-#
-# # zoom in
-fig = plt.figure(figsize=(10, 15))
+fig=plt.figure()
 ax=fig.add_subplot()
-ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
-# ax.scatter(crit_eig_real,crit_eig_imag, label='Critical Eigenvalues')
 ax.set_xlabel('Real Axis',fontsize=25)
 ax.set_ylabel('Imaginary Axis',fontsize=25)
+# ax.set_xlim()
+# ax.set_ylim()
 ax.tick_params(labelsize=20)
-ax.set_xlim([-500,150])
-ax.set_ylim([2000,3000])
-ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
 fig.tight_layout()
-plt.subplots_adjust(top=0.85)
 plt.grid()
-ax.set_title('Clustering Region', fontsize=25, pad=0)
+ax.scatter(df_real_clean,df_imag_clean, label='Eigenvalues')
+ax.scatter(df_real_clean_max, df_imag_clean_max, label='Max Eigenvalues')
+ax.legend(loc='lower center',bbox_to_anchor=(0.45, -0.65),fontsize=15, ncol=2)
+ax.set_title('Modal Map', fontsize=25)
 plt.show()
-# # # fig.savefig('Title.png', bbox_inches='tight')
 
 #%% clean the data before clustering
+
+complete = 1;
+if complete==1:
+    x_region = [-80,20]
+    y_region = [200,320]
+else:
+    x_region = [-1,20]
+    y_region = [-400,400]
 
 # select eigenvalues in the region
 selected_eig_real = df_real_clean[(df_real_clean > x_region[0]) & (df_real_clean < x_region[1])]
