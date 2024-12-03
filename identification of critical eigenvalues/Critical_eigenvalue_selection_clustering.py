@@ -167,78 +167,29 @@ X = np.vstack([selected_eig_real_clean, selected_eig_imag_clean]).T
 # print(f"Silhouette Score: {silhouette:.2f}")
 
 #%% Optics 
-# optics = OPTICS(min_samples=2, xi=0.05, min_cluster_size=0.1)
-# optics.fit(X)
-# labels = optics.labels_
-
-# fig = plt.figure()
-# ax=fig.add_subplot()
-# ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
-# ax.set_xlabel('Real Axis',fontsize=25)
-# ax.set_ylabel('Imaginary Axis',fontsize=25)
-# ax.tick_params(labelsize=20)
-# ax.set_xlim(x_region)
-# ax.set_ylim(y_region)
-# ax.set_title('Optics Clustering')
-# ax.set_xlabel('Real Axis')
-# ax.set_ylabel('Imaginary Axis')
-# ax.legend()
-# ax.grid()
-# fig.tight_layout()
-# plt.show()
-
-#%% Bisecting K means 
-
-def bisecting_kmeans(X, k):
-    # Initial clustering with 2 clusters
-    kmeans = KMeans(n_clusters=2, random_state=0)
-    kmeans.fit(X)
+xivals = [0.01, 0.05, 0.10, 0.15, 0.2]
+for i in xivals: 
+    optics = OPTICS(min_samples=2, xi=i, min_cluster_size=0.1)
+    optics.fit(X)
+    labels = optics.labels_
     
-    # List to store cluster centers and labels
-    clusters = [X[kmeans.labels_ == 0], X[kmeans.labels_ == 1]]
-    labels = kmeans.labels_
-    
-    while len(clusters) < k:
-        # Find the cluster with the largest SSE (sum of squared errors)
-        largest_cluster = max(clusters, key=lambda x: np.sum((x - kmeans.cluster_centers_[np.argmax(np.bincount(kmeans.labels_))])**2))
-        
-        # Apply K-Means to split the largest cluster into two
-        kmeans = KMeans(n_clusters=2, random_state=0)
-        kmeans.fit(largest_cluster)
-        
-        # Get the new clusters from the split
-        new_cluster_1 = largest_cluster[kmeans.labels_ == 0]
-        new_cluster_2 = largest_cluster[kmeans.labels_ == 1]
-        
-        # Remove the largest cluster and add the new ones
-        clusters.remove(largest_cluster)
-        clusters.append(new_cluster_1)
-        clusters.append(new_cluster_2)
-        
-        # Update the cluster labels
-        labels[labels == np.argmax(kmeans.labels_)] = kmeans.labels_
-        
-    return clusters, labels
+    fig = plt.figure()
+    ax=fig.add_subplot()
+    ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
+    ax.set_xlabel('Real Axis',fontsize=25)
+    ax.set_ylabel('Imaginary Axis',fontsize=25)
+    ax.tick_params(labelsize=20)
+    ax.set_xlim(x_region)
+    ax.set_ylim(y_region)
+    ax.set_title('Optics Clustering')
+    ax.set_xlabel('Real Axis')
+    ax.set_ylabel('Imaginary Axis')
+    ax.legend()
+    ax.grid()
+    fig.tight_layout()
+    plt.show()
+    fig.savefig(f'Complete_OPTICS_xi={i}.png')
 
-# Step 2: Apply Bisecting K-Means and get the clusters and labels
-k = 4  # Desired number of clusters
-clusters, labels = bisecting_kmeans(X, k)
-
-fig = plt.figure()
-ax=fig.add_subplot()
-ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
-ax.set_xlabel('Real Axis',fontsize=25)
-ax.set_ylabel('Imaginary Axis',fontsize=25)
-ax.tick_params(labelsize=20)
-ax.set_xlim(x_region)
-ax.set_ylim(y_region)
-ax.set_title('Bisecting Kmeans')
-ax.set_xlabel('Real Axis')
-ax.set_ylabel('Imaginary Axis')
-ax.legend()
-ax.grid()
-fig.tight_layout()
-plt.show()
 
 #%% Calculate the damping index
 
