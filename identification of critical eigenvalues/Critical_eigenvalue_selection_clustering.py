@@ -193,15 +193,6 @@ for i in xivals:
 
 #%% Calculate the damping index
 
-# separate the groups 
-# I have X with two columns and I have labels with the label 
-# I want to split the X values into an array for each label 
-# or I can keep them together and have the damping index do a loop and calcualte it for each label 
-
-
-# damping index of group 1
-#DI_crit_eig=1-(-crit_eig_real[:,0]/np.sqrt(crit_eig_real[:,0]**2+crit_eig_imag[:,0]**2))
-
 # this equation calculates the DI of all of the eigenvalues (not in groups)
 DI_tot = 1-(-X[:,0]/np.sqrt(X[:,0]**2+X[:,1]**2))
 DI_tot_min = min(DI_tot)
