@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.cluster import SpectralClustering
 from sklearn.cluster import DBSCAN
+from sklearn.cluster import OPTICS
 from sklearn.metrics import silhouette_samples, silhouette_score
 import matplotlib.cm as cm
 from sklearn.preprocessing import StandardScaler
@@ -77,206 +78,152 @@ selected_eig_imag_clean = selected_eig_imag_flat[valid_mask]
 X = np.vstack([selected_eig_real_clean, selected_eig_imag_clean]).T
 
 # scale the data 
-X_scaled = StandardScaler().fit_transform(X)
+# X_scaled = StandardScaler().fit_transform(X)
 
-#%% run clustering
+#%% clustering methods
+
 #%% k means cluster
-# k = 3  # Number of clusters
+# k = 3 # Number of clusters
 # kmeans = KMeans(n_init=10, n_clusters=k, random_state=42)
-# kmeans.fit(X_scaled)
-#
+# kmeans.fit(X)
+
 # labels = kmeans.labels_  # Cluster labels for each data point
 # centers = kmeans.cluster_centers_  # Coordinates of the cluster centers
-#
+
 # fig = plt.figure()
 # ax=fig.add_subplot()
-# ax.scatter(X_scaled[:, 0], X_scaled[:, 1], c=labels, cmap='viridis', marker='o')
+# ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
 # ax.set_xlabel('Real Axis',fontsize=25)
 # ax.set_ylabel('Imaginary Axis',fontsize=25)
 # ax.tick_params(labelsize=20)
 # ax.set_xlim(x_region)
 # ax.set_ylim(y_region)
 # ax.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='x', label='Centers')  # Plot the centers
-# ax.set_title('Complete K-Means Clustering')
+# ax.set_title('K-Means Clustering')
 # ax.set_xlabel('Real Axis')
 # ax.set_ylabel('Imaginary Axis')
 # ax.legend()
 # ax.grid()
 # fig.tight_layout()
 # plt.show()
-# fig.savefig('Complete_Kmeans_Clustering.png')
-
-# # calculate the silhouette score
-# range_n_clusters = [2, 3, 4, 5, 6]
-#
-# for n_clusters in range_n_clusters:
-#     # Create a subplot with 1 row and 2 columns
-#     fig, (ax1, ax2) = plt.subplots(1, 2)
-#     fig.set_size_inches(18, 7)
-#
-#     # The 1st subplot is the silhouette plot
-#     # The silhouette coefficient can range from -1, 1 but in this example all
-#     # lie within [-0.1, 1]
-#     ax1.set_xlim([-0.1, 1])
-#     # The (n_clusters+1)*10 is for inserting blank space between silhouette
-#     # plots of individual clusters, to demarcate them clearly.
-#     ax1.set_ylim([0, len(X_scaled) + (n_clusters + 1) * 10])
-#
-#     # Initialize the clusterer with n_clusters value and a random generator
-#     # seed of 10 for reproducibility.
-#     clusterer = KMeans(n_init=10, n_clusters=n_clusters, random_state=42)
-#     cluster_labels = clusterer.fit_predict(X_scaled)
-#
-#     # The silhouette_score gives the average value for all the samples.
-#     # This gives a perspective into the density and separation of the formed
-#     # clusters
-#     silhouette_avg = silhouette_score(X_scaled, cluster_labels)
-#     print(
-#         "For n_clusters =",
-#         n_clusters,
-#         "The average silhouette_score is :",
-#         silhouette_avg,
-#     )
-#
-#     # Compute the silhouette scores for each sample
-#     sample_silhouette_values = silhouette_samples(X_scaled, cluster_labels)
-#
-#     y_lower = 10
-#     for i in range(n_clusters):
-#         # Aggregate the silhouette scores for samples belonging to
-#         # cluster i, and sort them
-#         ith_cluster_silhouette_values = sample_silhouette_values[cluster_labels == i]
-#
-#         ith_cluster_silhouette_values.sort()
-#
-#         size_cluster_i = ith_cluster_silhouette_values.shape[0]
-#         y_upper = y_lower + size_cluster_i
-#
-#         color = cm.nipy_spectral(float(i) / n_clusters)
-#         ax1.fill_betweenx(
-#             np.arange(y_lower, y_upper),
-#             0,
-#             ith_cluster_silhouette_values,
-#             facecolor=color,
-#             edgecolor=color,
-#             alpha=0.7,
-#         )
-#
-#         # Label the silhouette plots with their cluster numbers at the middle
-#         ax1.text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
-#
-#         # Compute the new y_lower for next plot
-#         y_lower = y_upper + 10  # 10 for the 0 samples
-#
-#     ax1.set_title("The silhouette plot for the various clusters.")
-#     ax1.set_xlabel("The silhouette coefficient values")
-#     ax1.set_ylabel("Cluster label")
-#
-#     # The vertical line for average silhouette score of all the values
-#     ax1.axvline(x=silhouette_avg, color="red", linestyle="--")
-#
-#     ax1.set_yticks([])  # Clear the yaxis labels / ticks
-#     ax1.set_xticks([-0.1, 0, 0.2, 0.4, 0.6, 0.8, 1])
-#
-#     # 2nd Plot showing the actual clusters formed
-#     colors = cm.nipy_spectral(cluster_labels.astype(float) / n_clusters)
-#     ax2.scatter(
-#         X_scaled[:, 0], X_scaled[:, 1], marker=".", s=30, lw=0, alpha=0.7, c=colors, edgecolor="k"
-#     )
-#
-#     # Labeling the clusters
-#     centers = clusterer.cluster_centers_
-#     # Draw white circles at cluster centers
-#     ax2.scatter(
-#         centers[:, 0],
-#         centers[:, 1],
-#         marker="o",
-#         c="white",
-#         alpha=1,
-#         s=200,
-#         edgecolor="k",
-#     )
-#
-#     for i, c in enumerate(centers):
-#         ax2.scatter(c[0], c[1], marker="$%d$" % i, alpha=1, s=50, edgecolor="k")
-#
-#     ax2.set_title("The visualization of the clustered data.")
-#     ax2.set_xlabel("Feature space for the 1st feature")
-#     ax2.set_ylabel("Feature space for the 2nd feature")
-#
-#     plt.suptitle(
-#         "Silhouette analysis for KMeans clustering on sample data with n_clusters = %d"
-#         % n_clusters,
-#         fontsize=14,
-#         fontweight="bold",
-#     )
-#
-# plt.show()
 
 
-#%% Create the SpectralClustering model
+#%% SpectralClustering model
+## note: this method doesn't work with the complete map because there is too much data 
 # n_clusters = 2  # Number of clusters you want to identify
 # sc = SpectralClustering(n_clusters=n_clusters, affinity='nearest_neighbors', random_state=42)
 # # Fit the model and predict the cluster labels
-# labels = sc.fit_predict(X_scaled)
+# labels = sc.fit_predict(X)
 # # Visualize the clusters
 # fig = plt.figure()
 # ax=fig.add_subplot()
-# ax.scatter(X_scaled[:, 0], X_scaled[:, 1], c=labels, cmap='viridis', marker='o')
+# ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
 # ax.set_xlabel('Real Axis',fontsize=25)
 # ax.set_ylabel('Imaginary Axis',fontsize=25)
 # ax.tick_params(labelsize=20)
 # ax.set_xlim(x_region)
 # ax.set_ylim(y_region)
-# ax.set_title('Highest Values Spectral Clustering Results')
+# ax.set_title('Spectral Clustering')
 # ax.set_xlabel('Real Axis')
 # ax.set_ylabel('Imaginary Axis')
 # ax.legend()
 # ax.grid()
 # fig.tight_layout()
 # plt.show()
-# # fig.savefig('Highest_Values_Spectral_Clustering.png')
 
 # # calculate silhouette score
-# silhouette = silhouette_score(X_scaled, labels)
+# silhouette = silhouette_score(X, labels)
 # print(f"Silhouette Score: {silhouette:.2f}")
 
-
 #%% DBScan
-# dbscan = DBSCAN(eps=3, min_samples=10)
-# labels = dbscan.fit_predict(X_scaled)
-
-# # Plot the results
-# fig = plt.figure()
-# ax=fig.add_subplot()
-# ax.scatter(X_scaled[:, 0], X_scaled[:, 1], c=labels, cmap='viridis', marker='o')
-# ax.set_xlabel('Real Axis',fontsize=25)
-# ax.set_ylabel('Imaginary Axis',fontsize=25)
-# ax.tick_params(labelsize=20)
-# # ax.set_xlim(x_region)
-# # ax.set_ylim(y_region)
-# ax.set_xlim([0,1])
-# ax.set_ylim([0,1])
-# ax.set_title('DBSCAN Clustering With Highest Values')
-# ax.set_xlabel('Real Axis')
-# ax.set_ylabel('Imaginary Axis')
-# ax.legend()
-# ax.grid()
-# fig.tight_layout()
-# plt.show()
+# epsvals = [0.1, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4]
+# for i in epsvals: 
+#     dbscan = DBSCAN(eps=i, min_samples=10)
+#     labels = dbscan.fit_predict(X)
+    
+#     # Plot the results
+#     fig = plt.figure()
+#     ax=fig.add_subplot()
+#     ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
+#     ax.set_xlabel('Real Axis',fontsize=25)
+#     ax.set_ylabel('Imaginary Axis',fontsize=25)
+#     ax.tick_params(labelsize=20)
+#     # ax.set_xlim(x_region)
+#     # ax.set_ylim(y_region)
+#     ax.set_title(f'DBSCAN Clustering with eps = {i}')
+#     ax.set_xlabel('Real Axis')
+#     ax.set_ylabel('Imaginary Axis')
+#     ax.legend()
+#     ax.grid()
+#     fig.tight_layout()
+#     plt.show()
+#     fig.savefig(f'Complete_DBSCAN_eps={i}.png')
 
 # # calculate silhouette score
 # # Exclude noise points
 # cluster_labels = labels[labels != -1]  # Exclude noise
-# filtered_X = X_scaled[labels != -1]           # Exclude noise points in data
+# filtered_X = X[labels != -1]           # Exclude noise points in data
 # silhouette = silhouette_score(filtered_X, cluster_labels)
 # print(f"Silhouette Score: {silhouette:.2f}")
 
-#%% DBScan
-dbscan = DBSCAN(eps=3, min_samples=10)
-labels = dbscan.fit_predict(X)
+#%% Optics 
+# optics = OPTICS(min_samples=2, xi=0.05, min_cluster_size=0.1)
+# optics.fit(X)
+# labels = optics.labels_
 
-# Plot the results
+# fig = plt.figure()
+# ax=fig.add_subplot()
+# ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
+# ax.set_xlabel('Real Axis',fontsize=25)
+# ax.set_ylabel('Imaginary Axis',fontsize=25)
+# ax.tick_params(labelsize=20)
+# ax.set_xlim(x_region)
+# ax.set_ylim(y_region)
+# ax.set_title('Optics Clustering')
+# ax.set_xlabel('Real Axis')
+# ax.set_ylabel('Imaginary Axis')
+# ax.legend()
+# ax.grid()
+# fig.tight_layout()
+# plt.show()
+
+#%% Bisecting K means 
+
+def bisecting_kmeans(X, k):
+    # Initial clustering with 2 clusters
+    kmeans = KMeans(n_clusters=2, random_state=0)
+    kmeans.fit(X)
+    
+    # List to store cluster centers and labels
+    clusters = [X[kmeans.labels_ == 0], X[kmeans.labels_ == 1]]
+    labels = kmeans.labels_
+    
+    while len(clusters) < k:
+        # Find the cluster with the largest SSE (sum of squared errors)
+        largest_cluster = max(clusters, key=lambda x: np.sum((x - kmeans.cluster_centers_[np.argmax(np.bincount(kmeans.labels_))])**2))
+        
+        # Apply K-Means to split the largest cluster into two
+        kmeans = KMeans(n_clusters=2, random_state=0)
+        kmeans.fit(largest_cluster)
+        
+        # Get the new clusters from the split
+        new_cluster_1 = largest_cluster[kmeans.labels_ == 0]
+        new_cluster_2 = largest_cluster[kmeans.labels_ == 1]
+        
+        # Remove the largest cluster and add the new ones
+        clusters.remove(largest_cluster)
+        clusters.append(new_cluster_1)
+        clusters.append(new_cluster_2)
+        
+        # Update the cluster labels
+        labels[labels == np.argmax(kmeans.labels_)] = kmeans.labels_
+        
+    return clusters, labels
+
+# Step 2: Apply Bisecting K-Means and get the clusters and labels
+k = 4  # Desired number of clusters
+clusters, labels = bisecting_kmeans(X, k)
+
 fig = plt.figure()
 ax=fig.add_subplot()
 ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
@@ -285,9 +232,7 @@ ax.set_ylabel('Imaginary Axis',fontsize=25)
 ax.tick_params(labelsize=20)
 ax.set_xlim(x_region)
 ax.set_ylim(y_region)
-# ax.set_xlim([0,1])
-# ax.set_ylim([0,1])
-ax.set_title('DBSCAN Clustering With Highest Values')
+ax.set_title('Bisecting Kmeans')
 ax.set_xlabel('Real Axis')
 ax.set_ylabel('Imaginary Axis')
 ax.legend()
@@ -295,17 +240,35 @@ ax.grid()
 fig.tight_layout()
 plt.show()
 
-# calculate silhouette score
-# Exclude noise points
-cluster_labels = labels[labels != -1]  # Exclude noise
-filtered_X = X_scaled[labels != -1]           # Exclude noise points in data
-silhouette = silhouette_score(filtered_X, cluster_labels)
-print(f"Silhouette Score: {silhouette:.2f}")
-
 #%% Calculate the damping index
+
+# separate the groups 
+# I have X with two columns and I have labels with the label 
+# I want to split the X values into an array for each label 
+# or I can keep them together and have the damping index do a loop and calcualte it for each label 
+
 
 # damping index of group 1
 #DI_crit_eig=1-(-crit_eig_real[:,0]/np.sqrt(crit_eig_real[:,0]**2+crit_eig_imag[:,0]**2))
+
+# this equation calculates the DI of all of the eigenvalues (not in groups)
+DI_tot = 1-(-X[:,0]/np.sqrt(X[:,0]**2+X[:,1]**2))
+DI_tot_min = min(DI_tot)
+DI_tot_max = max(DI_tot)
+
+# calculate the damping index for each group 
+DI = {}
+DI_min = {}
+DI_max = {}
+unique_labels = np.unique(labels)
+for i in unique_labels:
+    X_i = X[labels == i]
+    DI_i =1-(-X_i[:,0]/np.sqrt(X_i[:,0]**2+X_i[:,1]**2))
+    DI[i] = DI_i  # Store the result in a dictionary
+    DI_min[i] = min(DI_i)
+    DI_max[i] = max(DI_i)
+
+
 
 
 
