@@ -21,7 +21,7 @@ import time
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 
-def feasible_power_flow_ACOPF(case, **kwargs):
+def ACOPF_min_gen_cost(case, **kwargs):
     """
     Runs the alternating current optimal power flow (ACOPF) stability analysis.
     :param case: pandas DataFrame with the case parameters
@@ -83,11 +83,11 @@ def feasible_power_flow_ACOPF(case, **kwargs):
         voltage_profile_list, indx_id = gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
                                                                      gridCal_grid, generator=generator)
 
-        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
+        assign_Generators_to_grid.assign_PVGen_OPF(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
                                                voltage_profile_list=voltage_profile_list, indx_id=indx_id)
 
     elif v_set != None:
-        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
+        assign_Generators_to_grid.assign_PVGen_OPF(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
 
     assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
@@ -108,9 +108,9 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
 
     nc = compile_numerical_circuit_at(gridCal_grid)
-    nc.generator_data.cost_0[:] = 0
-    nc.generator_data.cost_1[:] = 0
-    nc.generator_data.cost_2[:] = 0
+    # nc.generator_data.cost_0[:] = 0
+    # nc.generator_data.cost_1[:] = 0
+    # nc.generator_data.cost_2[:] = 0
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)#, tolerance=1e-8, max_iter=100)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-8, ips_iterations=100)
 
@@ -128,7 +128,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                                           pf_init= True,
                                           Sbus_pf= pf_results.Sbus,
                                           voltage_pf= pf_results.voltage,
-                                          plot_error= False)
+                                          plot_error= True)
 
 
     end = time.perf_counter()

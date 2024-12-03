@@ -233,7 +233,7 @@ def main():
     for _, case in cases_df.iterrows():
         stability, output_dataframes = eval_stability(
             case=case,
-            f=feasible_power_flow_ACOPF,
+            f=ACOPF_min_gen_cost,
             func_params=func_params,
             generator=generator)
         stability_array.append(stability)
