@@ -291,7 +291,7 @@ if ClustersMissingEigs == 1:
         
         # for each value in sample 
         for j in range(len(samplevals)):
-            # Calculate the Euclidean distance
+            # Calculate the Euclidean distance between the center and the sample 
             distance = np.sqrt(np.sum((samplevals.iloc[j] - center) ** 2))
             
             # Check if this distance is the minimum
@@ -300,8 +300,7 @@ if ClustersMissingEigs == 1:
                 min_index = j
         
         # reassign the eigenvalue to that cluster 
-        min_index
-
+        labels_reshape[min_index,SampleClusterPairs[i][0]] = SampleClusterPairs[i][1]
 
 for l in range(k):
     X_cl=X[labels==l]
