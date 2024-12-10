@@ -11,6 +11,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.cluster import OPTICS
 from sklearn.cluster import HDBSCAN
 from sklearn.neighbors import NearestNeighbors
+from sklearn.neighbors import NearestCentroid
 from sklearn.metrics import silhouette_samples, silhouette_score
 import matplotlib.cm as cm
 from sklearn.preprocessing import StandardScaler
@@ -83,13 +84,12 @@ n_cases_clean= len(df_real_clean)
 df_real_clean_max = df_real_clean[df_real_clean.columns[0:2]]
 df_imag_clean_max = df_imag_clean[df_imag_clean.columns[0:2]]
 
-#%% plot the modal map 
+#%% plot the full modal map 
 
 # fig=plt.figure()
 # ax=fig.add_subplot()
 # ax.set_xlabel('Real Axis',fontsize=25)
 # ax.set_ylabel('Imaginary Axis',fontsize=25)
-
 # ax.tick_params(labelsize=20)
 # fig.tight_layout()
 # plt.grid()
@@ -106,7 +106,7 @@ if complete==0:
     x_region = [-115,20]
     y_region = [200,320]
     
-#%% Plot the Modal Map 
+#%% Plot the Modal Map for the region 
 
 # fig=plt.figure()
 # ax=fig.add_subplot()
@@ -155,11 +155,8 @@ real_selected_df=real_selected_df.dropna()
 #%% If you want to exclude 50 Hz eigenvalues
 
 # real_selected_no50Hz,imag_selected_no50Hz=exclude_50Hz_eig(real_selected_df, imag_selected_df)
-
 # real_selected_df=real_selected_no50Hz.copy(deep=True).dropna()
 # imag_selected_df=imag_selected_no50Hz.copy(deep=True).dropna()
-
-
 
 #%%
 
@@ -206,18 +203,29 @@ X = np.vstack([selected_eig_real_flat, selected_eig_imag_flat]).T
 # joblib.dump(kmeans, 'kmeans3clusters.sav')
 
 #%% DBSCAN
-cluster_method = 'DBSCAN'
+# cluster_method = 'DBSCAN'
 
 epsvals = [1, 5, 10]
-min_samples = [5, 10, 15]
-DBSCAN_results = np.zeros((len(epsvals) * len(min_samples), 3))
+min_samplesvals = [5, 10, 15]
+DBSCAN_results = np.zeros((len(epsvals) * len(min_samplesvals), 3))
 
 counter = 0
 for i in epsvals:
-    for j in min_samples:
+    for j in min_samplesvals:
         # Apply DBSCAN clustering
         dbscan = DBSCAN(eps=i, min_samples=j)
         labels = dbscan.fit_predict(X)
+        
+        # reassign noise points 
+        noise_points = X[labels == -1]
+        if len(noise_points) > 0:
+            # Reassign noise points to nearest cluster
+            clf = NearestCentroid()
+            clf.fit(X[labels != -1], labels[labels != -1])
+            noise_labels = clf.predict(noise_points)
+            
+            # Update labels
+            labels[labels == -1] = noise_labels
         
         # Store the eps, min_samples, and silhouette score
         DBSCAN_results[counter, 0] = i  # eps value
@@ -228,36 +236,73 @@ for i in epsvals:
         counter += 1
 
 #%% Optics 
+# cluster_method = 'Optics'
 
-# xivals = [0.01, 0.05, 0.10, 0.15, 0.2]
-# for i in xivals: 
-#     optics = OPTICS(min_samples=2, xi=i, min_cluster_size=0.1)
+# min_samplesvals = [5, 10, 15]
+# # max_epsvals = inf
+# # Optics_results = np.zeros((len(max_epsvals) * len(min_samplesvals), 3))
+# Optics_results = np.zeros((len(min_samplesvals), 3))
+    
+# counter = 0
+# for i in min_samplesvals: 
+# # for j in max_epsvals:
+#     optics = OPTICS(min_samples=i)
 #     optics.fit(X)
 #     labels = optics.labels_
     
-#     fig = plt.figure()
-#     ax=fig.add_subplot()
-#     ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
-#     ax.set_xlabel('Real Axis',fontsize=25)
-#     ax.set_ylabel('Imaginary Axis',fontsize=25)
-#     ax.tick_params(labelsize=20)
-#     ax.set_xlim(x_region)
-#     ax.set_ylim(y_region)
-#     ax.set_title('Optics Clustering')
-#     ax.set_xlabel('Real Axis')
-#     ax.set_ylabel('Imaginary Axis')
-#     ax.legend(loc='lower left', fontsize=15, ncol=1)  
-#     ax.grid()
-#     fig.tight_layout()
-#     plt.show()
-#     fig.savefig(f'Complete_OPTICS_xi={i}.png')
+#     # reassign noise points 
+#     noise_points = X[labels == -1]
+#     if len(noise_points) > 0:
+#         # Reassign noise points to nearest cluster
+#         clf = NearestCentroid()
+#         clf.fit(X[labels != -1], labels[labels != -1])
+#         noise_labels = clf.predict(noise_points)
+        
+#         # Update labels
+#         labels[labels == -1] = noise_labels
+
+#     # Store the eps, min_samples, and silhouette score
+#     Optics_results[counter, 0] = i  # min samples value 
+#     # Optics_results[counter, 1] = j  # max eps value
+#     Optics_results[counter, 1] = silhouette_score(X, labels)  # silhouette score
+    
+#     # Increment counter
+#     counter += 1
 
 #%% HDBSCAN 
+cluster_method = 'HDBSCAN'
 
-# cluster_method = 'HDBSCAN'
-# hdb = HDBSCAN()
-# hdb.fit(X)
-# labels = hdb.labels_  
+min_cluster_sizevals = [5, 10, 15]
+min_samplesvals = [5, 10, 15]
+HDBSCAN_results = np.zeros((len(min_cluster_sizevals) * len(min_samplesvals), 3))
+
+counter = 0
+for i in min_cluster_sizevals:
+    for j in min_samplesvals:
+        hdb = HDBSCAN(min_cluser_size = min_cluster_sizevals, min_samples = min_samplesvals)
+        hdb.fit(X)
+        labels = hdb.labels_  
+        
+        # reassign noise points 
+        noise_points = X[labels == -1]
+        if len(noise_points) > 0:
+            # Reassign noise points to nearest cluster
+            clf = NearestCentroid()
+            clf.fit(X[labels != -1], labels[labels != -1])
+            noise_labels = clf.predict(noise_points)
+            
+            # Update labels
+            labels[labels == -1] = noise_labels
+        
+        # Store the eps, min_samples, and silhouette score
+        HDBSCAN_results[counter, 0] = i  
+        HDBSCAN_results[counter, 1] = j  
+        HDBSCAN_results[counter, 2] = silhouette_score(X, labels)  # silhouette score
+        
+        # Increment counter
+        counter += 1
+        
+        
 
 #%% plot the clusters
 
@@ -287,68 +332,90 @@ print(f"Silhouette Score: {silhouette:.2f}")
 
 
 #%% check to see if there are samples that do not have an eigenvalue in each cluster
-# labels_reshape=labels.reshape(imag_selected_df.shape)
-# ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
+labels_reshape=labels.reshape(imag_selected_df.shape)
+ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
 
-# # if there are samples that do not have an eigenvalue in each cluster
-# if ClustersMissingEigs == 1:
-#     for i in range(len(SampleClusterPairs)): # for each samplecluster pair         
-#         center = centers[SampleClusterPairs[i][1]] # cluster centroid 
+# if there are samples missing eigenvalues in certain clusters, 
+# if row one has an eigenvalue in every cluster except for cluster 1, then highlight that eigenvalue and the cluster 
+
+# if there are samples that do not have an eigenvalue in each cluster
+if ClustersMissingEigs == 1:
+    for i in range(len(SampleClusterPairs)): # for each samplecluster pair         
+        center = centers[SampleClusterPairs[i][1]] # cluster centroid 
         
-#         # values in the sample:
-#         real = real_selected_df.T.iloc[SampleClusterPairs[i][0],:]
-#         imag = imag_selected_df.T.iloc[SampleClusterPairs[i][0],:]
-#         samplevals = pd.concat([real, imag], axis=1).reset_index(drop=True)
+        # values in the sample:
+        real = real_selected_df.T.iloc[SampleClusterPairs[i][0],:]
+        imag = imag_selected_df.T.iloc[SampleClusterPairs[i][0],:]
+        samplevals = pd.concat([real, imag], axis=1).reset_index(drop=True)
         
-#         min_distance = float('inf')  # Start with a very large number
-#         min_index = -1  # To store the index of the minimum distance
+        min_distance = float('inf')  # Start with a very large number
+        min_index = -1  # To store the index of the minimum distance
         
-#         # for each value in sample 
-#         for j in range(len(samplevals)):
-#             # Calculate the Euclidean distance between the center and the sample 
-#             distance = np.sqrt(np.sum((samplevals.iloc[j] - center) ** 2))
+        # for each value in sample 
+        for j in range(len(samplevals)):
+            # Calculate the Euclidean distance between the center and the sample 
+            distance = np.sqrt(np.sum((samplevals.iloc[j] - center) ** 2))
             
-#             # Check if this distance is the minimum
-#             if distance < min_distance:
-#                 min_distance = distance
-#                 min_index = j
+            # Check if this distance is the minimum
+            if distance < min_distance:
+                min_distance = distance
+                min_index = j
+                
+        # plot the clustering region and highlight the target cluster and the target point 
+        # fig = plt.figure()
+        # ax=fig.add_subplot()
+        # target_region = labels
+        # scatter=ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
+        # handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=scatter.cmap(scatter.norm(label)), markersize=10) for label in unique_labels]
+        # ax.legend(handles=handles, labels=[str(label) for label in unique_labels], loc='lower left', bbox_to_anchor=(0, 0), fontsize=15, ncol=1)
+        # if cluster_method == 'KMeans':
+        #     ax.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='x', label='Centers')  
+        # ax.set_xlim(x_region)
+        # ax.set_ylim(y_region)
+        # ax.tick_params(labelsize=20)
+        # ax.set_xlabel('Real Axis',fontsize=25)
+        # ax.set_ylabel('Imaginary Axis',fontsize=25)
+        # ax.set_title(cluster_method + ' Clustering')
+        # ax.grid()
+        # fig.tight_layout()
+        # plt.show()
         
-#         # reassign the eigenvalue to that cluster 
-#         labels_reshape[min_index,SampleClusterPairs[i][0]] = SampleClusterPairs[i][1]
+        # reassign the eigenvalue to that cluster 
+        labels_reshape[min_index,SampleClusterPairs[i][0]] = SampleClusterPairs[i][1]
 
-# for l in range(unique_labels):
-#     X_cl=X[labels==l]
-#     if X_cl[:,0].max()>=0:
-#         print('Cluster '+str(l)+' collects critical eigenvalues')
-#         crit_cluster=l
+for l in range(unique_labels):
+    X_cl=X[labels==l]
+    if X_cl[:,0].max()>=0:
+        print('Cluster '+str(l)+' collects critical eigenvalues')
+        crit_cluster=l
         
         
-# #%% Calculate the damping ratios
-# labels_reshape_T=labels_reshape.T
+#%% Calculate the damping ratios
+labels_reshape_T=labels_reshape.T
 
-# # DI[1] has the damping index values for cluster 1, DI[2] has the values for cluster 2, etc. 
-# drs = {} 
-# # go through each label 
-# for i in unique_labels:
-#     # initialize an empty DI array that is the same size as labels_reshape_T
-#     dr = np.full_like(labels_reshape_T, np.nan, dtype = float)
-#     for row_idx, row in enumerate(labels_reshape_T):
-#         for col_idx, value in enumerate(row):
-#             if value == i: # if the label is the label we are looking for
-#                 dr[row_idx, col_idx] =  (-real_selected_df.T.iloc[row_idx, col_idx]/np.sqrt(real_selected_df.T.iloc[row_idx, col_idx]**2+imag_selected_df.T.iloc[row_idx, col_idx]**2))
-#     drs[i] = dr
+# DI[1] has the damping index values for cluster 1, DI[2] has the values for cluster 2, etc. 
+drs = {} 
+# go through each label 
+for i in unique_labels:
+    # initialize an empty DI array that is the same size as labels_reshape_T
+    dr = np.full_like(labels_reshape_T, np.nan, dtype = float)
+    for row_idx, row in enumerate(labels_reshape_T):
+        for col_idx, value in enumerate(row):
+            if value == i: # if the label is the label we are looking for
+                dr[row_idx, col_idx] =  (-real_selected_df.T.iloc[row_idx, col_idx]/np.sqrt(real_selected_df.T.iloc[row_idx, col_idx]**2+imag_selected_df.T.iloc[row_idx, col_idx]**2))
+    drs[i] = dr
         
 
 
-# #%% calculate the damping index 
+#%% calculate the damping index 
 
-# dr=drs[crit_cluster]
-# DIs=np.zeros([dr.shape[0],1])
-# for i in range(dr.shape[0]):
-#     if np.all(np.isnan(dr[i, :])):
-#         DIs[i, 0] = np.nan  # Assign NaN if no valid values exist
-#     else:
-#         DIs[i,0]=1-min(dr[i,~np.isnan(dr[i,:])])
+dr=drs[crit_cluster]
+DIs=np.zeros([dr.shape[0],1])
+for i in range(dr.shape[0]):
+    if np.all(np.isnan(dr[i, :])):
+        DIs[i, 0] = np.nan  # Assign NaN if no valid values exist
+    else:
+        DIs[i,0]=1-min(dr[i,~np.isnan(dr[i,:])])
     
 
 
