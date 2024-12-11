@@ -13,12 +13,13 @@ from sklearn.cluster import HDBSCAN
 from sklearn.neighbors import NearestNeighbors
 from sklearn.neighbors import NearestCentroid
 from sklearn.metrics import silhouette_samples, silhouette_score
+from sklearn.model_selection import RandomizedSearchCV
 import matplotlib.cm as cm
 from sklearn.preprocessing import StandardScaler
 import copy
 import joblib
 
-#%% 
+#%% Functions
 def exclude_50Hz_eig(real_selected_df, imag_selected_df, plot_figure=True):
     
     imag_selected_df=imag_selected_df.round(3)
@@ -58,7 +59,7 @@ def check_cluster_memberships(labels_reshape, k):
     SampleClusterPairs = []  # List to store (sample, cluster) pairs
     
     for i in range(labels_reshape.shape[1]):  # For every column (sample)
-        for l in range(k):  # For each cluster
+        for l in k:  # For each cluster
             if not any(labels_reshape[:, i] == l): 
                 print(f'There is no eigenvalue from sample {i} in cluster {l}')
                 ClustersMissingEigs = 1
@@ -66,6 +67,52 @@ def check_cluster_memberships(labels_reshape, k):
     
     return ClustersMissingEigs, SampleClusterPairs
 
+def plot_clusters(cluster_method, X, labels, x_region, y_region, model, reassignment = 0, target_cluster_points = 0,target_point=0, centroid = 0 ):
+
+    unique_labels = np.unique(labels)
+    fig = plt.figure()
+    ax=fig.add_subplot()
+    scatter=ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
+    handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=scatter.cmap(scatter.norm(label)), markersize=10) for label in unique_labels]
+    # ax.legend(handles=handles, labels=[str(label) for label in unique_labels], loc='lower left', bbox_to_anchor=(0, 0), fontsize=15, ncol=1)
+    if cluster_method == 'KMeans':
+        centers = kmeans.cluster_centers_
+        ax.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='x', label='Centers')  
+        ax.text(-100, 210, 'n_clusters: ' + str(kmeans.n_clusters))
+    elif cluster_method == 'Optics':
+        ax.text(-100, 210, 'min_samples: ' + str(optics.min_samples) + '\nmax_eps: ' + str(optics.max_eps) + '\nNumber of clusters: ' + str(len(unique_labels)))
+    elif cluster_method == 'DBSCAN':
+        ax.text(-100, 210, 'eps: ' + str(dbscan.eps) + ' min_samples: ' + str(dbscan.min_samples)  + '\nNumber of clusters: ' + str(len(unique_labels)))
+    elif cluster_method == 'HDBSCAN':
+        ax.text(-100, 210, 'min_cluster_size' + str(hdbscan.min_cluser_size) + '\nmin_samples: ' + str(hdbscan.min_samples)  + '\nNumber of clusters: ' + str(len(unique_labels)))
+    else: print("wrong")
+    if reassignment == 1:
+        ax.scatter(target_cluster_points[:, 0], target_cluster_points[:, 1], color='yellow', edgecolor='black', s=100, label='Target Cluster')
+        ax.scatter(target_point[0], target_point[1], color='red', edgecolor='black', s=150, label='Reassigned Point')
+        ax.scatter(centroid[:, 0], centroid[:, 1], c='red', s=200, marker='x', label='Centroid')
+    fig.subplots_adjust(top=0.5, bottom=0.2, left=0.2, right=0.9)  # Adjust these values
+    ax.set_xlim(x_region)
+    ax.set_ylim(y_region)
+    ax.tick_params(labelsize=20)
+    ax.set_xlabel('Real Axis',fontsize=25)
+    ax.set_ylabel('Imaginary Axis',fontsize=25)
+    ax.set_title(cluster_method + ' Clustering')
+    ax.grid()
+    fig.tight_layout(pad=4.0)
+    plt.show()
+    
+def reassign_noise_points(X, labels):
+    noise_points = X[labels == -1]
+    if len(noise_points) > 0:
+        clf = NearestCentroid()
+        clf.fit(X[labels != -1], labels[labels != -1])  # Fit only non-noise points
+        noise_labels = clf.predict(noise_points)
+        labels[labels == -1] = noise_labels
+    return labels
+
+
+
+    
 #%% import and clean data
 df_real=pd.read_csv('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464/case_df_real.csv')
 df_imag=pd.read_csv('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464/case_df_imag.csv')
@@ -185,163 +232,154 @@ X = np.vstack([selected_eig_real_flat, selected_eig_imag_flat]).T
 #%% K Means cluster
 # cluster_method = 'KMeans'
 
-# kvals = [2,3,4,5,6]
-# K_Means_Results = np.column_stack((kvals, np.zeros(len(kvals))))
-# for idx, i in enumerate(kvals):
+# # test for different kvals (number of clusters)
+# n_clusters = [2,3,4,5,6]
+# K_Means_Results = np.column_stack((n_clusters, np.zeros(len(n_clusters))))
+# for idx, i in enumerate(n_clusters):
 #     kmeans = KMeans(n_init=10, n_clusters=i, random_state=42)
 #     kmeans.fit(X)  
 #     labels = kmeans.labels_  # Cluster labels for each data point
-#     centers = kmeans.cluster_centers_  # Coordinates of the cluster centers
 #     K_Means_Results[idx,1] = silhouette_score(X, labels)
     
 # # the best silhouette score is when n_clusters = 3 
 # kmeans = KMeans(n_init=10, n_clusters=3, random_state=42)
 # kmeans.fit(X)
 # labels = kmeans.labels_  # Cluster labels for each data point
-# centers = kmeans.cluster_centers_  # Coordinates of the cluster centers
+# plot_clusters(cluster_method, X, labels, x_region, y_region, kmeans)
+
 
 # joblib.dump(kmeans, 'kmeans3clusters.sav')
 
-#%% DBSCAN
-# cluster_method = 'DBSCAN'
+#%% Optics 
+cluster_method = 'Optics'
 
-epsvals = [1, 5, 10]
-min_samplesvals = [5, 10, 15]
-DBSCAN_results = np.zeros((len(epsvals) * len(min_samplesvals), 3))
-
+# test for different min_samples 
+min_samples = [2200]
+Optics_results = np.zeros((len(min_samples), 2))
 counter = 0
-for i in epsvals:
-    for j in min_samplesvals:
-        # Apply DBSCAN clustering
+for i in min_samples: 
+    optics = OPTICS(min_samples=i)
+    optics.fit(X)
+    labels = optics.labels_
+    labels = reassign_noise_points(X, labels)
+    
+    Optics_results[counter, 0] = i  # min samples value 
+    Optics_results[counter, 1] = silhouette_score(X, labels)  # silhouette score
+    
+    print(f"min_samples: {i},  Silhouette Score: {Optics_results[counter, 1]}")
+    
+    print(cluster_method)
+    unique_labels = np.unique(labels)
+    labels_reshape=labels.reshape(imag_selected_df.shape)
+    ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
+    
+    plot_clusters(cluster_method, X, labels, x_region, y_region, optics)
+    counter += 1
+    
+# # the best silhouette score occurs when min_samples is apporximately 2300 
+optics = OPTICS(min_samples=2200)
+optics.fit(X)
+labels = optics.labels_
+plot_clusters(cluster_method, X, labels, x_region, y_region, optics)
+
+#%% DBSCAN
+cluster_method = 'DBSCAN'
+
+# k distance graph 
+# min_samples = 20  # Adjust this value to see the effect on the elbow
+# nbrs = NearestNeighbors(n_neighbors=min_samples).fit(X)
+# distances, indices = nbrs.kneighbors(X)
+# distances = np.sort(distances[:, -1])  # Distances to the `min_samples-th` nearest neighbor
+# plt.plot(distances)
+# plt.xlabel("Points sorted by distance")
+# plt.ylabel(f"{min_samples}-th Nearest Neighbor Distance")
+# plt.title("k-Distance Plot")
+# plt.show()
+
+dbscan = DBSCAN()
+eps = [0.5, 1, 1.5] #chosen because they are elbow of kdistance graph 
+min_samples = [50,60,70] 
+DBSCAN_results = np.zeros((len(eps) * len(min_samples), 4))
+
+# Manually loop over the hyperparameter combinations
+counter = 0
+for i in eps:
+    for j in min_samples:
         dbscan = DBSCAN(eps=i, min_samples=j)
         labels = dbscan.fit_predict(X)
-        
-        # reassign noise points 
-        noise_points = X[labels == -1]
-        if len(noise_points) > 0:
-            # Reassign noise points to nearest cluster
-            clf = NearestCentroid()
-            clf.fit(X[labels != -1], labels[labels != -1])
-            noise_labels = clf.predict(noise_points)
-            
-            # Update labels
-            labels[labels == -1] = noise_labels
-        
-        # Store the eps, min_samples, and silhouette score
+        labels = reassign_noise_points(X, labels)
+
         DBSCAN_results[counter, 0] = i  # eps value
         DBSCAN_results[counter, 1] = j  # min_samples value
         DBSCAN_results[counter, 2] = silhouette_score(X, labels)  # silhouette score
+        DBSCAN_results[counter, 3] = len(np.unique(labels))
         
-        # Increment counter
+        print(cluster_method)
+        unique_labels = np.unique(labels)
+        labels_reshape=labels.reshape(imag_selected_df.shape)
+        
+        if len(unique_labels) < 15:
+            ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
+        
+        print(f"eps: {i}, min_samples: {j}, Silhouette Score: {DBSCAN_results[counter, 2]}, Number of Clusters: {len(unique_labels)}")
+        
         counter += 1
 
-#%% Optics 
-# cluster_method = 'Optics'
+# the best results are when eps = and min_samples= 
+dbscan = DBSCAN(eps=0.5, min_samples=40)
+dbscan.fit(X)
+labels = dbscan.labels_
+plot_clusters(cluster_method, X, labels, x_region, y_region, dbscan)
 
-# min_samplesvals = [5, 10, 15]
-# # max_epsvals = inf
-# # Optics_results = np.zeros((len(max_epsvals) * len(min_samplesvals), 3))
-# Optics_results = np.zeros((len(min_samplesvals), 3))
-    
-# counter = 0
-# for i in min_samplesvals: 
-# # for j in max_epsvals:
-#     optics = OPTICS(min_samples=i)
-#     optics.fit(X)
-#     labels = optics.labels_
-    
-#     # reassign noise points 
-#     noise_points = X[labels == -1]
-#     if len(noise_points) > 0:
-#         # Reassign noise points to nearest cluster
-#         clf = NearestCentroid()
-#         clf.fit(X[labels != -1], labels[labels != -1])
-#         noise_labels = clf.predict(noise_points)
-        
-#         # Update labels
-#         labels[labels == -1] = noise_labels
-
-#     # Store the eps, min_samples, and silhouette score
-#     Optics_results[counter, 0] = i  # min samples value 
-#     # Optics_results[counter, 1] = j  # max eps value
-#     Optics_results[counter, 1] = silhouette_score(X, labels)  # silhouette score
-    
-#     # Increment counter
-#     counter += 1
 
 #%% HDBSCAN 
-cluster_method = 'HDBSCAN'
+# cluster_method = 'HDBSCAN'
 
-min_cluster_sizevals = [5, 10, 15]
-min_samplesvals = [5, 10, 15]
-HDBSCAN_results = np.zeros((len(min_cluster_sizevals) * len(min_samplesvals), 3))
+# # test for different values of min_cluster_sizevals and min_samplesvals
+# min_cluster_size = [50, 100, 150]
+# min_samples = [30, 50, 100]
+# HDBSCAN_results = np.zeros((len(min_cluster_size) * len(min_samples), 3))
 
-counter = 0
-for i in min_cluster_sizevals:
-    for j in min_samplesvals:
-        hdb = HDBSCAN(min_cluser_size = min_cluster_sizevals, min_samples = min_samplesvals)
-        hdb.fit(X)
-        labels = hdb.labels_  
+# counter = 0
+# for i in min_cluster_size:
+#     for j in min_samples:
+#         hdbscan = HDBSCAN(min_cluster_size = i, min_samples = j)
+#         hdbscan.fit(X)
+#         labels = hdbscan.labels_  
+#         labels = reassign_noise_points(X, labels)
         
-        # reassign noise points 
-        noise_points = X[labels == -1]
-        if len(noise_points) > 0:
-            # Reassign noise points to nearest cluster
-            clf = NearestCentroid()
-            clf.fit(X[labels != -1], labels[labels != -1])
-            noise_labels = clf.predict(noise_points)
-            
-            # Update labels
-            labels[labels == -1] = noise_labels
+#         # Store the eps, min_samples, and silhouette score
+#         HDBSCAN_results[counter, 0] = i  
+#         HDBSCAN_results[counter, 1] = j  
+#         HDBSCAN_results[counter, 2] = silhouette_score(X, labels)  # silhouette score
         
-        # Store the eps, min_samples, and silhouette score
-        HDBSCAN_results[counter, 0] = i  
-        HDBSCAN_results[counter, 1] = j  
-        HDBSCAN_results[counter, 2] = silhouette_score(X, labels)  # silhouette score
+        # print(f"min_cluster_size: {i}, min_samples: {j}, Silhouette Score: {HDBSCAN_results[counter, 2]}")
         
-        # Increment counter
-        counter += 1
+#         counter += 1
         
-        
+#         print(cluster_method)
+#         unique_labels = np.unique(labels)
+#         labels_reshape=labels.reshape(imag_selected_df.shape)
+#         ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
 
-#%% plot the clusters
-
-unique_labels = np.unique(labels)
-
-fig = plt.figure()
-ax=fig.add_subplot()
-scatter=ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
-handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=scatter.cmap(scatter.norm(label)), markersize=10) for label in unique_labels]
-ax.legend(handles=handles, labels=[str(label) for label in unique_labels], loc='lower left', bbox_to_anchor=(0, 0), fontsize=15, ncol=1)
-if cluster_method == 'KMeans':
-    ax.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='x', label='Centers')  
-ax.set_xlim(x_region)
-ax.set_ylim(y_region)
-ax.tick_params(labelsize=20)
-ax.set_xlabel('Real Axis',fontsize=25)
-ax.set_ylabel('Imaginary Axis',fontsize=25)
-ax.set_title(cluster_method + ' Clustering')
-ax.grid()
-fig.tight_layout()
-plt.show()
-
-#%% Calculate the silhouette score 
-
-silhouette = silhouette_score(X, labels)
-print(f"Silhouette Score: {silhouette:.2f}")
-
+       
+# # the best results are when min_cluster_size = and when min_samples = 
+# hdbscan = HDBSCAN(min_cluser_size = , min_samples = )
+# hdbscan.fit(X)
+# labels = hdbscan.labels_ 
+# plot_clusters(cluster_method, X, labels, x_region, y_region, hdbscan)
 
 #%% check to see if there are samples that do not have an eigenvalue in each cluster
+unique_labels = np.unique(labels)
 labels_reshape=labels.reshape(imag_selected_df.shape)
 ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
 
-# if there are samples missing eigenvalues in certain clusters, 
-# if row one has an eigenvalue in every cluster except for cluster 1, then highlight that eigenvalue and the cluster 
-
-# if there are samples that do not have an eigenvalue in each cluster
+# # if there are samples that do not have an eigenvalue in each cluster
 if ClustersMissingEigs == 1:
-    for i in range(len(SampleClusterPairs)): # for each samplecluster pair         
-        center = centers[SampleClusterPairs[i][1]] # cluster centroid 
+    for i in range(len(SampleClusterPairs)): # for each samplecluster pair 
+        
+        # calculate the centroid of the cluster 
+        centroid = np.array([X[labels == SampleClusterPairs[i][1]].mean(axis=0)])
         
         # values in the sample:
         real = real_selected_df.T.iloc[SampleClusterPairs[i][0],:]
@@ -354,7 +392,7 @@ if ClustersMissingEigs == 1:
         # for each value in sample 
         for j in range(len(samplevals)):
             # Calculate the Euclidean distance between the center and the sample 
-            distance = np.sqrt(np.sum((samplevals.iloc[j] - center) ** 2))
+            distance = np.sqrt(np.sum((samplevals.iloc[j].values - centroid) ** 2))
             
             # Check if this distance is the minimum
             if distance < min_distance:
@@ -362,23 +400,9 @@ if ClustersMissingEigs == 1:
                 min_index = j
                 
         # plot the clustering region and highlight the target cluster and the target point 
-        # fig = plt.figure()
-        # ax=fig.add_subplot()
-        # target_region = labels
-        # scatter=ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
-        # handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=scatter.cmap(scatter.norm(label)), markersize=10) for label in unique_labels]
-        # ax.legend(handles=handles, labels=[str(label) for label in unique_labels], loc='lower left', bbox_to_anchor=(0, 0), fontsize=15, ncol=1)
-        # if cluster_method == 'KMeans':
-        #     ax.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='x', label='Centers')  
-        # ax.set_xlim(x_region)
-        # ax.set_ylim(y_region)
-        # ax.tick_params(labelsize=20)
-        # ax.set_xlabel('Real Axis',fontsize=25)
-        # ax.set_ylabel('Imaginary Axis',fontsize=25)
-        # ax.set_title(cluster_method + ' Clustering')
-        # ax.grid()
-        # fig.tight_layout()
-        # plt.show()
+        target_cluster_points = X[labels == SampleClusterPairs[i][1]]
+        target_point = samplevals.iloc[min_index].values
+        plot_clusters(cluster_method, X, labels, x_region, y_region, optics, 1, target_cluster_points, target_point,  centroid)
         
         # reassign the eigenvalue to that cluster 
         labels_reshape[min_index,SampleClusterPairs[i][0]] = SampleClusterPairs[i][1]
