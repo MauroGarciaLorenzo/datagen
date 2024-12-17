@@ -110,8 +110,6 @@ def reassign_noise_points(X, labels):
         labels[labels == -1] = noise_labels
     return labels
 
-
-
     
 #%% import and clean data
 df_real=pd.read_csv('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464/case_df_real.csv')
@@ -127,11 +125,11 @@ df_imag_clean = df_imag_clean.drop([df_imag_clean.columns[0], 'case_id', 'Stabil
 
 n_cases_clean= len(df_real_clean)
 
+#%% plot the full modal map with highest values 
+
 # select the eigenvalues that have the highest real parts in each row 
 df_real_clean_max = df_real_clean[df_real_clean.columns[0:2]]
 df_imag_clean_max = df_imag_clean[df_imag_clean.columns[0:2]]
-
-#%% plot the full modal map 
 
 # fig=plt.figure()
 # ax=fig.add_subplot()
@@ -146,14 +144,11 @@ df_imag_clean_max = df_imag_clean[df_imag_clean.columns[0:2]]
 # ax.set_title('Modal Map', fontsize=25)
 # plt.show()
 
-#%% select the targeted region 
-
-complete = 0; # 1 for the complete set, 0 for the sepcific region 
-if complete==0:
-    x_region = [-115,20]
-    y_region = [200,320]
     
-#%% Plot the Modal Map for the region 
+#%% plot the modal map for the region 
+
+x_region = [-115,20]
+y_region = [200,320]
 
 # fig=plt.figure()
 # ax=fig.add_subplot()
@@ -195,7 +190,8 @@ for i in range(len(selected_eig_imag)): # for each row
     else:
         real_selected_df=real_selected_df.merge(pd.DataFrame(real_selected).reset_index(drop=True), how='outer', left_index=True, right_index=True)
         imag_selected_df=imag_selected_df.merge(pd.DataFrame(imag_selected).reset_index(drop=True), how='outer', left_index=True, right_index=True)
-#%% 
+
+# drop all rows which contain any naan values 
 imag_selected_df=imag_selected_df.dropna()
 real_selected_df=real_selected_df.dropna()
 
@@ -205,7 +201,7 @@ real_selected_df=real_selected_df.dropna()
 # real_selected_df=real_selected_no50Hz.copy(deep=True).dropna()
 # imag_selected_df=imag_selected_no50Hz.copy(deep=True).dropna()
 
-#%%
+#%% create X 
 
 # Convert DataFrame to numpy arrays to flatten
 selected_eig_real_flat = real_selected_df.to_numpy().flatten()
@@ -214,41 +210,27 @@ selected_eig_imag_flat = imag_selected_df.to_numpy().flatten()
 # Combine the cleaned real and imaginary parts
 X = np.vstack([selected_eig_real_flat, selected_eig_imag_flat]).T
 
-    
-#%%
-# # Convert DataFrame to numpy arrays to flatten
-# selected_eig_real_flat = selected_eig_real.to_numpy().flatten()
-# selected_eig_imag_flat = selected_eig_imag.to_numpy().flatten()
-
-# # Remove NaN values using a valid mask
-# valid_mask = ~np.isnan(selected_eig_real_flat) & ~np.isnan(selected_eig_imag_flat)
-# selected_eig_real_clean = selected_eig_real_flat[valid_mask]
-# selected_eig_imag_clean = selected_eig_imag_flat[valid_mask]
-
-# # Combine the cleaned real and imaginary parts
-# X = np.vstack([selected_eig_real_clean, selected_eig_imag_clean]).T
-
 
 #%% K Means cluster
-# cluster_method = 'KMeans'
+cluster_method = 'KMeans'
 
-# # test for different kvals (number of clusters)
-# n_clusters = [2,3,4,5,6]
-# K_Means_Results = np.column_stack((n_clusters, np.zeros(len(n_clusters))))
-# for idx, i in enumerate(n_clusters):
-#     kmeans = KMeans(n_init=10, n_clusters=i, random_state=42)
-#     kmeans.fit(X)  
-#     labels = kmeans.labels_  # Cluster labels for each data point
-#     K_Means_Results[idx,1] = silhouette_score(X, labels)
+# test for different kvals (number of clusters)
+n_clusters = [2,3,4,5,6]
+K_Means_Results = np.column_stack((n_clusters, np.zeros(len(n_clusters))))
+for idx, i in enumerate(n_clusters):
+    kmeans = KMeans(n_init=10, n_clusters=i, random_state=42)
+    kmeans.fit(X)  
+    labels = kmeans.labels_  # Cluster labels for each data point
+    K_Means_Results[idx,1] = silhouette_score(X, labels)
     
-# # the best silhouette score is when n_clusters = 3 
-# kmeans = KMeans(n_init=10, n_clusters=3, random_state=42)
-# kmeans.fit(X)
-# labels = kmeans.labels_  # Cluster labels for each data point
-# plot_clusters(cluster_method, X, labels, x_region, y_region, kmeans)
+# the best silhouette score is when n_clusters = 3 
+kmeans = KMeans(n_init=10, n_clusters=3, random_state=42)
+kmeans.fit(X)
+labels = kmeans.labels_  # Cluster labels for each data point
+plot_clusters(cluster_method, X, labels, x_region, y_region, kmeans)
 
 
-# joblib.dump(kmeans, 'kmeans3clusters.sav')
+joblib.dump(kmeans, 'kmeans3clusters.sav')
 
 #%% Optics 
 cluster_method = 'Optics'
@@ -276,7 +258,7 @@ for i in min_samples:
     plot_clusters(cluster_method, X, labels, x_region, y_region, optics)
     counter += 1
     
-# # the best silhouette score occurs when min_samples is apporximately 2300 
+# # the best silhouette score occurs when min_samples is approximately 2300 
 optics = OPTICS(min_samples=2200)
 optics.fit(X)
 labels = optics.labels_
@@ -441,6 +423,13 @@ for i in range(dr.shape[0]):
     else:
         DIs[i,0]=1-min(dr[i,~np.isnan(dr[i,:])])
     
+    
+#%% create the csv with the inputs and add a column with the DIs  
+
+# may want to remove empty rows
+inputs=pd.read_csv('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464/case_df_op.csv')
+inputs['DI_crit'] = DIs
+pd.DataFrame.to_csv(inputs, 'Inputs_DI_Crit.csv', index=False)
 
 
 
