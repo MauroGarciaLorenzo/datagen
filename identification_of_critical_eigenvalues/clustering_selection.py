@@ -249,11 +249,10 @@ np.savetxt('X.csv', X, delimiter=',', fmt='%.16f')
 cluster_method = 'KMeans'
 
 # test for different kvals (number of clusters)
-n_clusters = [2,3] #[2,3,4,5,6]
+n_clusters = [2,3,4,5,6]
 K_Means_Results = pd.DataFrame({'cluster_method': [cluster_method] * len(n_clusters), 'n_clusters': n_clusters, 'parameter_2': [np.nan] * len(n_clusters), 'silhouette_score': [np.nan] * len(n_clusters)})
 counter = 0
 for i in n_clusters:
-    print(i)
     kmeans = KMeans(n_init=10, n_clusters=i, random_state=42)
     kmeans.fit(X)  
     labels = kmeans.labels_  # Cluster labels for each data point
@@ -270,7 +269,7 @@ for i in n_clusters:
 cluster_method = 'Optics'
 
 # test for different min_samples 
-min_samples = [2200]
+min_samples = [10, 100, 1000, 2000, 2200, 2300, 2400]
 Optics_results = pd.DataFrame({'cluster_method': [cluster_method] * len(min_samples), 'min_samples': min_samples,  'parameter_2': [np.nan] * len(min_samples), 'silhouette_score': [np.nan] * len(min_samples)})
 counter = 0
 for i in min_samples: 
@@ -292,7 +291,7 @@ for i in min_samples:
 cluster_method = 'DBSCAN'
 
 # # k distance graph 
-# min_samples = 50  # Adjust this value to see the effect on the elbow
+# min_samples = 100  # Adjust this value to see the effect on the elbow
 # nbrs = NearestNeighbors(n_neighbors=min_samples).fit(X)
 # distances, indices = nbrs.kneighbors(X)
 # distances = np.sort(distances[:, -1])  # Distances to the `min_samples-th` nearest neighbor
@@ -303,9 +302,15 @@ cluster_method = 'DBSCAN'
 # plt.show()
 
 dbscan = DBSCAN()
-eps =  [0.5] # [0.5, 1, 1.5] #chosen because they are elbow of kdistance graph 
-min_samples = [50] # [50,60,70] 
-DBSCAN_results = pd.DataFrame({'cluster_method': [cluster_method] * (len(eps) * len(min_samples)), 'eps': eps, 'min_samples': min_samples, 'silhouette_score': [np.nan] * (len(eps) * len(min_samples))})
+eps =  [0.5, 1, 1.5, 2]  # chosen because they are elbow of kdistance graph 
+min_samples = [20, 40, 60, 80]
+param_grid = [(e, m) for e in eps for m in min_samples]
+DBSCAN_results = pd.DataFrame({
+    'cluster_method': ['DBSCAN'] * len(param_grid),
+    'eps': [p[0] for p in param_grid],
+    'min_samples': [p[1] for p in param_grid],
+    'silhouette_score': [np.nan] * len(param_grid)
+})
 counter = 0
 for i in eps:
     for j in min_samples:
@@ -392,7 +397,7 @@ if ClustersMissingEigs == 1:
         # plot the clustering region and highlight the target cluster and the target point 
         target_cluster_points = X[labels == SampleClusterPairs[i][1]]
         target_point = samplevals.iloc[min_index].values
-        plot_clusters(cluster_method, X, labels, x_region, y_region, optics, 1, target_cluster_points, target_point,  centroid)
+        plot_clusters(best_method, X, labels, x_region, y_region, best_method.lower(), 1, target_cluster_points, target_point,  centroid)
         # this will save 1 figure for reassignment, not all of them
         
         # reassign the eigenvalue to that cluster 
