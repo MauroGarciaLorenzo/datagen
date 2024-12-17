@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Dec 16 16:36:56 2024
+selects regression model 
 
 """
 # from pyearth import Earth
@@ -21,6 +20,8 @@ plt.rcParams.update({
 #%% Load Training Data
 
 Training_data=pd.read_csv('../B.IdentificationOfGroupsOfCriticalEigenvalues/Training_inputs_DI_crit_LHS10_10_nreg9.csv').drop(['Iter_num','DI','PLTOT','f','Exitflag'],axis=1)
+Training_data = pd.read_csv('../identification_of_critical_eigenvalues/Training_Inputs_DI_Crit.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
+
 
 #%% Remove correlated variables
 
