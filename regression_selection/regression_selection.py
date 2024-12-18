@@ -9,7 +9,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
-
+from sklearn.model_selection import train_test_split
+import os
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -17,18 +18,17 @@ plt.rcParams.update({
     "font.serif": ["Palatino"],
 })
 
-#%% Load Training Data
-
-Training_data=pd.read_csv('../B.IdentificationOfGroupsOfCriticalEigenvalues/Training_inputs_DI_crit_LHS10_10_nreg9.csv').drop(['Iter_num','DI','PLTOT','f','Exitflag'],axis=1)
-Training_data = pd.read_csv('../identification_of_critical_eigenvalues/Training_Inputs_DI_Crit.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
-
+#%% Load Data and split it 
+Data = pd.read_csv('../identification_of_critical_eigenvalues/Data_DI_Crit.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
+Data = Data.dropna()
 
 #%% Remove correlated variables
 
-corr_matrix=abs(Training_data.drop(['V1','Theta1'],axis=1).corr())
+# do I need to drop the slack bus? the other file does it but I can't find the slack bus for 118 
+corr_matrix=abs(Data.corr())
 corr_matrix=corr_matrix.sort_values(by='DI_crit',ascending=False)
 corr_matrix=corr_matrix.drop('DI_crit',axis=0)
-uncorr_var=Training_data.drop(['V1','Theta1','DI_crit'],axis=1).columns
+uncorr_var=Data.columns
 
 for var in corr_matrix.index:
     if var not in corr_matrix.index:
@@ -37,12 +37,15 @@ for var in corr_matrix.index:
     corrs_var=corrs.query('{var}>=0.9'.format(var=var)).index
     uncorr_var=list(set(uncorr_var)-set(corrs_var))
     corr_matrix=corr_matrix.drop(corrs_var,axis=0)
-    
+   
+# split into test train 
+X=Data[uncorr_var]
+y=Data['DI_crit']
+Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.20, random_state=42)
+
 
 # #%% Train MARS model
 
-Xtrain=Training_data[uncorr_var]
-ytrain=Training_data['DI_crit']
 # mars_model=Earth(feature_importance_type='gcv')#smooth=False, max_degree=2)
 # mars_model.fit(Xtrain,ytrain)
 
@@ -83,7 +86,7 @@ ytrain=Training_data['DI_crit']
 # fig.tight_layout()
 # fig.savefig('Feature_Importance.png')
 
-# %%
+# %% train other models 
 
 models_list = ['LR','Lasso','Ridge','ElasticNet']
 models_dict={'LR': LinearRegression(),'Lasso': Lasso(alpha=0.1),'Ridge': Ridge(alpha=0.1),'ElasticNet': ElasticNet()}
@@ -94,16 +97,16 @@ for name in models_list:
     lin_model_trained[name]=[]
     lin_model_trained[name].append(models_dict[name].fit(Xtrain,ytrain))
 
-#%% Load Test data
+#%% calculate r2 scores 
 
 r2_summary=pd.DataFrame()
 ind=0
-for obj_fun in ['Min_P_SG','Min_P_losses']:
+for obj_fun in ['one_objective_function']: #['Min_P_SG','Min_P_losses']:
 
-    Test_data=pd.read_csv('../B.IdentificationOfGroupsOfCriticalEigenvalues/Test_data'+obj_fun+'_inputs_DI_crit.csv').drop(['DI','PLTOT','f','Exitflag','ObjFun'],axis=1)
+    # Test_data=pd.read_csv('../B.IdentificationOfGroupsOfCriticalEigenvalues/Test_data'+obj_fun+'_inputs_DI_crit.csv').drop(['DI','PLTOT','f','Exitflag','ObjFun'],axis=1)
 
-    Xtest=Test_data[uncorr_var]
-    ytest=Test_data['DI_crit']
+    # Xtest=Test_data[uncorr_var]
+    # ytest=Test_data['DI_crit']
 
     # pred_mars=mars_model.predict(Xtest)
     # r2_mars=r2_score(ytest,pred_mars.reshape(-1,1))
@@ -126,7 +129,7 @@ print(r2_summary)
 
 #%% Select Best Model
 best_model=pd.DataFrame()
-obj_fun_list=['Min_P_SG','Min_P_losses']
+obj_fun_list=['one_objective_function'] #['Min_P_SG','Min_P_losses']
 for ii in range(len(obj_fun_list)) :
     obj_fun=obj_fun_list[ii]
     max_r2_ind=np.argmax(r2_summary.query('Obj_Fun == @obj_fun').T[ii].drop('Obj_Fun'))
