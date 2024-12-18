@@ -1,5 +1,5 @@
 """
-Calculates the damping index 
+Calculates the damping index for the best clustering model  
 """
 
 import pandas as pd
@@ -102,7 +102,6 @@ labels_reshape=labels.reshape(imag_selected_df.shape)
 labels_reshape_T=labels_reshape.T
 unique_labels = np.unique(labels)
 
-# DI[1] has the damping index values for cluster 1, DI[2] has the values for cluster 2, etc. 
 drs = {} 
 # go through each label 
 for i in unique_labels:
@@ -138,6 +137,6 @@ case_op=pd.read_csv('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_11
 # remove the rows with na in column V1 (the cases that didn't converge)
 case_op = case_op.dropna(subset=['V1'])
 case_op['DI_crit'] = DIs
-pd.DataFrame.to_csv(case_op, 'Training_Inputs_DI_Crit.csv', index=False)
+pd.DataFrame.to_csv(case_op, 'Data_DI_Crit.csv', index=False)
 
 
