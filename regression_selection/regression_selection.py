@@ -20,8 +20,8 @@ plt.rcParams.update({
 
 #%% Load Data and split it 
 Data = pd.read_csv('../identification_of_critical_eigenvalues/Data_DI_Crit.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
-Data = Data.dropna()
-
+#Data = Data.dropna()
+Data = Data.fillna(0)
 #%% Remove correlated variables
 
 # do I need to drop the slack bus? the other file does it but I can't find the slack bus for 118 
@@ -41,7 +41,7 @@ for var in corr_matrix.index:
 # split into test train 
 X=Data[uncorr_var]
 y=Data['DI_crit']
-Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.20, random_state=42)
+Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.30, random_state=42)
 
 
 # #%% Train MARS model
@@ -89,7 +89,7 @@ Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.20, random_sta
 # %% train other models 
 
 models_list = ['LR','Lasso','Ridge','ElasticNet']
-models_dict={'LR': LinearRegression(),'Lasso': Lasso(alpha=0.1),'Ridge': Ridge(alpha=0.1),'ElasticNet': ElasticNet()}
+models_dict={'LR': LinearRegression(),'Lasso': Lasso(alpha=0.001),'Ridge': Ridge(alpha=0.005),'ElasticNet': ElasticNet()}
 
 lin_model_trained={}
 
@@ -111,9 +111,14 @@ for obj_fun in ['one_objective_function']: #['Min_P_SG','Min_P_losses']:
     # pred_mars=mars_model.predict(Xtest)
     # r2_mars=r2_score(ytest,pred_mars.reshape(-1,1))
 
+    fig=plt.figure(figsize=(20,5))
+    ax=fig.add_subplot()
+
     r2_lin_models=[]
     for name in models_list:
+        pred=lin_model_trained[name][0].predict(Xtest)
         r2_lin_models.append(r2_score(ytest,lin_model_trained[name][0].predict(Xtest)))
+        ax.scatter(ytest,pred)
 
     r2_lin_models=pd.DataFrame(r2_lin_models).T
     r2_lin_models.columns=models_list
