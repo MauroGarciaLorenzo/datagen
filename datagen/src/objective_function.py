@@ -17,6 +17,24 @@ from stability_analysis.powerflow import check_feasibility
 
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 
+
+def complex_2d_shape_obj_func(case, **kwargs):
+    x = case['tau_Dim_0']
+    y = case['tau_Dim_1']
+    z = complex_2d_shape(x, y)
+    # Adjusting noise to handle arrays
+    noise = np.random.normal(0, 0.2)
+    z += noise
+    z = np.tanh(z)
+    return np.where(z > 0, 1, 0), {}
+
+
+def complex_2d_shape(x, y):
+    z = (np.sin(x * np.pi) * np.cos(y * np.pi)
+         + np.sin(3 * x) + np.cos(2 * y) + np.sin(x * y))
+    return z
+
+
 # file where objective function is declared (dummy test)
 def dummy(case, **kwargs):
     time.sleep(0.0001)
