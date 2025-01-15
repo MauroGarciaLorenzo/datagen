@@ -25,15 +25,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="1.4788159"
-     inkscape:cx="412.83028"
-     inkscape:cy="644.7726"
+     inkscape:zoom="1.0456808"
+     inkscape:cx="317.97468"
+     inkscape:cy="892.71988"
      inkscape:window-width="1920"
      inkscape:window-height="991"
      inkscape:window-x="-9"
      inkscape:window-y="-9"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g6378" />
+     inkscape:current-layer="layer1" />
   <defs
      id="defs5867">
     <clipPath
@@ -473,6 +473,375 @@
          width="1043940"
          height="662362"
          id="rect6025-5" />
+    </clipPath>
+    <clipPath
+       id="clip1-9">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-7" />
+    </clipPath>
+    <clipPath
+       id="clip3-8">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-4" />
+    </clipPath>
+    <clipPath
+       id="clip4-8">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect6001-5" />
+    </clipPath>
+    <clipPath
+       id="clip5-0">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect6004-7" />
+    </clipPath>
+    <clipPath
+       id="clip6-1">
+      <rect
+         x="142"
+         y="427"
+         width="99"
+         height="100"
+         id="rect6007-4" />
+    </clipPath>
+    <clipPath
+       id="clip7-2">
+      <rect
+         x="142"
+         y="427"
+         width="99"
+         height="100"
+         id="rect6010-8" />
+    </clipPath>
+    <clipPath
+       id="clip8-4">
+      <rect
+         x="142"
+         y="427"
+         width="99"
+         height="100"
+         id="rect6013-5" />
+    </clipPath>
+    <clipPath
+       id="clip9-0">
+      <rect
+         x="0"
+         y="0"
+         width="1036320"
+         height="662940"
+         id="rect6016-5" />
+    </clipPath>
+    <clipPath
+       id="clip10-3">
+      <rect
+         x="0"
+         y="0"
+         width="1036320"
+         height="657527"
+         id="rect6019-9" />
+    </clipPath>
+    <clipPath
+       id="clip13-7">
+      <rect
+         x="0"
+         y="0"
+         width="548640"
+         height="160020"
+         id="rect6028-3" />
+    </clipPath>
+    <clipPath
+       id="clip15-4">
+      <rect
+         x="0"
+         y="0"
+         width="548640"
+         height="156754"
+         id="rect6032-7" />
+    </clipPath>
+    <clipPath
+       id="clip16-7">
+      <rect
+         x="-4.6566101e-10"
+         y="0"
+         width="556260"
+         height="160020"
+         id="rect6035-1" />
+    </clipPath>
+    <clipPath
+       id="clip18-2">
+      <rect
+         x="0"
+         y="0"
+         width="556260"
+         height="158931"
+         id="rect6039-0" />
+    </clipPath>
+    <clipPath
+       id="clip19-1">
+      <rect
+         x="0"
+         y="-4.6566101e-10"
+         width="556260"
+         height="160020"
+         id="rect6042-8" />
+    </clipPath>
+    <clipPath
+       id="clip21-1">
+      <rect
+         x="0"
+         y="0"
+         width="556260"
+         height="158931"
+         id="rect6046-7" />
+    </clipPath>
+    <clipPath
+       id="clip22-5">
+      <rect
+         x="-4.6566101e-10"
+         y="-4.6566101e-10"
+         width="556260"
+         height="160020"
+         id="rect6049-9" />
+    </clipPath>
+    <clipPath
+       id="clip23-5">
+      <rect
+         x="0"
+         y="0"
+         width="556260"
+         height="158931"
+         id="rect6052-0" />
+    </clipPath>
+    <clipPath
+       id="clip24-9">
+      <rect
+         x="-4.6566101e-10"
+         y="0"
+         width="556260"
+         height="160020"
+         id="rect6055-4" />
+    </clipPath>
+    <clipPath
+       id="clip25-9">
+      <rect
+         x="0"
+         y="0"
+         width="556260"
+         height="158931"
+         id="rect6058-5" />
+    </clipPath>
+    <clipPath
+       id="clip26-9">
+      <rect
+         x="-4.6566101e-10"
+         y="-4.6566101e-10"
+         width="556260"
+         height="160020"
+         id="rect6061-9" />
+    </clipPath>
+    <clipPath
+       id="clip27-6">
+      <rect
+         x="0"
+         y="0"
+         width="556260"
+         height="158931"
+         id="rect6064-0" />
+    </clipPath>
+    <clipPath
+       id="clip28-0">
+      <rect
+         x="-4.6566101e-10"
+         y="0"
+         width="556260"
+         height="160020"
+         id="rect6067-5" />
+    </clipPath>
+    <clipPath
+       id="clip29-3">
+      <rect
+         x="0"
+         y="0"
+         width="556260"
+         height="158931"
+         id="rect6070-5" />
+    </clipPath>
+    <clipPath
+       id="clip30-4">
+      <rect
+         x="-4.6566101e-10"
+         y="-4.6566101e-10"
+         width="556260"
+         height="160020"
+         id="rect6073-3" />
+    </clipPath>
+    <clipPath
+       id="clip31-3">
+      <rect
+         x="0"
+         y="0"
+         width="556260"
+         height="158931"
+         id="rect6076-7" />
+    </clipPath>
+    <clipPath
+       id="clip32-6">
+      <rect
+         x="-4.6566101e-10"
+         y="-4.6566101e-10"
+         width="556260"
+         height="160020"
+         id="rect6079-1" />
+    </clipPath>
+    <clipPath
+       id="clip33-2">
+      <rect
+         x="0"
+         y="0"
+         width="556260"
+         height="158931"
+         id="rect6082-5" />
+    </clipPath>
+    <clipPath
+       id="clip34-5">
+      <rect
+         x="0"
+         y="0"
+         width="548640"
+         height="160020"
+         id="rect6085-1" />
+    </clipPath>
+    <clipPath
+       id="clip35-0">
+      <rect
+         x="0"
+         y="0"
+         width="548640"
+         height="156754"
+         id="rect6088-5" />
+    </clipPath>
+    <clipPath
+       id="clip36-6">
+      <rect
+         x="-4.6566101e-10"
+         y="-4.6566101e-10"
+         width="548640"
+         height="160020"
+         id="rect6091-6" />
+    </clipPath>
+    <clipPath
+       id="clip37-7">
+      <rect
+         x="0"
+         y="0"
+         width="548640"
+         height="156754"
+         id="rect6094-2" />
+    </clipPath>
+    <clipPath
+       id="clip38-0">
+      <rect
+         x="-4.6566101e-10"
+         y="0"
+         width="548640"
+         height="160020"
+         id="rect6097-8" />
+    </clipPath>
+    <clipPath
+       id="clip39-6">
+      <rect
+         x="0"
+         y="0"
+         width="548640"
+         height="156754"
+         id="rect6100-4" />
+    </clipPath>
+    <clipPath
+       id="clip40-4">
+      <rect
+         x="0"
+         y="0"
+         width="1463040"
+         height="1089660"
+         id="rect6103-6" />
+    </clipPath>
+    <clipPath
+       id="clip42-3">
+      <rect
+         x="0"
+         y="0"
+         width="1454260"
+         height="1089660"
+         id="rect6107-0" />
+    </clipPath>
+    <clipPath
+       id="clip43-2">
+      <rect
+         x="0"
+         y="0"
+         width="1623060"
+         height="464820"
+         id="rect6110-9" />
+    </clipPath>
+    <clipPath
+       id="clip45-4">
+      <rect
+         x="0"
+         y="0"
+         width="1604250"
+         height="464820"
+         id="rect6114-0" />
+    </clipPath>
+    <clipPath
+       id="clip9-2-7">
+      <rect
+         x="0"
+         y="0"
+         width="1036320"
+         height="662940"
+         id="rect6016-9-3" />
+    </clipPath>
+    <clipPath
+       id="clip10-8-5">
+      <rect
+         x="0"
+         y="0"
+         width="1036320"
+         height="657527"
+         id="rect6019-7-3" />
+    </clipPath>
+    <clipPath
+       id="clip11-8-1">
+      <rect
+         x="-4.6566101e-10"
+         y="0"
+         width="1043940"
+         height="662940"
+         id="rect6022-5-3" />
+    </clipPath>
+    <clipPath
+       id="clip12-6-8">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="662362"
+         id="rect6025-5-4" />
     </clipPath>
   </defs>
   <g
@@ -1402,5 +1771,914 @@
    id="tspan6344"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">DataFrame</tspan></text>
     </g>
+    <rect
+       x="380.39548"
+       y="890.46375"
+       width="147.04915"
+       height="22.798319"
+       fill="#c5e0b4"
+       id="rect6120-7"
+       style="stroke-width:0.569958"
+       inkscape:export-filename="PF_SS_total.png"
+       inkscape:export-xdpi="320"
+       inkscape:export-ydpi="320"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6122-4"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="382.67429"
+       y="906.42255"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">Constant Input Data</text>
+    <rect
+       x="101.11607"
+       y="890.46375"
+       width="276.4296"
+       height="101.45251"
+       stroke="#c5e0b4"
+       stroke-width="2.13734"
+       stroke-miterlimit="8"
+       stroke-dasharray="11.25, 3.75"
+       fill="#ecf5e7"
+       id="rect6124-5"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <rect
+       x="114.22512"
+       y="956.57886"
+       width="94.04306"
+       height="23.368277"
+       fill="#e2f0d9"
+       id="rect6126-6"
+       style="stroke-width:0.569958"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6128-4"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="117.67634"
+       y="972.53766"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">.raw (PSS/E)</text>
+    <g
+       clip-path="url(#clip1-9)"
+       transform="matrix(1.9790267e-5,0,0,1.9790267e-5,7.2377459,208.3005)"
+       id="g6134-9">
+      <g
+         clip-path="url(#clip3-8)"
+         transform="matrix(1.01075,0,0,1,-0.0673828,-0.105957)"
+         id="g6132-2">
+        <use
+           width="100%"
+           height="100%"
+           xlink:href="#img2"
+           transform="scale(7123.04)"
+           id="use6130-0" />
+      </g>
+    </g>
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6138-6"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="146.72668"
+       y="923.5213"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">Grid <tspan
+   font-size="13.109px"
+   x="132.89096"
+   y="939.4801"
+   id="tspan6136-8"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">topology</tspan></text>
+    <rect
+       x="302.31125"
+       y="956.57886"
+       width="51.866173"
+       height="23.368277"
+       fill="#e2f0d9"
+       id="rect6140-1"
+       style="stroke-width:0.569958"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6142-3"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="309.47058"
+       y="972.53766"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">Excel</text>
+    <g
+       clip-path="url(#clip4-8)"
+       transform="matrix(1.9790267e-5,0,0,1.9790267e-5,51.422546,208.3005)"
+       id="g6148-1">
+      <g
+         clip-path="url(#clip5-0)"
+         transform="matrix(1.01075,0,0,1,0.0395508,-0.105957)"
+         id="g6146-7">
+        <use
+           width="100%"
+           height="100%"
+           xlink:href="#img2"
+           transform="scale(7123.04)"
+           id="use6144-0" />
+      </g>
+    </g>
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6152-9"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="302.29691"
+       y="923.5213"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">Control <tspan
+   font-size="13.109px"
+   x="289.35413"
+   y="939.4801"
+   id="tspan6150-7"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">parameters</tspan></text>
+    <rect
+       x="1.4972765"
+       y="234.52991"
+       width="208.12593"
+       height="40.263729"
+       stroke="#bfbfbf"
+       stroke-width="0.545469"
+       stroke-miterlimit="8"
+       stroke-dasharray="11.25, 3.75"
+       fill="#f2f2f2"
+       id="rect6154-3" />
+    <rect
+       x="712.68091"
+       y="974.8175"
+       width="171.55734"
+       height="23.368277"
+       fill="#bfbfbf"
+       id="rect6156-1"
+       style="stroke-width:0.569958"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6160-3"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="728.51611"
+       y="990.77631"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">Small-signal analysis</text>
+    <rect
+       x="127.19648"
+       y="280.99762"
+       width="38.755951"
+       height="6.0320549"
+       fill="#a0bed6"
+       id="rect6182-7-0"
+       style="stroke-width:0.150801" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6184-1-8"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.150801"
+       x="128.1257"
+       y="285.07947">Sampled Input Data</text>
+    <g
+       clip-path="url(#clip6-1)"
+       id="g6170-9"
+       transform="matrix(0.15080137,0,0,0.15080137,-13.572844,177.03054)">
+      <g
+         clip-path="url(#clip7-2)"
+         id="g6168-6">
+        <g
+           clip-path="url(#clip8-4)"
+           id="g6166-0">
+          <path
+             d="m 61.1531,38.4656 c -4.3312,0 -7.7343,-3.5062 -7.7343,-7.7344 0,-4.2281 3.5062,-7.7343 7.7343,-7.7343 4.3313,0 7.7344,3.5062 7.7344,7.7343 0,4.2282 -3.5063,7.7344 -7.7344,7.7344 z M 78.5812,25.8844 C 78.1688,24.4406 77.6531,23.1 76.9313,21.8625 l 1.6499,-4.8469 -3.7124,-3.7125 -4.8469,1.65 C 68.7844,14.2312 67.4437,13.7156 66,13.3031 L 63.7313,8.76562 H 58.575 l -2.2688,4.53748 c -1.4437,0.4125 -2.7843,0.9281 -4.0218,1.65 l -4.8469,-1.65 -3.7125,3.7125 1.65,4.8469 c -0.7219,1.2375 -1.2375,2.5781 -1.65,4.0219 l -4.5375,2.2687 v 5.1563 l 4.5375,2.2687 c 0.4125,1.4438 0.9281,2.7844 1.65,4.0219 l -1.65,4.8469 3.6094,3.6093 4.8468,-1.65 c 1.2376,0.7219 2.5782,1.2375 4.0219,1.65 l 2.2688,4.5376 h 5.1562 l 2.2688,-4.5376 c 1.4437,-0.4125 2.7844,-0.9281 4.0219,-1.65 l 4.8468,1.65 3.7125,-3.6093 -1.65,-4.8469 c 0.7219,-1.2375 1.3407,-2.6812 1.7531,-4.0219 l 4.5376,-2.2687 v -5.1563 z"
+             stroke="#595959"
+             stroke-width="1.03125"
+             fill="#8c8787"
+             transform="matrix(1,0,0,1.0101,142,427)"
+             id="path6162-8" />
+          <path
+             d="m 37.8469,76.0031 c -4.3313,0 -7.7344,-3.5062 -7.7344,-7.7344 0,-4.3312 3.5062,-7.7343 7.7344,-7.7343 4.3312,0 7.7343,3.5062 7.7343,7.7343 0,4.2282 -3.4031,7.7344 -7.7343,7.7344 z M 53.625,59.4 l 1.65,-4.8469 -3.7125,-3.7125 -4.8469,1.65 c -1.2375,-0.7219 -2.6812,-1.2375 -4.0218,-1.65 L 40.425,46.3031 H 35.2687 L 33,50.8406 c -1.4438,0.4125 -2.7844,0.9281 -4.0219,1.65 l -4.8468,-1.65 -3.6094,3.6094 1.5469,4.8469 c -0.7219,1.2375 -1.2375,2.6812 -1.6501,4.0219 l -4.5375,2.2687 v 5.1563 l 4.5375,2.2687 c 0.4126,1.4437 0.9282,2.7844 1.6501,4.0219 l -1.5469,4.8468 3.6094,3.6094 4.8468,-1.5469 c 1.2375,0.7219 2.5781,1.2376 4.0219,1.6501 l 2.2687,4.5374 h 5.1563 l 2.2688,-4.5374 c 1.4437,-0.4125 2.7843,-0.9282 4.0218,-1.6501 l 4.8469,1.6501 3.6094,-3.7126 -1.5469,-4.7437 c 0.7219,-1.2375 1.2375,-2.5781 1.65,-4.0219 l 4.5375,-2.2687 V 65.6906 L 55.275,63.4219 C 54.8625,61.9781 54.3469,60.6375 53.625,59.4 Z"
+             stroke="#595959"
+             stroke-width="1.03125"
+             fill="#8c8787"
+             transform="matrix(1,0,0,1.0101,142,427)"
+             id="path6164-2" />
+        </g>
+      </g>
+    </g>
+    <rect
+       x="112.51524"
+       y="1091.6588"
+       width="87.773521"
+       height="38.757141"
+       fill="#d9d9d9"
+       id="rect6176-2"
+       style="stroke-width:0.569958"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6180-3"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="118.70185"
+       y="1108.3862"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">Power flow <tspan
+   font-size="13.109px"
+   x="119.68027"
+   y="1124.3451"
+   id="tspan6178-8"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">calculation</tspan></text>
+    <rect
+       x="1.418003"
+       y="281.27039"
+       width="38.173161"
+       height="22.79879"
+       stroke="#a0bed6"
+       stroke-width="0.386921"
+       stroke-miterlimit="8"
+       stroke-dasharray="11.25, 3.75"
+       fill="#c0d4e3"
+       id="rect6186-8" />
+    <g
+       clip-path="url(#clip9-0)"
+       transform="matrix(1.9790267e-5,0,0,1.9790267e-5,8.5949578,282.11369)"
+       id="g6192-8">
+      <g
+         clip-path="url(#clip10-3)"
+         transform="matrix(1,0,0,1.00823,0.0532227,0.149902)"
+         id="g6190-9">
+        <use
+           width="100%"
+           height="100%"
+           xlink:href="#img2"
+           transform="scale(7147.03)"
+           id="use6188-67" />
+      </g>
+    </g>
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6196-1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.150801"
+       x="9.6312628"
+       y="287.62817">Operating<tspan
+   font-size="13.109px"
+   x="13.538272"
+   y="291.85062"
+   id="tspan6194-4"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.0859504">point</tspan></text>
+    <g
+       id="g6952-0"
+       transform="matrix(0.26458333,0,0,0.26458333,-24.737698,77.767553)">
+      <text
+         fill="#7f7f7f"
+         font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+         font-weight="400"
+         font-size="13.109px"
+         id="text6180-5-3"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';text-align:center;text-anchor:middle;stroke-width:0.569958"
+         x="227.2572"
+         y="651.78693"><tspan
+           sodipodi:role="line"
+           id="tspan6944-4"
+           x="227.2572"
+           y="651.78693">Equilibrium</tspan><tspan
+           sodipodi:role="line"
+           id="tspan6946-5"
+           x="227.2572"
+           y="670.1203">point</tspan></text>
+      <path
+         d="m 196.08652,626.27378 h 53.57605 v -3.98971 l 7.97941,7.97941 -7.97941,7.97942 v -3.98971 h -53.57605 z"
+         stroke="#7f7f7f"
+         stroke-width="0.949932"
+         stroke-miterlimit="8"
+         fill="#bfbfbf"
+         fill-rule="evenodd"
+         id="path6212-9" />
+    </g>
+    <g
+       id="g6676-5"
+       transform="matrix(0.28734782,0,0,0.28734782,-32.235563,63.072163)">
+      <g
+         clip-path="url(#clip13-7)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,331.16656,642.2326)"
+         id="g6218-4">
+        <g
+           clip-path="url(#clip15-4)"
+           transform="matrix(1,0,0,1.02083,-0.247559,0.0180664)"
+           id="g6216-1">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img14"
+             transform="scale(4125.11)"
+             id="use6214-5" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip16-7)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,286.70984,642.2326)"
+         id="g6224-9">
+        <g
+           clip-path="url(#clip18-2)"
+           transform="matrix(1,0,0,1.00685,-0.209473,0.0180664)"
+           id="g6222-2">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img17"
+             transform="scale(4182.41)"
+             id="use6220-7" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip19-1)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,286.13988,604.61538)"
+         id="g6230-5">
+        <g
+           clip-path="url(#clip21-1)"
+           transform="matrix(1,0,0,1.00685,0.0410156,-0.199707)"
+           id="g6228-6">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img20"
+             transform="scale(4182.41)"
+             id="use6226-8" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip22-5)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,330.5966,604.61538)"
+         id="g6236-7">
+        <g
+           clip-path="url(#clip23-5)"
+           transform="matrix(1,0,0,1.00685,-0.24707,-0.199707)"
+           id="g6234-6">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img14"
+             transform="scale(4182.41)"
+             id="use6232-3" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip24-9)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,286.70984,617.15445)"
+         id="g6242-2">
+        <g
+           clip-path="url(#clip25-9)"
+           transform="matrix(1,0,0,1.00685,-0.209473,0.0395508)"
+           id="g6240-8">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img20"
+             transform="scale(4182.41)"
+             id="use6238-3" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip26-9)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,286.70984,629.69353)"
+         id="g6248-9">
+        <g
+           clip-path="url(#clip27-6)"
+           transform="matrix(1,0,0,1.00685,-0.209473,-0.221191)"
+           id="g6246-4">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img20"
+             transform="scale(4182.41)"
+             id="use6244-7" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip28-0)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,330.5966,617.15445)"
+         id="g6254-2">
+        <g
+           clip-path="url(#clip29-3)"
+           transform="matrix(1,0,0,1.00685,-0.24707,0.0395508)"
+           id="g6252-6">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img14"
+             transform="scale(4182.41)"
+             id="use6250-3" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip30-4)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,330.5966,629.69353)"
+         id="g6260-0">
+        <g
+           clip-path="url(#clip31-3)"
+           transform="matrix(1,0,0,1.00685,-0.24707,-0.221191)"
+           id="g6258-6">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img14"
+             transform="scale(4182.41)"
+             id="use6256-5" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip32-6)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,286.70984,654.77168)"
+         id="g6266-2">
+        <g
+           clip-path="url(#clip33-2)"
+           transform="matrix(1,0,0,1.00685,-0.209473,-0.242676)"
+           id="g6264-4">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img17"
+             transform="scale(4182.41)"
+             id="use6262-1" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip34-5)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,287.2798,667.31075)"
+         id="g6272-3">
+        <g
+           clip-path="url(#clip35-0)"
+           transform="matrix(1,0,0,1.02083,0.0400391,-0.00341797)"
+           id="g6270-5">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img17"
+             transform="scale(4125.11)"
+             id="use6268-9" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip36-6)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,330.5966,654.77168)"
+         id="g6278-7">
+        <g
+           clip-path="url(#clip37-7)"
+           transform="matrix(1,0,0,1.02083,-0.24707,-0.242676)"
+           id="g6276-4">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img17"
+             transform="scale(4125.11)"
+             id="use6274-9" />
+        </g>
+      </g>
+      <g
+         clip-path="url(#clip38-0)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,330.5966,667.31075)"
+         id="g6284-9">
+        <g
+           clip-path="url(#clip39-6)"
+           transform="matrix(1,0,0,1.02083,-0.24707,-0.00341797)"
+           id="g6282-5">
+          <use
+             width="100%"
+             height="100%"
+             xlink:href="#img17"
+             transform="scale(4125.11)"
+             id="use6280-7" />
+        </g>
+      </g>
+    </g>
+    <rect
+       x="268.68372"
+       y="1092.7988"
+       width="123.68088"
+       height="39.327099"
+       fill="#d9d9d9"
+       id="rect6286-5"
+       style="stroke-width:0.569958"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6292-1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="289.88107"
+       y="1108.4612"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">State space <tspan
+   font-size="13.109px"
+   x="271.13419"
+   y="1124.42"
+   id="tspan6290-5"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">blocks generation</tspan></text>
+    <g
+       clip-path="url(#clip40-4)"
+       transform="matrix(1.9790267e-5,0,0,1.9790267e-5,86.710068,235.89716)"
+       id="g6298-9">
+      <g
+         clip-path="url(#clip42-3)"
+         transform="matrix(1.00604,0,0,1,-0.324707,0.0546875)"
+         id="g6296-4">
+        <use
+           width="100%"
+           height="100%"
+           xlink:href="#img41"
+           transform="scale(4143.19)"
+           id="use6294-1" />
+      </g>
+    </g>
+    <rect
+       x="414.02298"
+       y="1092.7988"
+       width="137.92982"
+       height="39.327099"
+       fill="#d9d9d9"
+       id="rect6300-1"
+       style="stroke-width:0.569958"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6306-7"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="425.60168"
+       y="1108.7577"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">State space blocks <tspan
+   font-size="13.109px"
+   x="434.22235"
+   y="1124.7166"
+   id="tspan6304-3"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">interconnection</tspan></text>
+    <g
+       clip-path="url(#clip43-2)"
+       transform="matrix(1.9790267e-5,0,0,1.9790267e-5,126.06922,243.13563)"
+       id="g6312-1">
+      <g
+         clip-path="url(#clip45-4)"
+         transform="matrix(1.01173,0,0,1,0.0478516,0.03125)"
+         id="g6310-6">
+        <use
+           width="100%"
+           height="100%"
+           xlink:href="#img44"
+           transform="scale(4113.45)"
+           id="use6308-1" />
+      </g>
+    </g>
+    <rect
+       x="587.29016"
+       y="1077.9799"
+       width="91.763229"
+       height="38.757141"
+       fill="#d9d9d9"
+       id="rect6314-4"
+       style="stroke-width:0.569958"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6320-6"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="596.90198"
+       y="1093.9387"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">State space <tspan
+   font-size="13.109px"
+   x="613.40704"
+   y="1109.8976"
+   id="tspan6318-7"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">model</tspan></text>
+    <path
+       d="m 389.51479,1047.2022 h 13.67899 v -3.9897 l 7.97942,7.9794 -7.97942,7.9794 v -3.9897 h -13.67899 z"
+       stroke="#7f7f7f"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6322-2"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <path
+       d="m 538.84378,1046.7747 h 13.39401 v -4.1321 l 8.26439,8.2643 -8.26439,8.2644 v -4.1322 h -13.39401 z"
+       stroke="#7f7f7f"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6324-9"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <use
+       width="100%"
+       height="100%"
+       xlink:href="#img46"
+       fill="none"
+       transform="matrix(0.15080137,0,0,0.15080137,170.25403,235.29396)"
+       id="use6326-9" />
+    <path
+       d="m 59.432911,279.3956 v -6.26699 h -1.867122 l 3.734247,-2.41797 3.734248,2.41797 h -1.867125 v 6.26699 z"
+       stroke="#7f7f7f"
+       stroke-width="0.204414"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6332-0" />
+    <path
+       d="m 165.23635,985.64675 v 19.94855 h 7.12447 l -14.24895,14.2489 -14.24894,-14.2489 h 7.12447 v -19.94855 z"
+       stroke="#7f7f7f"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6334-4"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <rect
+       x="3.1661096"
+       y="296.74142"
+       width="34.684315"
+       height="6.0320549"
+       fill="#a0bed6"
+       id="rect6336-6"
+       style="stroke-width:0.150801" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6340-0"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.150801"
+       x="3.8945637"
+       y="300.79672">Python <tspan
+   font-size="13.109px"
+   x="16.398518"
+   y="300.79672"
+   id="tspan6338-1"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.0859504">DataFrame</tspan></text>
+    <path
+       d="m 337.50613,986.21671 v 11.39916 h 6.98198 l -13.96397,11.39913 -13.96397,-11.39913 h 6.98199 v -11.39916 z"
+       stroke="#7f7f7f"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6348-0"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <path
+       d="m 707.21505,1048.4989 11.07999,-7.6449 -2.29123,-3.3245 11.23387,2.0626 -2.06325,11.2362 -2.29123,-3.3246 -11.08568,7.6449 z"
+       stroke="#7f7f7f"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6352-6"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <path
+       d="m 715.48514,1073.4123 9.27322,9.7622 2.92958,-2.7814 -0.29637,11.4203 -11.42196,-0.2941 2.92958,-2.7814 -9.27321,-9.7622 z"
+       stroke="#7f7f7f"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6354-4"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <rect
+       x="739.46893"
+       y="1084.8195"
+       width="49.016384"
+       height="27.92794"
+       stroke="#828282"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#ebebeb"
+       id="rect6356-9"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#413e3e"
+       font-family="'Century Schoolbook', 'Century Schoolbook_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="17.0987px"
+       id="text6358-1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="750.09467"
+       y="1102.7723"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">G(s)</text>
+    <rect
+       x="842.0614"
+       y="1020.4141"
+       width="22.798319"
+       height="27.357983"
+       stroke="#828282"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#ebebeb"
+       id="rect6360-1"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#413e3e"
+       font-family="'Century Schoolbook', 'Century Schoolbook_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="17.0987px"
+       id="text6362-1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="850.02307"
+       y="1038.0642"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">ξ</text>
+    <rect
+       x="815.27338"
+       y="1084.8195"
+       width="70.674789"
+       height="43.316803"
+       stroke="#828282"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#ebebeb"
+       id="rect6364-0"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <text
+       fill="#413e3e"
+       font-family="'Monotype Corsiva', 'Monotype Corsiva_MSFontService', sans-serif"
+       font-style="italic"
+       font-weight="400"
+       font-size="17.0987px"
+       id="text6372-2"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+       x="817.66449"
+       y="1103.0581"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)">H<tspan
+   font-size="11.3992px"
+   x="829.30109"
+   y="1107.0477"
+   id="tspan6366-1"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">2</tspan><tspan
+   font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+   font-style="normal"
+   font-size="13.109px"
+   x="838.08789"
+   y="1103.0581"
+   id="tspan6368-2"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">norm</tspan><tspan
+   font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+   font-style="normal"
+   font-size="13.109px"
+   x="817.66449"
+   y="1121.2968"
+   id="tspan6370-2"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">DC Gains</tspan></text>
+    <path
+       d="m 811.85364,1029.5335 h 13.67899 v -3.9897 l 7.97941,7.9794 -7.97941,7.9794 v -3.9897 h -13.67899 z"
+       stroke="#7f7f7f"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6374-0"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <path
+       d="m 790.76519,1094.6513 h 13.39401 v -4.1322 l 8.26439,8.2644 -8.26439,8.2643 v -4.1321 h -13.39401 z"
+       stroke="#7f7f7f"
+       stroke-width="0.949932"
+       stroke-miterlimit="8"
+       fill="#bfbfbf"
+       fill-rule="evenodd"
+       id="path6376-1"
+       transform="matrix(0.26458333,0,0,0.26458333,-25.095533,-30.468197)" />
+    <rect
+       x="41.923496"
+       y="281.64175"
+       width="82.186745"
+       height="22.620205"
+       stroke="#a0bed6"
+       stroke-width="0.565505"
+       stroke-miterlimit="8"
+       stroke-dasharray="11.25, 3.75"
+       fill="#c0d4e3"
+       id="rect6186-9-8" />
+    <g
+       clip-path="url(#clip9-2-7)"
+       transform="matrix(1.9790267e-5,0,0,1.9790267e-5,49.01116,282.39576)"
+       id="g6192-7-8">
+      <g
+         clip-path="url(#clip10-8-5)"
+         transform="matrix(1,0,0,1.00823,0.0532227,0.149902)"
+         id="g6190-2-8">
+        <use
+           width="100%"
+           height="100%"
+           xlink:href="#img2"
+           transform="scale(7147.03)"
+           id="use6188-6-8" />
+      </g>
+    </g>
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6196-0-0"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.150801"
+       x="50.047466"
+       y="287.91025">Operating<tspan
+   font-size="13.109px"
+   x="53.954479"
+   y="292.13269"
+   id="tspan6194-8-8"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.0859504">point</tspan></text>
+    <g
+       clip-path="url(#clip11-8-1)"
+       transform="matrix(2.1244518e-5,0,0,1.9790267e-5,92.74356,282.39576)"
+       id="g6202-0">
+      <g
+         clip-path="url(#clip12-6-8)"
+         transform="matrix(1,0,0,1.00087,-0.213379,0.149902)"
+         id="g6200-9">
+        <use
+           width="100%"
+           height="100%"
+           xlink:href="#img2"
+           transform="scale(7199.59)"
+           id="use6198-7" />
+      </g>
+    </g>
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6210-6"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.150801"
+       x="97.019539"
+       y="287.97543">Control <tspan
+   font-size="13.109px"
+   x="93.5951"
+   y="292.19788"
+   id="tspan6204-5"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.0859504">parameters</tspan></text>
+    <rect
+       x="43.582317"
+       y="297.02353"
+       width="34.684315"
+       height="6.0320549"
+       fill="#a0bed6"
+       id="rect6336-0-5"
+       style="stroke-width:0.150801" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6340-7-4"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.150801"
+       x="44.310768"
+       y="301.07883">Python <tspan
+   font-size="13.109px"
+   x="56.81472"
+   y="301.07883"
+   id="tspan6338-2-2"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.0859504">DataFrame</tspan></text>
+    <rect
+       x="86.560707"
+       y="296.57108"
+       width="34.835117"
+       height="6.0320549"
+       fill="#a0bed6"
+       id="rect6342-8"
+       style="stroke-width:0.150801" />
+    <text
+       fill="#7f7f7f"
+       font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+       font-weight="400"
+       font-size="13.109px"
+       id="text6346-5"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.150801"
+       x="87.364578"
+       y="300.79355">Python <tspan
+   font-size="13.109px"
+   x="99.868507"
+   y="300.79355"
+   id="tspan6344-6"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.88056px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.0859504">DataFrame</tspan></text>
   </g>
 </svg>
