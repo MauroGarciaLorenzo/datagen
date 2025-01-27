@@ -17,7 +17,6 @@ from clustering_selection import import_and_clean
 from clustering_selection import get_clustering_region_data
 from clustering_selection import plot_clusters
 from joblib import dump, load
-from clustering_selection import best_method, x_region, y_region
 
 def check_cluster_memberships(labels_reshape, k):
     ClustersMissingEigs = 0
@@ -32,7 +31,8 @@ def check_cluster_memberships(labels_reshape, k):
     
     return ClustersMissingEigs, SampleClusterPairs
 
-def reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels):
+def reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels, x_region, y_region, model):
+    model_name = type(model).__name__.lower()
     # if there are samples without an eigenvalue in each cluster, then reassign the closest eigenvalue in the sample to that cluster
     unique_labels = np.unique(labels)
     labels_reshape=labels.reshape(imag_selected_df.shape)
@@ -66,7 +66,7 @@ def reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels):
             # plot the clustering region and highlight the target cluster and the target point 
             target_cluster_points = X[labels == SampleClusterPairs[i][1]]
             target_point = samplevals.iloc[min_index].values
-            plot_clusters(best_method, X, labels, x_region, y_region, best_method.lower(), 1, target_cluster_points, target_point,  centroid)
+            plot_clusters(X, labels, x_region, y_region, model, 1, target_cluster_points, target_point,  centroid)
             # this will save 1 figure for reassignment, not all of them
             
             # reassign the eigenvalue to that cluster 
@@ -80,18 +80,19 @@ data_name = "../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_846
 [df_real_clean, df_imag_clean]=import_and_clean(data_name)
 
 # same region as clustering section script 
+x_region = [-115,20]
+y_region = [200,320]
 [real_selected_df, imag_selected_df, X] = get_clustering_region_data(x_region, y_region, df_real_clean, df_imag_clean)
 
 # Load the model
 model = load('best_model.joblib')
+model_name = type(model).__name__.lower()
 
 # Use the model
 labels = model.predict(X)
 
-# best_model = type(model).__name__
-
 #%% if there are samples without an eigenvalue in each cluster, then reassign the closest eigenvalue in the sample to that cluster
-labels_reshape = reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels)
+labels_reshape = reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels, x_region, y_region, model)
 
 #%% Calculate the damping ratios for each eigenvalue 
 labels_reshape=labels.reshape(imag_selected_df.shape)
