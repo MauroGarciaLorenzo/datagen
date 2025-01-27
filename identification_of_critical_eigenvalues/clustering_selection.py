@@ -105,7 +105,7 @@ def plot_clusters(X, labels, x_region, y_region, model, reassignment = 0, target
         ax.scatter(target_cluster_points[:, 0], target_cluster_points[:, 1], color='yellow', edgecolor='black', s=100, label='Target Cluster')
         ax.scatter(target_point[0], target_point[1], color='red', edgecolor='black', s=150, label='Reassigned Point')
         ax.scatter(centroid[:, 0], centroid[:, 1], c='red', s=200, marker='x', label='Centroid')
-    fig.subplots_adjust(top=0.5, bottom=0.2, left=0.2, right=0.9)  # Adjust these values
+    fig.subplots_adjust(top=0.5, bottom=0.2, left=0.2, right=0.9)
     ax.set_xlim(x_region)
     ax.set_ylim(y_region)
     ax.tick_params(labelsize=20)
@@ -273,7 +273,7 @@ if __name__ == "__main__":
         # labels_reshape=labels.reshape(imag_selected_df.shape)
         # ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
         
-        plot_clusters(cluster_method, X, labels, x_region, y_region, kmeans)
+        plot_clusters(X, labels, x_region, y_region, kmeans)
         counter += 1
     
     #%% Optics 
@@ -295,7 +295,7 @@ if __name__ == "__main__":
         # labels_reshape=labels.reshape(imag_selected_df.shape)
         # ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
         
-        plot_clusters(cluster_method, X, labels, x_region, y_region, optics)
+        plot_clusters(X, labels, x_region, y_region, optics)
         counter += 1
     
     #%% DBSCAN
@@ -335,7 +335,7 @@ if __name__ == "__main__":
             # labels_reshape=labels.reshape(imag_selected_df.shape)
             # ClustersMissingEigs, SampleClusterPairs = check_cluster_memberships(labels_reshape, unique_labels)
             
-            plot_clusters(cluster_method, X, labels, x_region, y_region, dbscan)
+            plot_clusters(X, labels, x_region, y_region, dbscan)
             counter+=1
     
     #%% identify the best silhouette score from dataframe 
