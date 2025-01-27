@@ -1,5 +1,5 @@
 """
-selects regression model 
+selects regression model using only using damping indices created from eigencalues in the critical cluster
 
 """
 # from pyearth import Earth
@@ -20,11 +20,10 @@ plt.rcParams.update({
 
 #%% Load Data and split it 
 Data = pd.read_csv('../identification_of_critical_eigenvalues/Data_DI_Crit.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
-#Data = Data.dropna()
+Data = Data.dropna()
 Data = Data.fillna(0)
 #%% Remove correlated variables
 
-# do I need to drop the slack bus? the other file does it but I can't find the slack bus for 118 
 corr_matrix=abs(Data.corr())
 corr_matrix=corr_matrix.sort_values(by='DI_crit',ascending=False)
 corr_matrix=corr_matrix.drop('DI_crit',axis=0)
@@ -39,7 +38,7 @@ for var in corr_matrix.index:
     corr_matrix=corr_matrix.drop(corrs_var,axis=0)
    
 # split into test train 
-X=Data[uncorr_var]
+X = Data.drop('DI_crit', axis=1)
 y=Data['DI_crit']
 Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.30, random_state=42)
 
@@ -103,22 +102,17 @@ r2_summary=pd.DataFrame()
 ind=0
 for obj_fun in ['one_objective_function']: #['Min_P_SG','Min_P_losses']:
 
-    # Test_data=pd.read_csv('../B.IdentificationOfGroupsOfCriticalEigenvalues/Test_data'+obj_fun+'_inputs_DI_crit.csv').drop(['DI','PLTOT','f','Exitflag','ObjFun'],axis=1)
-
-    # Xtest=Test_data[uncorr_var]
-    # ytest=Test_data['DI_crit']
-
     # pred_mars=mars_model.predict(Xtest)
     # r2_mars=r2_score(ytest,pred_mars.reshape(-1,1))
 
-    fig=plt.figure(figsize=(20,5))
-    ax=fig.add_subplot()
+    # fig=plt.figure(figsize=(20,5))
+    # ax=fig.add_subplot()
 
     r2_lin_models=[]
     for name in models_list:
         pred=lin_model_trained[name][0].predict(Xtest)
         r2_lin_models.append(r2_score(ytest,lin_model_trained[name][0].predict(Xtest)))
-        ax.scatter(ytest,pred)
+        #ax.scatter(ytest,pred)
 
     r2_lin_models=pd.DataFrame(r2_lin_models).T
     r2_lin_models.columns=models_list
@@ -141,5 +135,5 @@ for ii in range(len(obj_fun_list)) :
     best_model.loc[ii, 'Obj_Fun']=obj_fun
     best_model.loc[ii,'Model']=r2_summary.query('Obj_Fun == @obj_fun').T.drop('Obj_Fun').index[max_r2_ind]
 
-pd.DataFrame.to_csv(best_model,'Best_Model.csv')
-pd.DataFrame.to_csv(r2_summary,'R2_summary.csv')
+pd.DataFrame.to_csv(best_model,'Best_Model_Crit.csv')
+pd.DataFrame.to_csv(r2_summary,'R2_summary_Crit.csv')
