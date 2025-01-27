@@ -17,6 +17,7 @@ from clustering_selection import import_and_clean
 from clustering_selection import get_clustering_region_data
 from clustering_selection import plot_clusters
 from joblib import dump, load
+import json
 
 def check_cluster_memberships(labels_reshape, k):
     ClustersMissingEigs = 0
@@ -76,8 +77,13 @@ def reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels, x_region
 #%% import X, real_selected_df, imag_selected_df
 
 # get the data to run the model on
-data_name = "../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464"
-[df_real_clean, df_imag_clean]=import_and_clean(data_name)
+#loaded_data = "../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464"
+loaded_data = "../results/datagen_ACOPF_LF09_seed8_nc3_ns3_d5_20250123_000244_4541"
+[df_real_clean, df_imag_clean]=import_and_clean(loaded_data)
+
+data_number = loaded_data[-4:]
+with open('data_number.json', 'w') as file:
+    json.dump(data_number, file)
 
 # same region as clustering section script 
 x_region = [-115,20]
@@ -90,6 +96,20 @@ model_name = type(model).__name__.lower()
 
 # Use the model
 labels = model.predict(X)
+
+#plot the modal map 
+fig = plt.figure()
+ax=fig.add_subplot()
+scatter=ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
+fig.subplots_adjust(top=0.5, bottom=0.2, left=0.2, right=0.9)
+ax.set_xlim(x_region)
+ax.set_ylim(y_region)
+ax.tick_params(labelsize=20)
+ax.set_xlabel('Real Axis',fontsize=25)
+ax.set_ylabel('Imaginary Axis',fontsize=25)
+ax.set_title(model_name + ' Clustering')
+ax.grid()
+fig.tight_layout(pad=4.0)
 
 #%% if there are samples without an eigenvalue in each cluster, then reassign the closest eigenvalue in the sample to that cluster
 labels_reshape = reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels, x_region, y_region, model)
@@ -121,13 +141,12 @@ for i in unique_labels:
 for l in unique_labels:
     X_cl=X[labels==l]
     if X_cl[:,0].max()>=0:
-        print('Cluster '+str(l)+' collects critical eigenvalues')
+        #print('Cluster '+str(l)+' collects critical eigenvalues')
         crit_cluster=l
-        
 
-#%% calculate the damping indices 
+#%% calculate the damping indices for each operational point 
 
-# calculate damping indices for all eigenvalues
+# calculate damping indices using all eigenvalues
 DIs_all=np.zeros([drs_all.shape[0],1])
 for i in range(drs_all.shape[0]):
     if np.all(np.isnan(drs_all[i, :])):
@@ -135,7 +154,7 @@ for i in range(drs_all.shape[0]):
     else:
         DIs_all[i,0]=1-min(drs_all[i,~np.isnan(drs_all[i,:])])
 
-# calculate damping indices for the eigenvalues in the critical cluster 
+# calculate damping indices using only eigenvalues in the critical cluster 
 drs_crit=drs_clustered[crit_cluster]
 DIs_crit=np.zeros([drs_crit.shape[0],1])
 for i in range(drs_crit.shape[0]):
@@ -147,17 +166,17 @@ for i in range(drs_crit.shape[0]):
     
 #%% create the csv with the inputs and add a column with the DIs  
 
-case_op=pd.read_csv(f'{data_name}/case_df_op.csv')
+case_op=pd.read_csv(f'{loaded_data}/case_df_op.csv')
 # remove the rows with na in column V1 (the cases that didn't converge)
 case_op = case_op.dropna(subset=['V1'])
 
 case_op_crit = case_op.copy()
 case_op_crit['DI_crit'] = DIs_crit
-pd.DataFrame.to_csv(case_op_crit, f'DI_crit_{data_name[-4:]}.csv', index=False)
+pd.DataFrame.to_csv(case_op_crit, f'DI_crit_{loaded_data[-4:]}.csv', index=False)
 
 case_op_all = case_op.copy()
 case_op_all['DI_all']= DIs_all
-pd.DataFrame.to_csv(case_op_all, f'DI_crit_{data_name[-4:]}.csv', index=False)
+pd.DataFrame.to_csv(case_op_all, f'DI_all_{loaded_data[-4:]}.csv', index=False)
 
 
 

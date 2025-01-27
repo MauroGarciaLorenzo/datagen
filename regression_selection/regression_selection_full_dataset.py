@@ -11,6 +11,7 @@ from sklearn.metrics import r2_score
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
 from sklearn.model_selection import train_test_split
 import os
+import json
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -19,11 +20,13 @@ plt.rcParams.update({
 })
 
 #%% Load Data and split it 
-Data = pd.read_csv('../identification_of_critical_eigenvalues/Data_DI_All.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
+with open('../identification_of_critical_eigenvalues/data_number.json', 'r') as file:
+    data_number = json.load(file) 
+Data = pd.read_csv(f'../identification_of_critical_eigenvalues/DI_all_{data_number[-4:]}.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
 #Data = Data.dropna()
 Data = Data.fillna(0)
-#%% Remove correlated variables
 
+#%% Remove correlated variables
 corr_matrix=abs(Data.corr())
 corr_matrix=corr_matrix.sort_values(by='DI_all',ascending=False)
 corr_matrix=corr_matrix.drop('DI_all',axis=0)
@@ -88,7 +91,7 @@ Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size=0.30, random_sta
 # %% train other models 
 
 models_list = ['LR','Lasso','Ridge','ElasticNet']
-models_dict={'LR': LinearRegression(),'Lasso': Lasso(alpha=0.001),'Ridge': Ridge(alpha=0.005),'ElasticNet': ElasticNet()}
+models_dict={'LR': LinearRegression(),'Lasso': Lasso(alpha=0.001, max_iter=5000),'Ridge': Ridge(alpha=0.005),'ElasticNet': ElasticNet()}
 
 lin_model_trained={}
 
@@ -135,5 +138,5 @@ for ii in range(len(obj_fun_list)) :
     best_model.loc[ii, 'Obj_Fun']=obj_fun
     best_model.loc[ii,'Model']=r2_summary.query('Obj_Fun == @obj_fun').T.drop('Obj_Fun').index[max_r2_ind]
 
-pd.DataFrame.to_csv(best_model,'Best_Model_All.csv')
-pd.DataFrame.to_csv(r2_summary,'R2_summary_All.csv')
+pd.DataFrame.to_csv(best_model,f'Best_Model_All_{data_number}.csv')
+pd.DataFrame.to_csv(r2_summary,f'R2_summary_All_{data_number}.csv')
