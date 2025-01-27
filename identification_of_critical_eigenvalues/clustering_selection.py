@@ -77,7 +77,8 @@ def check_cluster_memberships(labels_reshape, k):
     
     return ClustersMissingEigs, SampleClusterPairs
 
-def plot_clusters(cluster_method, X, labels, x_region, y_region, model, reassignment = 0, target_cluster_points = 0,target_point=0, centroid = 0 ):
+def plot_clusters(X, labels, x_region, y_region, model, reassignment = 0, target_cluster_points = 0,target_point=0, centroid = 0 ):
+    model_name = type(model).__name__.lower()
     unique_labels = np.unique(labels)
     fig = plt.figure()
     ax=fig.add_subplot()
@@ -85,19 +86,19 @@ def plot_clusters(cluster_method, X, labels, x_region, y_region, model, reassign
     scatter=ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
     handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=scatter.cmap(scatter.norm(label)), markersize=10) for label in unique_labels]
     # ax.legend(handles=handles, labels=[str(label) for label in unique_labels], loc='lower left', bbox_to_anchor=(0, 0), fontsize=15, ncol=1)
-    if cluster_method == 'KMeans':
-        centers = kmeans.cluster_centers_
+    if model_name == 'kmeans':
+        centers = model.cluster_centers_
         ax.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='x', label='Centers')  
-        par_1_str = 'n_clusters=' + str(kmeans.n_clusters)
+        par_1_str = 'n_clusters=' + str(model.n_clusters)
         par_2_str = ''
         ax.text(-100, 210, par_1_str)
-    elif cluster_method == 'Optics':
-        par_1_str = 'min_samples=' + str(optics.min_samples)
+    elif model_name == 'optics':
+        par_1_str = 'min_samples=' + str(model.min_samples)
         par_2_str = ''
         ax.text(-100, 210, par_1_str + '\nNumber of clusters: ' + str(len(unique_labels)))
-    elif cluster_method == 'DBSCAN':
-        par_1_str = 'eps=' + str(dbscan.eps)
-        par_2_str = ' min_samples=' + str(dbscan.min_samples)
+    elif model_name == 'dbscan':
+        par_1_str = 'eps=' + str(model.eps)
+        par_2_str = ' min_samples=' + str(model.min_samples)
         ax.text(-100, 210, par_1_str  + par_2_str  + '\nNumber of clusters: ' + str(len(unique_labels)))
     else: print("wrong")
     if reassignment == 1:
@@ -110,20 +111,20 @@ def plot_clusters(cluster_method, X, labels, x_region, y_region, model, reassign
     ax.tick_params(labelsize=20)
     ax.set_xlabel('Real Axis',fontsize=25)
     ax.set_ylabel('Imaginary Axis',fontsize=25)
-    ax.set_title(cluster_method + ' Clustering')
+    ax.set_title(model_name + ' Clustering')
     ax.grid()
     fig.tight_layout(pad=4.0)
     
     if reassignment == 0:
         Images_folder = '../identification_of_critical_eigenvalues/Images'
         os.makedirs(Images_folder, exist_ok=True)  # Ensure folder exists
-        save_path = os.path.join(Images_folder, cluster_method + '_' + par_1_str + '_' + par_2_str + '.png')
+        save_path = os.path.join(Images_folder, model_name + '_' + par_1_str + '_' + par_2_str + '.png')
         plt.savefig(save_path)
         plt.close(fig)  
     else: 
         Images_folder = '../identification_of_critical_eigenvalues/Images'
         os.makedirs(Images_folder, exist_ok=True)  # Ensure folder exists
-        save_path = os.path.join(Images_folder, cluster_method + '_' + par_1_str + '_' + par_2_str + '_reassignment.png')
+        save_path = os.path.join(Images_folder, model_name + '_' + par_1_str + '_' + par_2_str + '_reassignment.png')
         plt.savefig(save_path)
         plt.close(fig)  
 
@@ -362,17 +363,20 @@ if __name__ == "__main__":
         kmeans = KMeans(n_init=10, n_clusters=int(best_parameter1), random_state=42)
         kmeans.fit(X)
         labels = kmeans.labels_  
+        best_model = kmeans
     elif best_method == "Optics":
         optics = OPTICS(min_samples=int(best_parameter1))
         optics.fit(X)
         labels = optics.labels_
+        best_model = optics
     elif best_method == "DBSCAN":
         dbscan = DBSCAN(eps=best_parameter1, min_samples=int(best_parameter2))
         dbscan.fit(X)
         labels = dbscan.labels_
+        best_model = dbscan
     
     # save the best model
-    joblib.dump(best_method.lower(), 'best_model.joblib')
+    joblib.dump(best_model, 'best_model.joblib')
     
 
     
