@@ -87,7 +87,8 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
                      cases_heritage_df=None, dims_heritage_df=pd.DataFrame(),
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
                      divs_per_cell=divs_per_cell, generator=generator,
-                     feasible_rate=feasible_rate, func_params=func_params))
+                     feasible_rate=feasible_rate, func_params=func_params,
+                     dst_dir=dst_dir))
     execution_logs = compss_wait_on(execution_logs)
     cases_df = compss_wait_on(cases_df)
     dims_df = compss_wait_on(dims_df)

@@ -47,20 +47,22 @@ def plot_importances_and_divisions(dimensions, importances):
     plt.show()
 
 
-def plot_stabilities(ax, cases_df, dims_df):
+def plot_stabilities(ax, cases_df, dims_df, dst_dir):
     time.sleep(1)
     for idx, dim_row in dims_df.iterrows():
         color = 'green' if cases_df.loc[idx, 'Stability'] == 1 else 'red'
         ax.scatter(dim_row.iloc[0], dim_row.iloc[1], s=1.5, color=color,
                    linewidth=0.5, edgecolors='black')
 
-    dir_path = "results/figures"
+    dir_path = os.path.join(dst_dir, "figures")
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path)
     file_name = format(time.time(), '.0f') + ".png"
     path = os.path.join(dir_path, file_name)
     ax.figure.savefig(fname=path, dpi=300)
 
 
-def plot_divs(ax, children_grid):
+def plot_divs(ax, children_grid, dst_dir):
     time.sleep(1)
     for cell in children_grid:
         dim0 = (cell.dimensions[0].borders[0], cell.dimensions[0].borders[1])
@@ -69,7 +71,9 @@ def plot_divs(ax, children_grid):
                                  dim1[1] - dim1[0], linewidth=1,
                                  edgecolor='black', facecolor='none')
         ax.add_patch(cell)
-    dir_path = "results/figures"
+    dir_path = os.path.join(dst_dir, "figures")
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path)
     file_name = format(time.time(), '.0f') + ".png"
     path = os.path.join(dir_path, file_name)
     ax.figure.savefig(fname=path, dpi=300)

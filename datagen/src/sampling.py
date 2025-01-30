@@ -49,7 +49,8 @@ from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_cir
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator, feasible_rate,
-                 func_params, total_dataframes=None, cell_name=""):
+                 func_params, total_dataframes=None, cell_name="",
+                 dst_dir=None):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -125,7 +126,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:
-        plot_stabilities(ax, cases_df, dims_df)
+        plot_stabilities(ax, cases_df, dims_df, dst_dir)
 
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
     dims_df = pd.concat([dims_df, dims_heritage_df], ignore_index=True)
@@ -150,7 +151,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         children_grid = gen_grid(dimensions)
 
         if ax is not None and len(dimensions) == 2:
-            plot_divs(ax, children_grid)
+            plot_divs(ax, children_grid, dst_dir)
 
         cases_df, dims_df, children_total, total_dataframes = \
             explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
@@ -159,14 +160,15 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                          max_depth=max_depth, divs_per_cell=divs_per_cell,
                          generator=generator, feasible_rate=feasible_rate,
                          func_params=func_params, dataframes=total_dataframes,
-                         parent_entropy=parent_entropy, parent_name=cell_name)
+                         parent_entropy=parent_entropy, parent_name=cell_name,
+                         dst_dir=dst_dir)
         return children_total, cases_df, dims_df, total_dataframes
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
                  feasible_rate, func_params, dataframes, parent_entropy,
-                 parent_name):
+                 parent_name, dst_dir):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -207,13 +209,15 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
         (child_total_params, cases_children_df, dims_children_df,
          children_dataframes) = \
             explore_cell(func=func, n_samples=n_samples,
-                         parent_entropy=parent_entropy, depth=children_depth, ax=ax,
-                         dimensions=dim, cases_heritage_df=cases_heritage_df,
+                         parent_entropy=parent_entropy, depth=children_depth,
+                         ax=ax, dimensions=dim,
+                         cases_heritage_df=cases_heritage_df,
                          dims_heritage_df=dims_heritage_df,
                          use_sensitivity=use_sensitivity, max_depth=max_depth,
                          divs_per_cell=divs_per_cell, generator=generator,
                          feasible_rate=feasible_rate, func_params=func_params,
-                         total_dataframes=heritage_dataframes, cell_name=cell_name)
+                         total_dataframes=heritage_dataframes,
+                         cell_name=cell_name, dst_dir=dst_dir)
 
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)

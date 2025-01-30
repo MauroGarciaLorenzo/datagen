@@ -1,5 +1,8 @@
+import os
+import random
+from datetime import datetime
+
 import numpy as np
-import scienceplots
 from matplotlib import pyplot as plt
 
 from datagen.src.objective_function import complex_2d_shape_obj_func, \
@@ -14,12 +17,9 @@ except ImportError:
     from datagen.dummies.task import task
     from datagen.dummies.api import compss_wait_on
 
-plt.style.use('science')
-
 
 @task()
-def main():
-    dst_dir = "results"
+def main(working_dir):
     n_samples = 20
     n_cases = 1
     rel_tolerance = 0.02
@@ -34,18 +34,47 @@ def main():
     divs_per_cell = 3
     feasible_rate = 0.5
 
+    # Get computing units assigned to the objective function
+    cu = os.environ.get("COMPUTING_UNITS", default=None)
+    cu_str = ""
+    if cu:
+        cu_str = f"_cu{cu}"
+    print("COMPUTING_UNITS: ", cu)
+    # Get slurm job id
+    slurm_job_id = os.getenv("SLURM_JOB_ID", default=None)
+    slurm_str = ""
+    if slurm_job_id:
+        slurm_str = f"_slurm{slurm_job_id}"
+    # Get slurm n_nodes
+    slurm_num_nodes = os.environ.get('SLURM_JOB_NUM_NODES', default=None)
+    slurm_nodes_str = ""
+    if slurm_num_nodes:
+        slurm_nodes_str = f"_nodes{slurm_num_nodes}"
+    print("NUMBER OF NODES: ", slurm_num_nodes)
+    # Create unique directory name for results
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    rnd_num = random.randint(1000, 9999)
+    dir_name = f"datagen_2D_explore{slurm_str}{cu_str}{slurm_nodes_str}_seed{seed}_nc{n_cases}" \
+               f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
+    path_results = os.path.join(
+        working_dir, "results", dir_name)
+    if not os.path.isdir(path_results):
+        os.makedirs(path_results)
+
     # Plot heat map
     add_color_map(ax, fig)
 
     cases_df, dims_df, execution_logs, output_dataframes = \
         start(dimensions, n_samples, rel_tolerance,
               func=complex_2d_shape_obj_func,
-              max_depth=max_depth, dst_dir=dst_dir,
+              max_depth=max_depth, dst_dir=path_results,
               use_sensitivity=use_sensitivity, ax=ax,
               divs_per_cell=divs_per_cell, plot_boxplot=True, seed=seed,
               feasible_rate=feasible_rate)
 
-    fig.savefig("figures/2D_contour_plot_complex_shape.png", dpi=300)
+    fig_path = os.path.join(
+        path_results, "figures/2D_contour_plot_complex_shape.png")
+    fig.savefig(fig_path, dpi=300)
     plt.show()
 
 
@@ -73,4 +102,5 @@ def add_color_map(ax, fig):
 
 
 if __name__ == '__main__':
-    main()
+    results_dir = os.path.join(os.getcwd(), "results")
+    main(results_dir)
