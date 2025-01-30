@@ -82,9 +82,9 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
 
     generator = np.random.default_rng(seed)
     execution_logs, cases_df, dims_df, output_dataframes = (
-        explore_cell(func=func, n_samples=n_samples, entropy=None, depth=0,
-                     ax=ax, dimensions=dimensions, cases_heritage_df=None,
-                     dims_heritage_df=pd.DataFrame(),
+        explore_cell(func=func, n_samples=n_samples, parent_entropy=None,
+                     depth=0, ax=ax, dimensions=dimensions,
+                     cases_heritage_df=None, dims_heritage_df=pd.DataFrame(),
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
                      divs_per_cell=divs_per_cell, generator=generator,
                      feasible_rate=feasible_rate, func_params=func_params))

@@ -23,7 +23,6 @@ import os
 import numpy
 import numpy as np
 import pandas as pd
-import random
 
 
 from sklearn.ensemble import RandomForestClassifier
@@ -35,7 +34,6 @@ from .utils import check_dims, flatten_list, get_dimension, concat_df_dict, \
     generate_unique_id
 from .dimensions import Cell, Dimension
 from .viz import plot_divs, plot_stabilities, plot_importances_and_divisions
-from ..tests.utils import unique
 try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
@@ -48,11 +46,10 @@ except ImportError:
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 @task(returns=4)
-def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
+def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
-                 max_depth, divs_per_cell, generator, feasible_rate, func_params,
-                 total_dataframes=None
-                 ):
+                 max_depth, divs_per_cell, generator, feasible_rate,
+                 func_params, total_dataframes=None, cell_name=""):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -63,8 +60,8 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
 
     :param func: Objective function
     :param n_samples: Number of samples to produce
-    :param entropy: Entropy of the father calculated from the cases that fits
-    into this cell's space
+    :param parent_entropy: Entropy of the parent calculated from the cases that
+    fits into this cell's space
     :param depth: Recursivity depth
     :param ax: Plottable object
     :param dimensions: Cell dimensions
@@ -77,6 +74,7 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :param dims_heritage_df: Inherited independent_dims dataframe
     :param divs_per_cell: Number of resultant cells from each recursive call
     :param generator: Numpy generator for random values
+    :param cell_name: Name of the current cell for logging purposes
     :return children_total: List of children dimensions, entropy,
     delta_entropy and depth
     :return cases_df: Concatenation of inherited cases and those produced by
@@ -84,7 +82,9 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     :return dims_df: Concatenation of inherited independent_dims and those produced by
     the cell
     """
-    print("New cell", flush=True)
+    if not cell_name:
+        cell_name = "0"
+    print(f"Entering cell {cell_name}", flush=True)
     # Generate samples (n_samples for each dimension)
     samples_df = gen_samples(n_samples, dimensions, generator)
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
@@ -130,17 +130,19 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
     dims_df = pd.concat([dims_df, dims_heritage_df], ignore_index=True)
 
-    entropy, delta_entropy = eval_entropy(stabilities, entropy)
+    parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy)
+    print(f"Depth={depth}, Entropy={parent_entropy}, "
+          f"Delta_entropy={delta_entropy}", flush=True)
 
     total_cases = n_samples * dimensions[0].n_cases
     # Finish recursivity if entropy decreases or cell become too small
     if (delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth or
             feasible_cases/total_cases < feasible_rate):
-        print("Stopped cell:")
-        print("    Entropy: ", entropy)
-        print("    Delta entropy: ", delta_entropy)
-        print("    Depth: ", depth)
-        return ((dimensions, entropy, delta_entropy, depth), cases_df, dims_df,
+        print("Stopped cell:", flush=True)
+        print("    Entropy: ", parent_entropy, flush=True)
+        print("    Delta entropy: ", delta_entropy, flush=True)
+        print("    Depth: ", depth, flush=True)
+        return ((dimensions, parent_entropy, delta_entropy, depth), cases_df, dims_df,
                 total_dataframes)
     else:
         if use_sensitivity:
@@ -150,19 +152,21 @@ def explore_cell(func, n_samples, entropy, depth, ax, dimensions,
         if ax is not None and len(dimensions) == 2:
             plot_divs(ax, children_grid)
 
-        cases_df, dims_df, children_total, total_dataframes = (
+        cases_df, dims_df, children_total, total_dataframes = \
             explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
                          depth=depth, dims_df=dims_df, func=func,
                          n_samples=n_samples, use_sensitivity=use_sensitivity,
                          max_depth=max_depth, divs_per_cell=divs_per_cell,
                          generator=generator, feasible_rate=feasible_rate,
-                         func_params=func_params, dataframes=total_dataframes))
+                         func_params=func_params, dataframes=total_dataframes,
+                         parent_entropy=parent_entropy, parent_name=cell_name)
         return children_total, cases_df, dims_df, total_dataframes
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
-                 feasible_rate, func_params, dataframes):
+                 feasible_rate, func_params, dataframes, parent_entropy,
+                 parent_name):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -182,30 +186,34 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     exceeded)
     :param divs_per_cell: Number of resultant cells from each recursive call
     :param generator: Numpy generator for random values
+    :param parent_entropy: Entropy of the parent cell
+    :param parent_name: Name of the parent cell
     :return: Children independent_dims, cases and parameters
     """
-    total_cases_df, total_dims_df, total_dataframes, total_entropies = (
+    total_cases_df, total_dims_df, total_dataframes = (
         get_children_parameters(grid, dims_df, cases_df, dataframes))
     children_total_params = []
     list_cases_children_df = []
     list_dims_children_df = []
     list_dataframes_children = []
+    children_depth = depth + 1
+    i = 0
     for (children_cell, cases_heritage_df, dims_heritage_df,
-         heritage_dataframes, entropy_children) \
-            in zip(grid, total_cases_df, total_dims_df, total_dataframes,
-                   total_entropies):
+         heritage_dataframes) \
+            in zip(grid, total_cases_df, total_dims_df, total_dataframes):
+        i += 1
+        cell_name = f"{parent_name}.{i}"
         dim = children_cell.dimensions
         (child_total_params, cases_children_df, dims_children_df,
-         children_dataframes) = (
+         children_dataframes) = \
             explore_cell(func=func, n_samples=n_samples,
-                         entropy=entropy_children, depth=depth + 1, ax=ax,
+                         parent_entropy=parent_entropy, depth=children_depth, ax=ax,
                          dimensions=dim, cases_heritage_df=cases_heritage_df,
                          dims_heritage_df=dims_heritage_df,
-                         use_sensitivity=use_sensitivity,
-                         max_depth=max_depth, divs_per_cell=divs_per_cell,
-                         generator=generator, feasible_rate=feasible_rate,
-                         func_params=func_params,
-                         total_dataframes=heritage_dataframes))
+                         use_sensitivity=use_sensitivity, max_depth=max_depth,
+                         divs_per_cell=divs_per_cell, generator=generator,
+                         feasible_rate=feasible_rate, func_params=func_params,
+                         total_dataframes=heritage_dataframes, cell_name=cell_name)
 
         children_total_params.append(child_total_params)
         list_cases_children_df.append(cases_children_df)
@@ -645,7 +653,6 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
     """
     total_cases = []
     total_dims = []
-    total_entropies = []
     total_dataframes = []
     for cell in children_grid:
         dims = []
@@ -684,24 +691,20 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
                                                 [idx], :]
 
         if cases and dims:
-            stabilities = [int(case["Stability"].iloc[0]) for case in cases]
-            entropy, _ = eval_entropy(stabilities, None)
             cases_df = pd.concat(cases, axis=0, ignore_index=True)
             dims_df = pd.concat(dims, axis=0, ignore_index=True)
         else:
-            entropy = None
             cases_df = pd.DataFrame()
             dims_df = pd.DataFrame()
         total_cases.append(cases_df)
         total_dims.append(dims_df)
-        total_entropies.append(entropy)
         total_dataframes.append(dataframes)
 
     if cases_heritage_df is None:
         cases_heritage_df = pd.DataFrame()
     if sum([len(cases) for cases in total_cases]) != len(cases_heritage_df):
         raise Exception("Not every case was assigned to a child")
-    return total_cases, total_dims, total_dataframes, total_entropies
+    return total_cases, total_dims, total_dataframes
 
 
 def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,generator):
