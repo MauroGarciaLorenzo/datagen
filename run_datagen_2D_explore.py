@@ -20,14 +20,14 @@ plt.style.use('science')
 @task()
 def main():
     dst_dir = "results"
-    n_samples = 5
-    n_cases = 3
-    rel_tolerance = 0.1
-    max_depth = 3
+    n_samples = 20
+    n_cases = 1
+    rel_tolerance = 0.02
+    max_depth = 10
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
     dimensions = [
-        Dimension(label="tau_Dim_0", n_cases=n_cases, divs=3, borders=(-1, 1)),
-        Dimension(label="tau_Dim_1", n_cases=n_cases, divs=3, borders=(-1, 1))
+        Dimension(label="tau_Dim_0", n_cases=n_cases, divs=2, borders=(-1, 1)),
+        Dimension(label="tau_Dim_1", n_cases=n_cases, divs=2, borders=(-1, 1))
     ]
     use_sensitivity = False
     seed = 17

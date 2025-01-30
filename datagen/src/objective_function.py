@@ -22,9 +22,9 @@ def complex_2d_shape_obj_func(case, **kwargs):
     x = case['tau_Dim_0']
     y = case['tau_Dim_1']
     z = complex_2d_shape(x, y)
-    # Adjusting noise to handle arrays
-    noise = np.random.normal(0, 0.2)
-    z += noise
+    # Add noise to problem
+    # noise = np.random.normal(0, 0.2)
+    # z += noise
     z = np.tanh(z)
     return np.where(z > 0, 1, 0), {}
 
