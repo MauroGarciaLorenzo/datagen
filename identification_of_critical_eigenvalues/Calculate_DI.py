@@ -18,6 +18,7 @@ from clustering_selection import get_clustering_region_data
 from clustering_selection import plot_clusters
 from joblib import dump, load
 import json
+import os
 
 def check_cluster_memberships(labels_reshape, k):
     ClustersMissingEigs = 0
@@ -77,10 +78,12 @@ def reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels, x_region
 #%% import X, real_selected_df, imag_selected_df
 
 # get the data to run the model on
-#loaded_data = "../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464"
-loaded_data = "../results/datagen_ACOPF_LF09_seed8_nc3_ns3_d5_20250123_000244_4541"
+loaded_data = "../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464"
+#loaded_data = "../results/datagen_ACOPF_LF09_seed8_nc3_ns3_d5_20250123_000244_4541"
+#loaded_data = "../results/ACOPF_standalone_NREL_LF095_seed16_nc3_ns100_20250203_154241_9253"
 [df_real_clean, df_imag_clean]=import_and_clean(loaded_data)
 
+# make a json file with the data_number in it so the number can be transported for regression selection scripts
 data_number = loaded_data[-4:]
 with open('data_number.json', 'w') as file:
     json.dump(data_number, file)
@@ -107,9 +110,14 @@ ax.set_ylim(y_region)
 ax.tick_params(labelsize=20)
 ax.set_xlabel('Real Axis',fontsize=25)
 ax.set_ylabel('Imaginary Axis',fontsize=25)
-ax.set_title(model_name + ' Clustering')
+ax.set_title('Clustering For Dataset ' + data_number)
 ax.grid()
 fig.tight_layout(pad=4.0)
+Images_folder = '../identification_of_critical_eigenvalues/DataSet_Clustering_Images'
+os.makedirs(Images_folder, exist_ok=True)  # Ensure folder exists
+save_path = os.path.join(Images_folder, data_number + 'clustering.png')
+plt.savefig(save_path)
+plt.close(fig) 
 
 #%% if there are samples without an eigenvalue in each cluster, then reassign the closest eigenvalue in the sample to that cluster
 labels_reshape = reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels, x_region, y_region, model)
