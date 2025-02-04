@@ -86,23 +86,24 @@ def plot_clusters(X, labels, x_region, y_region, model, reassignment = 0, target
     scatter=ax.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis', marker='o')
     handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=scatter.cmap(scatter.norm(label)), markersize=10) for label in unique_labels]
     # ax.legend(handles=handles, labels=[str(label) for label in unique_labels], loc='lower left', bbox_to_anchor=(0, 0), fontsize=15, ncol=1)
-    if model_name == 'kmeans':
-        centers = model.cluster_centers_
-        ax.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='x', label='Centers')  
-        par_1_str = 'n_clusters=' + str(model.n_clusters)
-        par_2_str = ''
-        ax.text(-100, 210, par_1_str)
-    elif model_name == 'optics':
-        par_1_str = 'min_samples=' + str(model.min_samples)
-        par_2_str = ''
-        ax.text(-100, 210, par_1_str + '\nNumber of clusters: ' + str(len(unique_labels)))
-    elif model_name == 'dbscan':
-        par_1_str = 'eps=' + str(model.eps)
-        par_2_str = ' min_samples=' + str(model.min_samples)
-        ax.text(-100, 210, par_1_str  + par_2_str  + '\nNumber of clusters: ' + str(len(unique_labels)))
-    else: print("wrong")
+    if reassignment == 0:
+        if model_name == 'kmeans':
+            centers = model.cluster_centers_
+            ax.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='x', label='Centers')  
+            par_1_str = 'n_clusters=' + str(model.n_clusters)
+            par_2_str = ''
+            ax.text(-100, 210, par_1_str)
+        elif model_name == 'optics':
+            par_1_str = 'min_samples=' + str(model.min_samples)
+            par_2_str = ''
+            ax.text(-100, 210, par_1_str + '\nNumber of clusters: ' + str(len(unique_labels)))
+        elif model_name == 'dbscan':
+            par_1_str = 'eps=' + str(model.eps)
+            par_2_str = ' min_samples=' + str(model.min_samples)
+            ax.text(-100, 210, par_1_str  + par_2_str  + '\nNumber of clusters: ' + str(len(unique_labels)))
+        else: print("wrong")
     if reassignment == 1:
-        ax.scatter(target_cluster_points[:, 0], target_cluster_points[:, 1], color='yellow', edgecolor='black', s=100, label='Target Cluster')
+        ax.scatter(target_cluster_points[:, 0], target_cluster_points[:, 1], color='yellow', s=100, label='Target Cluster')
         ax.scatter(target_point[0], target_point[1], color='red', edgecolor='black', s=150, label='Reassigned Point')
         ax.scatter(centroid[:, 0], centroid[:, 1], c='red', s=200, marker='x', label='Centroid')
     fig.subplots_adjust(top=0.5, bottom=0.2, left=0.2, right=0.9)
@@ -111,20 +112,20 @@ def plot_clusters(X, labels, x_region, y_region, model, reassignment = 0, target
     ax.tick_params(labelsize=20)
     ax.set_xlabel('Real Axis',fontsize=25)
     ax.set_ylabel('Imaginary Axis',fontsize=25)
-    ax.set_title(model_name + ' Clustering')
+    ax.set_title(model_name.capitalize() + ' Clustering')
     ax.grid()
     fig.tight_layout(pad=4.0)
     
     if reassignment == 0:
-        Images_folder = '../identification_of_critical_eigenvalues/Images'
+        Images_folder = '../identification_of_critical_eigenvalues/Clustering_Training_Images'
         os.makedirs(Images_folder, exist_ok=True)  # Ensure folder exists
         save_path = os.path.join(Images_folder, model_name + '_' + par_1_str + '_' + par_2_str + '.png')
         plt.savefig(save_path)
         plt.close(fig)  
     else: 
-        Images_folder = '../identification_of_critical_eigenvalues/Images'
+        Images_folder = '../identification_of_critical_eigenvalues/DataSet_Clustering_Images'
         os.makedirs(Images_folder, exist_ok=True)  # Ensure folder exists
-        save_path = os.path.join(Images_folder, model_name + '_' + par_1_str + '_' + par_2_str + '_reassignment.png')
+        save_path = os.path.join(Images_folder, 'point_reassignment.png')
         plt.savefig(save_path)
         plt.close(fig)  
 
