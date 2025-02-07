@@ -12,7 +12,7 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-@task()
+@task(on_failure='FAIL')
 def main():
     """
     In this method we work with dimensions (main axes), which represent a

@@ -45,7 +45,7 @@ except ImportError:
 
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
-@task(returns=4)
+@task(returns=4, on_failure='FAIL')
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator, feasible_rate,
@@ -550,7 +550,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
 
 
 @constraint(computing_units=os.environ.get('COMPUTING_UNITS', '1'))
-@task(returns=2)
+@task(returns=2, on_failure='FAIL')
 def eval_stability(case, f, func_params, **kwargs):
     """Call objective function and return its result.
 

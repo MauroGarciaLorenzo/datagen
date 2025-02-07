@@ -18,7 +18,7 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-@task()
+@task(on_failure='FAIL')
 def main(working_dir):
     n_samples = 20
     n_cases = 1

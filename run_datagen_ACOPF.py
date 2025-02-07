@@ -23,7 +23,7 @@ except ImportError:
 import warnings
 warnings.filterwarnings("ignore")
 
-@task()
+@task(on_failure='FAIL')
 def main(working_dir='', path_data='', setup_path=''):
     # %% Parse arguments (emulate sys.argv list as input)
     working_dir, path_data, setup_path = parse_args(
