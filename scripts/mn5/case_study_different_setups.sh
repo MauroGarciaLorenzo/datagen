@@ -68,7 +68,7 @@ for case in "${cases[@]}"; do
   sed -i "s/^seed: .*/seed: $seed/" "$yaml_file"
 
   # Run application
-  export COMPUTING_UNITS=1
+  export COMPUTING_UNITS=8
   enqueue_compss \
     --pythonpath="${PYTHONPATH}" \
     --num_nodes=1 \
@@ -81,6 +81,7 @@ for case in "${cases[@]}"; do
     --project_name=bsc19 \
     --qos=gp_bsccs \
     --log_dir="${working_dir}" \
+    -d \
     --agents \
     run_datagen_ACOPF.py "${datagen_root_dir}" "${input_data}" "${yaml_file}"
 done
