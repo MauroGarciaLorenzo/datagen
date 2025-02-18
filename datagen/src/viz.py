@@ -51,7 +51,7 @@ def plot_stabilities(ax, cases_df, dims_df):
     time.sleep(1)
     for idx, dim_row in dims_df.iterrows():
         color = 'green' if cases_df.loc[idx, 'Stability'] == 1 else 'red'
-        ax.scatter(dim_row[0], dim_row[1], color=color)
+        ax.scatter(dim_row[0], dim_row[1], color=color, edgecolors='black')
 
     dir_path = "results/figures"
     file_name = format(time.time(), '.0f') + ".png"

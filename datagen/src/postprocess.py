@@ -196,6 +196,35 @@ def search_total_time_in_trace(file_path):
     return None
 
 
+def create_gif_from_images(directory, output_file, gif_frame_count=20):
+    from PIL import Image
+    # Get all files in the directory
+    files = os.listdir(directory)
+    # Filter for image files and sort by creation timestamp
+    images = [os.path.join(directory, f) for f in files if
+              f.lower().endswith(('png', 'jpg', 'jpeg', 'bmp', 'tiff'))]
+    images.sort(key=lambda x: os.path.getctime(x))
+
+    # Select about gif_frame_count images evenly spaced
+    total_images = len(images)
+    if total_images < gif_frame_count:
+        print("Not enough images to create the GIF.")
+        return
+    step = total_images // gif_frame_count
+    selected_images = [images[i] for i in range(0, total_images, step)][
+                      :gif_frame_count]
+
+    # Open images and create frames
+    frames = [Image.open(img) for img in selected_images]
+
+    # Save frames as an animated GIF
+    frames[0].save(
+        output_file, save_all=True, append_images=frames[1:], optimize=True,
+        duration=800, loop=0
+    )
+    print(f"GIF saved as {output_file}")
+
+
 if __name__ == "__main__":
     name = 'cu_perf_datagen_1node'
     cu_perf_datagen(name)
@@ -213,3 +242,8 @@ if __name__ == "__main__":
     #     print(f"src_dir: {src_dir}")
     #     print(f"case_name: {case_name}")
     # cu_perf_standalone(src_dir, case_name, dst_dir)
+
+    # Animation example usage
+    # input_directory = "../../results/figures_complex_2d_shape_holes"
+    # output_gif = "output.gif"
+    # create_gif_from_images(input_directory, output_gif)
