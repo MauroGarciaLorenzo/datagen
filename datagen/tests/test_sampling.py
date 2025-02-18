@@ -205,7 +205,7 @@ class Test(TestCase):
                              f'{(2 * len(df1), df1.shape[1])}')
         self.assertEqual(df_dict['df2'].shape,
                          (2 * len(df2), df2.shape[1]),
-                         msg=f'Shape of df2: {df_dict['df2'].shape}'
+                         msg=f'Shape of df2: {df_dict["df2"].shape}'
                              f'differs from the expected shape of df2: '
                              f'{(2 * len(df2), df2.shape[1])}')
         self.assertListEqual(

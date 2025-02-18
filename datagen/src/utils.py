@@ -263,6 +263,10 @@ def concat_df_dict(*dicts):
      the row order on each dataframe, since they are sorted at the end of the
      run thanks to the use of a unique ID per case
     """
+    # Return empty dict if all contents are empty
+    if all_empty(dicts):
+        return {}
+
     # Consider case of list inside a list
     if isinstance(dicts, Sequence):
         if len(dicts) == 1 and isinstance(dicts[0], Sequence):
@@ -350,6 +354,16 @@ def concat_df_dict(*dicts):
                         ignore_index=True)
 
     return output_dict
+
+
+def all_empty(data):
+    if isinstance(data, (list, tuple)):  # Check for list or tuple
+        return all(all_empty(item) for item in data)
+    elif isinstance(data, dict):  # Check for dictionary
+        # Dict is empty when no keys exist
+        return all_empty(list(data.values())) and not data
+    else:  # For non-container types, consider them "non-empty" if present
+        return False
 
 
 def parse_setup_file(setup_path):
