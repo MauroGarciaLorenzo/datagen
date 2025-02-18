@@ -24,7 +24,7 @@ datagen_root_dir=$(pwd)
 stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
 yaml_file="${datagen_root_dir}/setup/setup_seed17_nc10_ns10_d5.yaml"
-working_dir="/gpfs/scratch/bsc19/tests/case_study_nodes/$username"
+working_dir="/gpfs/scratch/bsc19/${username}/tests/case_study_nodes"
 export PYTHONPATH="${datagen_root_dir}/packages/:${PYTHONPATH}:${datagen_root_dir}"
 
 # Print user information
@@ -58,6 +58,7 @@ do
     --log_dir=${working_dir} \
     --agents \
     run_datagen_ACOPF.py "${datagen_root_dir}" "${input_data}" "${yaml_file}"
-    nodes=$((nodes * 2))
+    i=$((i + 1))
   done
+  num_nodes=$((num_nodes * 2))
 done

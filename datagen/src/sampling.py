@@ -581,7 +581,7 @@ def gen_grid(dimensions):
     div = tuple(dim.divs for dim in independent_dims_subdv if dim.divs > 1)
     total_div = np.prod(div)
     if total_div == 0:
-        raise Exception("Too many divisions defined")
+        raise Exception(f"Too many divisions defined. div: {div}")
     grid = []
     for i in range(total_div):
         div_indices = np.unravel_index(i, div)

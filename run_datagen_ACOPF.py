@@ -162,12 +162,12 @@ def main(working_dir='', path_data='', setup_path=''):
 
     dimensions = [
         Dimension(label="p_sg", variable_borders=p_sg,
-                  n_cases=n_cases, divs=1,
+                  n_cases=n_cases, divs=2,
                   borders=(d_op['Generators']['Pmin_SG'].sum(),
                            d_op['Generators']['Pmax_SG'].sum()),
                   independent_dimension=True, cosphi=generators_power_factor),
         Dimension(label="p_cig", variable_borders=p_cig,
-                  n_cases=n_cases, divs=1,
+                  n_cases=n_cases, divs=2,
                   borders=(d_op['Generators']['Pmin_CIG'].sum(),
                            d_op['Generators']['Pmax_CIG'].sum()),
                   independent_dimension=True,
@@ -185,17 +185,17 @@ def main(working_dir='', path_data='', setup_path=''):
     for d in list(d_op['Generators']['BusNum']):
         dimensions.append(
             Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
-                      divs=2, borders=(0.01, 0.2),
+                      divs=1, borders=(0.01, 0.2),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
-                      divs=2, borders=(0.01, 0.2),
+                      divs=1, borders=(0.01, 0.2),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
-                      divs=2, borders=(0.01, 0.2),
+                      divs=1, borders=(0.01, 0.2),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
