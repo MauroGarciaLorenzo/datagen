@@ -70,7 +70,7 @@ def main():
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    dir_name = f"ACOPF_standalone_NREL_LF095_seed{seed}_nc{n_cases}_ns{n_samples}" \
+    dir_name = f"ACOPF_standalone_NREL_LF085_seed{seed}_nc{n_cases}_ns{n_samples}" \
                f"_{timestamp}_{rnd_num}"
     path_results = os.path.join(
         working_dir, "results", dir_name)
@@ -81,10 +81,10 @@ def main():
     # %% SET FILE NAMES AND PATHS
     if grid_name == 'IEEE9':
         # IEEE 9
-        raw = "ieee9_6"
+        raw = "ieee9_hypersim"
         excel_headers = "IEEE_9_headers"
         excel_data = "IEEE_9"
-        excel_op = "OperationData_IEEE_9"
+        excel_op = "OperationData_IEEE_9_hypersim"
     elif grid_name == 'IEEE118':
         # IEEE 118
         raw = "IEEE118busNREL"
@@ -133,19 +133,20 @@ def main():
     # %% Create GridCal Model
     gridCal_grid = GridCal_powerflow.create_model(raw_file)
 
-    for line in gridCal_grid.lines:
-        bf = int(line.bus_from.code)
-        bt = int(line.bus_to.code)
-        line.rate = lines_ratings.loc[
-            lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
-                0], 'Max Flow (MW)']
-
-    for trafo in gridCal_grid.transformers2w:
-        bf = int(trafo.bus_from.code)
-        bt = int(trafo.bus_to.code)
-        trafo.rate = lines_ratings.loc[
-            lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
-                0], 'Max Flow (MW)']
+    if grid_name == 'IEEE118':
+        for line in gridCal_grid.lines:
+            bf = int(line.bus_from.code)
+            bt = int(line.bus_to.code)
+            line.rate = lines_ratings.loc[
+                lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
+                    0], 'Max Flow (MW)']
+    
+        for trafo in gridCal_grid.transformers2w:
+            bf = int(trafo.bus_from.code)
+            bt = int(trafo.bus_to.code)
+            trafo.rate = lines_ratings.loc[
+                lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
+                    0], 'Max Flow (MW)']
 
     # %% READ EXCEL FILE
     # Read data of grid elements from Excel file
