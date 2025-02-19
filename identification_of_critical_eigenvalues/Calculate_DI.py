@@ -11,6 +11,7 @@ from sklearn.cluster import OPTICS
 from sklearn.cluster import HDBSCAN
 import matplotlib.cm as cm
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
 import copy
 import joblib
 from clustering_selection import import_and_clean
@@ -77,7 +78,7 @@ def reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels, x_region
     return labels_reshape 
 #%% import X, real_selected_df, imag_selected_df
 
-# get the data to run the model on
+# get the data to run the model on (testing data)
 #loaded_data = "../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464"
 #loaded_data = "../results/datagen_ACOPF_LF09_seed8_nc3_ns3_d5_20250123_000244_4541"
 loaded_data = "../results/ACOPF_standalone_NREL_LF095_seed16_nc3_ns100_20250203_154241_9253"
@@ -99,6 +100,9 @@ model_name = type(model).__name__.lower()
 
 # Use the model
 labels = model.predict(X)
+
+# calculate the silhouette score for the tested data 
+silhouette_score = silhouette_score(X, labels)
 
 #plot the modal map 
 fig = plt.figure()
