@@ -188,4 +188,3 @@ pd.DataFrame.to_csv(case_op_all, f'DI_all_{loaded_data[-4:]}.csv', index=False)
 
 
 
-
