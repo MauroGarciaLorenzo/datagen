@@ -24,8 +24,10 @@ plt.rcParams.update({
 with open('../identification_of_critical_eigenvalues/data_number.json', 'r') as file:
     data_number = json.load(file)
 Data = pd.read_csv(f'../identification_of_critical_eigenvalues/DI_crit_{data_number[-4:]}.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
-Data = Data.dropna()
+# Data = Data.dropna()
 Data = Data.fillna(0)
+Data = Data.drop('Stable',axis=1)
+Data = Data.iloc[0:int(len(Data)/2)]
 #%% Remove correlated variables
 
 corr_matrix=abs(Data.corr())
