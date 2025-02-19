@@ -9,10 +9,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_absolute_error
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
+from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import train_test_split
 import os
 import json
-
+from sklearn.neural_network import MLPRegressor
+from sklearn.dummy import DummyRegressor
+from sklearn.ensemble import RandomForestRegressor
 
 
 plt.rcParams.update({
@@ -114,8 +117,9 @@ for DI_method in DIs_used:
         
         # %% train other models 
         
-        models_list = ['LR','Lasso','Ridge','ElasticNet']
-        models_dict={'LR': LinearRegression(),'Lasso': Lasso(alpha=0.001, max_iter=5000),'Ridge': Ridge(alpha=0.005),'ElasticNet': ElasticNet()}
+        models_list = ['LR','Lasso','Ridge','ElasticNet','DT','RF','MLP']
+        models_dict={'LR': LinearRegression(),'Lasso': Lasso(alpha=0.01, max_iter=5000),'Ridge': Ridge(alpha=0.005),'ElasticNet': ElasticNet(),
+                    'DT': DecisionTreeRegressor(),'RF':RandomForestRegressor(),'MLP':MLPRegressor(max_iter=5000)}
         
         lin_model_trained={}
         
@@ -137,7 +141,7 @@ for DI_method in DIs_used:
             r2_lin_models=[]
             for name in models_list:
                 pred=lin_model_trained[name][0].predict(Xtest)
-                r2_lin_models.append(mean_absolute_error(ytest,lin_model_trained[name][0].predict(Xtest)))
+                r2_lin_models.append(r2_score(ytest,lin_model_trained[name][0].predict(Xtest)))
                 
                 #ax.scatter(ytest,pred)
         
