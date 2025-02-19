@@ -9,6 +9,13 @@ warnings.filterwarnings("ignore")
 import GridCalEngine.Devices as gc
 from GridCalEngine.Devices.multi_circuit import MultiCircuit
 from stability_analysis.powerflow import GridCal_powerflow
+from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from stability_analysis.powerflow.process_powerflow import process_GridCal_PF_loadPQ
+from stability_analysis.preprocess import preprocess_data, read_data, \
+    process_raw
+#%%
+raw_file='../stability_analysis/stability_analysis/data/raw/ieee9_hypersim.raw'
 
 lines_info = pd.read_excel('./hypersim9buses/Lineas_9bus_IEEE_hypersim.xlsx')
 trafos_info = pd.read_excel('./hypersim9buses/Trafos_9bus_IEEE_hypersim.xlsx')
@@ -130,11 +137,11 @@ for tt,trafo in enumerate(gridCal_grid.transformers2w):
     w=1#2*np.pi*50
     trafos_info.loc[idx_trafo, 'Zp']=complex(trafos_info.loc[idx_trafo, 'Rp_pu'],trafos_info.loc[idx_trafo, 'Lp_pu']*w)
     trafos_info.loc[idx_trafo, 'Zs']=complex(trafos_info.loc[idx_trafo, 'Rs_pu'],trafos_info.loc[idx_trafo, 'Ls_pu']*w)
-    trafos_info.loc[idx_trafo, 'Zs"']=trafos_info.loc[idx_trafo, 'Zs']*(trafos_info.loc[idx_trafo, 'Vp']/trafos_info.loc[idx_trafo, 'Vs'])**2
+    #trafos_info.loc[idx_trafo, 'Zs"']=trafos_info.loc[idx_trafo, 'Zs']*(trafos_info.loc[idx_trafo, 'Vp']/trafos_info.loc[idx_trafo, 'Vs'])**2
     #trafos_info.loc[idx_trafo, 'Zm']=1/(1/trafos_info.loc[idx_trafo, 'Rm']+1/complex(0,2*np.pi*trafos_info.loc[idx_trafo, 'Lm']))
     trafos_info.loc[idx_trafo, 'Zm_par']=complex(0,trafos_info.loc[idx_trafo, 'Rm_pu']*trafos_info.loc[idx_trafo, 'Lm_pu']*w)/complex(trafos_info.loc[idx_trafo, 'Rm_pu'],trafos_info.loc[idx_trafo, 'Lm_pu']*w)
     
-    Z1= trafos_info.loc[idx_trafo, 'Zs"']+trafos_info.loc[idx_trafo, 'Zp']
+    Z1= trafos_info.loc[idx_trafo, 'Zs']+trafos_info.loc[idx_trafo, 'Zp']
     Z2= trafos_info.loc[idx_trafo, 'Zm_par']
     
     # Z3=Z1+1/Z2
@@ -144,14 +151,14 @@ for tt,trafo in enumerate(gridCal_grid.transformers2w):
     Zbase=1#trafos_info.loc[idx_trafo, 'Vp']**2/gridCal_grid.Sbase/1e6
     trafos_info.loc[idx_trafo, 'R_pu']=np.real(Z1)/Zbase
     trafos_info.loc[idx_trafo, 'X_pu']=np.imag(Z1)/Zbase
-    trafos_info.loc[idx_trafo, 'G_pu']=1/trafos_info.loc[idx_trafo, 'Rm_pu']#np.real(1/Z2)*Zbase
-    trafos_info.loc[idx_trafo, 'B_pu']=1/trafos_info.loc[idx_trafo, 'Lm_pu']#abs(np.imag(1/Z2)*Zbase)
+    trafos_info.loc[idx_trafo, 'G_pu']=1/5000#♣trafos_info.loc[idx_trafo, 'Rm_pu']#np.real(1/Z2)*Zbase
+    trafos_info.loc[idx_trafo, 'B_pu']=1/5000#trafos_info.loc[idx_trafo, 'Lm_pu']#abs(np.imag(1/Z2)*Zbase)
     
     trafo.R=0#np.real(Z1)/Zbase
-    trafo.X=trafo_x[tt]#np.imag(Z1)/Zbase
+    trafo.X=np.imag(Z1)/Zbase
     
-    trafo.G=0#np.real(1/Z2)*Zbase
-    trafo.B=0#np.imag(1/Z2)*Zbase
+    trafo.G=1/5000#np.real(1/Z2)*Zbase
+    trafo.B=1/5000#np.imag(1/Z2)*Zbase
     
     # trafo.R=trafos_info.loc[idx_trafo, 'R_pu']
     # trafo.X=trafos_info.loc[idx_trafo, 'X_pu']
@@ -165,8 +172,6 @@ for tt,trafo in enumerate(gridCal_grid.transformers2w):
 
     
 #%%
-from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
-
     
 # Get Power-Flow results with GridCal
 #SolverType.IWAMOTO, SolverType.NR, SolverType.LM, SolverType.FASTDECOUPLED
@@ -174,6 +179,20 @@ pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,solver_type=SolverType
 
 print('Converged:', pf_results.convergence_reports[0].converged_[0])
 
-from GridCalEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
-from stability_analysis.powerflow.process_powerflow import process_GridCal_PF_loadPQ
 pf_bus, pf_load, pf_gen = process_GridCal_PF_loadPQ(gridCal_grid, pf_results)
+Sf=pf_results.results.Sf
+
+#%%
+d_raw_data = process_raw.read_raw(raw_file)
+preprocess_data.preprocess_raw(d_raw_data)
+
+gridCal_gri_raw= GridCal_powerflow.create_model(raw_file)
+gridCal_gri_raw.fBase=60
+#%%
+pf_results_raw = GridCal_powerflow.run_powerflow(gridCal_gri_raw,solver_type=SolverType.NR, Qconrol_mode=ReactivePowerControlMode.NoControl)
+
+print('Converged:', pf_results_raw.convergence_reports[0].converged_[0])
+
+pf_bus_raw, pf_load_raw, pf_gen_raw = process_GridCal_PF_loadPQ(gridCal_gri_raw, pf_results_raw)
+Sf=pf_results.results.Sf
+
