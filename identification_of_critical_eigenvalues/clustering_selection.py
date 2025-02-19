@@ -198,7 +198,7 @@ def get_clustering_region_data(x_region, y_region, df_real_clean, df_imag_clean)
    
 if __name__ == "__main__":
     
-    #%% import and clean data
+    #%% import and clean data (training data)
     
     [df_real_clean, df_imag_clean]=import_and_clean('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464')
     n_cases_clean= len(df_real_clean)
