@@ -30,6 +30,7 @@ from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import qmc
 from sklearn.preprocessing import StandardScaler
 
+from packages.fontTools.ttLib.tables.S__i_l_f import content_string
 from .utils import check_dims, flatten_list, get_dimension, concat_df_dict, \
     generate_unique_id
 from .dimensions import Cell, Dimension
@@ -45,7 +46,8 @@ except ImportError:
 
 from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
-@task(returns=4, on_failure='FAIL')
+@constraint(is_local=True)
+@task(returns=4, on_failure='FAIL', priority=True)
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator, feasible_rate,
