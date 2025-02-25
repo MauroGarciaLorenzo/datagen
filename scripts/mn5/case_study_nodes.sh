@@ -33,7 +33,7 @@ echo "Using $working_dir as the working directory"
 echo "Current directory is $(pwd)"
 
 # Variables initialization
-computing_units=112
+computing_units=8
 num_nodes=1
 # Run COMPSs execution
 while [ ${num_nodes} -le 64 ]
