@@ -79,9 +79,10 @@ def reassign_eigenvalues(real_selected_df, imag_selected_df, X, labels, x_region
 #%% import X, real_selected_df, imag_selected_df
 
 # get the data to run the model on (testing data)
-loaded_data = "../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464"
+# loaded_data = "../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464" # training data 
 #loaded_data = "../results/datagen_ACOPF_LF09_seed8_nc3_ns3_d5_20250123_000244_4541"
 #loaded_data = "../results/ACOPF_standalone_NREL_LF095_seed16_nc3_ns100_20250203_154241_9253"
+loaded_data = "../results/ACOPF_standalone_NREL_LF085_seed24_nc3_ns1000_20250219_172120_5243"
 [df_real_clean, df_imag_clean]=import_and_clean(loaded_data)
 
 # make a json file with the data_number in it so the number can be transported for regression selection scripts
