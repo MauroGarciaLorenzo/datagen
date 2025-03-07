@@ -30,7 +30,6 @@ from sklearn.ensemble import RandomForestClassifier
 from scipy.stats import qmc
 from sklearn.preprocessing import StandardScaler
 
-from packages.fontTools.ttLib.tables.S__i_l_f import content_string
 from .utils import check_dims, flatten_list, get_dimension, concat_df_dict, \
     generate_unique_id
 from .dimensions import Cell, Dimension
@@ -141,6 +140,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     # Finish recursivity if entropy decreases or cell become too small
     if (delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth or
             feasible_cases/total_cases < feasible_rate):
+    
         print("Stopped cell:", flush=True)
         print("    Entropy: ", parent_entropy, flush=True)
         print("    Delta entropy: ", delta_entropy, flush=True)

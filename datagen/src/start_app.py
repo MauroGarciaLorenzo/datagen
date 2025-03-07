@@ -20,6 +20,7 @@ import random
 
 import numpy as np
 import pandas as pd
+import time
 
 from .sampling import explore_cell
 from .viz import print_results, boxplot
@@ -27,15 +28,16 @@ from .utils import clean_dir, save_results
 
 try:
     from pycompss.api.task import task
-    from pycompss.api.api import compss_wait_on
+    from pycompss.api.api import compss_wait_on, compss_barrier
+
 except ImportError:
     from datagen.dummies.task import task
-    from datagen.dummies.api import compss_wait_on
+    from datagen.dummies.api import compss_wait_on, compss_barrier
 
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
           seed=None, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0.5, func_params = {}):
+          feasible_rate=0.5, func_params = {}, warmup=False):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -63,6 +65,15 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
     :param plot_boxplot: Indicates whether a boxplot representing all variable_borders
     should be plotted
     """
+    # Load imports in every executor before execution
+    print("DESTINATION DIR:", dst_dir)
+    if warmup:
+        for _ in range(200):
+            warmup_nodes()
+        compss_barrier()
+
+    t0 = time.time()
+
     clean_dir("results")
     if ax is not None and len(dimensions) == 2:
         clean_dir("results/figures")
@@ -99,7 +110,12 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
     if plot_boxplot:
         boxplot(cases_df)
     print_results(execution_logs, cases_df)
-    save_results(cases_df, dims_df, execution_logs, output_dataframes, dst_dir)
+    save_results(cases_df, dims_df, execution_logs, output_dataframes, dst_dir, time.time()-t0)
 
     return cases_df, dims_df, execution_logs, output_dataframes
 
+
+@task(is_replicated=True)
+def warmup_nodes():
+    from . import sampling, utils, objective_function_ACOPF
+    time.sleep(1)

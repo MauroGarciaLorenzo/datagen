@@ -6,20 +6,25 @@ import matplotlib.pyplot as plt
 
 def load_data(csv_path):
     columns = ["JobID", "CaseStudy", "Time", "Nodes", "CPUs", "Status",
-               "Extra"]
+               "Extra", "NNodes"]
     df = pd.read_csv(csv_path, sep="|", names=columns)
     df = df[df["Status"] == "COMPLETED"]
-    df["Time"] = pd.to_timedelta(
-        df["Time"]).dt.total_seconds()
+    df["Time"] = pd.to_timedelta(df["Time"]).dt.total_seconds()
+    df["Nodes"] = pd.to_numeric(df["Nodes"], errors="coerce")
+    df = df.dropna(subset=["Nodes", "Time"])  # Remove rows with invalid data
+    df["Nodes"] = df["Nodes"].astype(int)
     return df
 
 
 def compute_metrics(df):
     grouped = df.groupby("Nodes")["Time"].agg(["mean", "std"])
     grouped = grouped.sort_index()
-    base_time = grouped.iloc[0]["mean"]  # Tiempo en 1 nodo
+    if grouped.empty:
+        return grouped
+    base_time = grouped.iloc[0]["mean"]
     grouped["Speedup"] = base_time / grouped["mean"]
-    grouped["Efficiency"] = grouped["Speedup"] / grouped.index
+    grouped["Efficiency"] = grouped["Speedup"] / grouped.index.to_numpy(
+        dtype=float)
     return grouped
 
 
@@ -29,7 +34,6 @@ def plot_scaling(grouped, output_dir):
     efficiency = grouped["Efficiency"]
     times = grouped["mean"]
     errors = grouped["std"]
-
     os.makedirs(output_dir, exist_ok=True)
 
     # Strong Scaling Plot
@@ -62,14 +66,16 @@ def plot_scaling(grouped, output_dir):
     plt.legend()
     plt.grid()
     plt.savefig(os.path.join(output_dir, "efficiency.png"), dpi=300)
-
     plt.show()
 
 
 def main(csv_path):
     df = load_data(csv_path)
     grouped = compute_metrics(df)
-    print("--------_---", os.getcwd())
+    print(grouped)
+    if grouped.empty:
+        print("No valid data to plot.")
+        return
     output_dir = "../../figures/experiment_1_scalability"
     plot_scaling(grouped, output_dir)
 

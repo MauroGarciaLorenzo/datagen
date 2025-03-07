@@ -174,7 +174,7 @@ def sort_df_last_columns(df):
 
 
 def save_results(cases_df, dims_df, execution_logs, output_dataframes,
-                 dst_dir):
+                 dst_dir, execution_time):
     """
     Save set of results including the main cases/dims dataframes plus
     execution logs and all elements inside the output_dataframes dictionary,
@@ -189,6 +189,10 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
 
     cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"))
     dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"))
+    execution_time_df = pd.DataFrame(
+        {"execution_time": [execution_time]})
+
+    execution_time_df.to_csv((os.path.join(dst_dir, "execution_time.csv")), index=False)
 
     for key, value in output_dataframes.items():
         if isinstance(value, pd.DataFrame):
@@ -367,6 +371,7 @@ def all_empty(data):
 
 
 def parse_setup_file(setup_path):
+    print(setup_path)
     # Check setup file path
     if not setup_path:
         current_directory = os.path.dirname(__file__)

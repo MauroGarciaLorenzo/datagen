@@ -53,7 +53,6 @@ def main(working_dir='', path_data='', setup_path=''):
         slurm_nodes_str = f"_nodes{slurm_num_nodes}"
     print("NUMBER OF NODES: ", slurm_num_nodes)
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-
     # CASE CONFIGURATION
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -217,7 +216,7 @@ def main(working_dir='', path_data='', setup_path=''):
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        dst_dir=path_results
+        dst_dir=path_results, warmup=True
     )
 
     stability_array = compss_wait_on(stability_array)
