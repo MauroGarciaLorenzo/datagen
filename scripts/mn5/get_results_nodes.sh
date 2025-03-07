@@ -33,15 +33,29 @@ do
     $6=="COMPLETED" && $2 ~ /^nodes[0-9]+_case_study$/ {
         job_id=$1
         n_cases=0
+        execution_time=""
+        
+        # Find the job directory
         cmd="find " results_dir " -type d -name \"*" job_id "*\" | head -n 1"
         cmd | getline job_dir
         close(cmd)
+        
         if (job_dir != "") {
+            # Get the number of cases from cases_df.csv
             cases_file=job_dir "/cases_df.csv"
             cmd="wc -l < " cases_file
             cmd | getline n_cases
             close(cmd)
+            
+            # Get the execution time from execution_time.csv
+            execution_time_file=job_dir "/execution_time.csv"
+            cmd="tail -n +2 " execution_time_file " | head -n 1"
+            cmd | getline execution_time
+            close(cmd)
         }
+        
+        # Replace the Elapsed field with the execution time
+        $3 = execution_time
         print $0, n_cases
     }' >> "$results_path"
 

@@ -9,9 +9,16 @@ def load_data(csv_path):
                "Extra", "NNodes"]
     df = pd.read_csv(csv_path, sep="|", names=columns)
     df = df[df["Status"] == "COMPLETED"]
-    df["Time"] = pd.to_timedelta(df["Time"]).dt.total_seconds()
+    
+    # Convert the "Time" column to numeric (assuming it's already in seconds)
+    df["Time"] = pd.to_numeric(df["Time"], errors="coerce")
+    
+    # Filter out invalid rows (negative or NaN times)
+    df = df[df["Time"] >= 0]
+    
+    # Ensure "Nodes" is numeric and drop rows with invalid data
     df["Nodes"] = pd.to_numeric(df["Nodes"], errors="coerce")
-    df = df.dropna(subset=["Nodes", "Time"])  # Remove rows with invalid data
+    df = df.dropna(subset=["Nodes", "Time"])
     df["Nodes"] = df["Nodes"].astype(int)
     return df
 
@@ -21,10 +28,11 @@ def compute_metrics(df):
     grouped = grouped.sort_index()
     if grouped.empty:
         return grouped
+    
+    # Calculate speedup and efficiency
     base_time = grouped.iloc[0]["mean"]
     grouped["Speedup"] = base_time / grouped["mean"]
-    grouped["Efficiency"] = grouped["Speedup"] / grouped.index.to_numpy(
-        dtype=float)
+    grouped["Efficiency"] = grouped["Speedup"] / grouped.index.to_numpy(dtype=float)
     return grouped
 
 
