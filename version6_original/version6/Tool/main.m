@@ -9,7 +9,7 @@ addpath(genpath(pwd))
 %% SET INPUT DATA
 
 % Case name as in Excel files
-    caseName =  '/TestDyn_windfarm/comb1_eq';%'test_MPC'; %
+    caseName =  'IEEE118_FULL';%'/TestDyn_windfarm/comb1_eq';%'test_MPC'; %
     caseNameNLin =  eraseBetween(regexprep(caseName,{'/'},{'_'}),1,1);%'test_MPC'; %
     caseNameLin =  caseNameNLin;%'OP_7'%'test_MPC'; %
 
