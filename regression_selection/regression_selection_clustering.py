@@ -7,16 +7,52 @@ selects regression model using only using damping indices created from eigencalu
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import r2_score, mean_absolute_error
+from sklearn.metrics import make_scorer, r2_score, mean_absolute_error
 from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.model_selection import train_test_split
-import os
-import json
+from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.neural_network import MLPRegressor
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.externals.joblib import Parallel, delayed
+import os
+import json
 
+
+def compare_models(models_list, X, Y, Data_size, n_folds=6, scoring=r2_score):#'accuracy'):
+
+    df_model_results = pd.DataFrame(columns=['Model','Mean','Std','cv_results', 'Data_size'])
+    
+    scorer = make_scorer(scoring)
+
+    results = []
+    names = []
+
+    for name, model in models_list:
+        kfold = KFold(n_splits=n_folds, shuffle=True)
+        cv_results = cross_val_score(model, X, Y, cv=kfold, scoring=scorer)
+        results.append(cv_results)
+        names.append(name)
+        # msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
+        df_model_results.loc[len(df_model_results.index)] = [name, cv_results.mean(), cv_results.std(), cv_results, Data_size]
+        # print(msg)
+
+    return df_model_results
+
+
+def get_split_data(num_splits):
+        
+    Data_new = pd.read_csv(f'../identification_of_critical_eigenvalues/{DI_method}_{data_number[-4:]}.csv').drop(['Unnamed: 0', 'case_id', 'Stability', 'Stable'], axis=1)
+    Data_8464 = pd.read_csv(f'../identification_of_critical_eigenvalues/{DI_method}_8464.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
+    Data_combined = pd.concat([Data_new, Data_8464]).fillna(0)
+
+    shuffled_data = np.random.permutation(Data_combined)  # Shuffle the data
+    split_data = np.array_split(shuffled_data, num_splits)  # Split into 15 parts
+    Data = [pd.DataFrame(part, columns = Data_combined.columns) for part in split_data]  
+    for i in range(1, len(split_data)):
+        Data[i] = pd.concat([Data[i-1],Data[i]])
+        
+    return Data
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -25,33 +61,18 @@ plt.rcParams.update({
 })
 
 
-
-
 DIs_used = ['DI_crit', 'DI_all']
 highest_r2_methods = {}
-for DI_method in DIs_used:
-    #%% Load Data and split it 
-    # with open('../identification_of_critical_eigenvalues/data_number.json', 'r') as file:
-    #     data_number = json.load(file)
-    # Data = pd.read_csv(f'../identification_of_critical_eigenvalues/DI_crit_{data_number[-4:]}.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
-
-    Data_larger = pd.read_csv(f'../identification_of_critical_eigenvalues/{DI_method}_8464.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
-    Data_larger = Data_larger.fillna(0)
-    # Data_larger = Data_larger.drop('Stable',axis=1)
-
-    Data_half = Data_larger.iloc[0:int(len(Data_larger)/2)]
-
-    Data_smaller = pd.read_csv(f'../identification_of_critical_eigenvalues/{DI_method}_9253.csv').drop(['Unnamed: 0', 'case_id', 'Stability'], axis=1)
-    Data_smaller = Data_smaller.fillna(0)
-    Data_smaller = Data_smaller.drop('Stable',axis=1)
-
-    Data_combined = pd.concat([Data_larger, Data_smaller])
+for DI_method in DIs_used:    
+    with open('../identification_of_critical_eigenvalues/data_number.json', 'r') as file:
+        data_number = json.load(file)
     
+    num_splits = 15
+    Data = get_split_data(num_splits)
+    Data_sizes = [i.shape[0] for i in Data]
     
-    Data = [Data_half, Data_larger, Data_combined]
-    Data_sizes = [Data_half.shape[0], Data_larger.shape[0], Data_combined.shape[0]]
-    
-    r2_summary=pd.DataFrame()
+    cumulative_r2_summary=pd.DataFrame()
+    highest_r2_scores = pd.DataFrame(columns = ['data_size', 'method', 'mean_r2_score'])
     for i in range(len(Data)):
         #%% Remove correlated variables
         corr_matrix=abs(Data[i].corr())
@@ -120,68 +141,44 @@ for DI_method in DIs_used:
         models_list = ['LR','Lasso','Ridge','ElasticNet','DT','RF','MLP']
         models_dict={'LR': LinearRegression(),'Lasso': Lasso(alpha=0.01, max_iter=5000),'Ridge': Ridge(alpha=0.005),'ElasticNet': ElasticNet(),
                     'DT': DecisionTreeRegressor(),'RF':RandomForestRegressor(),'MLP':MLPRegressor(max_iter=5000)}
+        models_tuple_list = [(name, models_dict[name]) for name in models_list]
         
         lin_model_trained={}
         
         for name in models_list:
-            lin_model_trained[name]=[]
-            lin_model_trained[name].append(models_dict[name].fit(Xtrain,ytrain))
-        
+            lin_model_trained[name] = models_dict[name].fit(Xtrain, ytrain)
+            
         #%% calculate r2 scores 
-        
         obj_func_ind=0
         for obj_fun in ['one_objective_function']: #['Min_P_SG','Min_P_losses']:
         
             # pred_mars=mars_model.predict(Xtest)
             # r2_mars=r2_score(ytest,pred_mars.reshape(-1,1))
-        
-            # fig=plt.figure(figsize=(20,5))
-            # ax=fig.add_subplot()
-        
-            r2_lin_models=[]
-            for name in models_list:
-                pred=lin_model_trained[name][0].predict(Xtest)
-                r2_lin_models.append(r2_score(ytest,lin_model_trained[name][0].predict(Xtest)))
-                
-                #ax.scatter(ytest,pred)
-        
-            r2_lin_models=pd.DataFrame(r2_lin_models).T
-            r2_lin_models.columns=models_list
-        
-            r2_summary.loc[i,'Obj_Fun']=obj_fun
-            r2_summary.loc[i, 'Data_Sizes'] = Data_sizes[i]
-            # r2_summary.loc[obj_func_ind, 'MARS'] = r2_mars
             
-            for lin_model in models_list:
-                r2_summary.loc[i,lin_model]=r2_lin_models.loc[0,lin_model]
+            
+            n_folds = 6
+            r2_summary = compare_models(models_tuple_list, Xtrain, ytrain, Data_sizes[i], n_folds=n_folds, scoring=r2_score)
+            print(r2_summary)
         
-            obj_func_ind=obj_func_ind+1
+            # # r2_summary.loc[i,'Obj_Fun']=obj_fun
+            # obj_func_ind=obj_func_ind+1
         
-        
-    #%% get highest scores 
-    highest_r2 = r2_summary.iloc[:, :2].copy()
-    r2_summary['Method'] = np.nan
-    r2_summary['Highest_score'] = np.nan
-    for row in range(len(highest_r2)):
-        # want the third column to be the method 
-        highest_r2.loc[row,'Method']=r2_summary.drop(['Obj_Fun','Data_Sizes' ],axis=1).iloc[row,:].idxmax()
-        
-        # want the fourth column to be the highest score 
-        highest_r2.loc[row,'Highest_score']=r2_summary.drop(['Obj_Fun','Data_Sizes' ],axis=1).iloc[row,:].max()
-    
-    highest_r2.rename(columns={'Data_Sizes': 'Best_Method'}, inplace=True)
-    highest_r2.rename(columns={'LR': 'Highest_Score'}, inplace=True)
-    
-    
-    print(r2_summary)
-    
-    pd.DataFrame.to_csv(r2_summary,f'R2_summary_{DI_method}.csv')
-    pd.DataFrame.to_csv(highest_r2,f'Highest_Scores_{DI_method}.csv')
+            
+            highest_r2_scores.loc[i, 'data_size'] = Data_sizes[i]
+            highest_r2_scores.loc[i,'mean_r2_score'] = r2_summary.loc[:,"Mean"].max()
+            highest_r2_scores.loc[i,'method'] = r2_summary.loc[r2_summary.loc[:,"Mean"].idxmax(),"Model"]
+            print(highest_r2_scores)
+            
+            cumulative_r2_summary = pd.concat([cumulative_r2_summary, r2_summary], ignore_index=True)
+            print(cumulative_r2_summary)
+
+    pd.DataFrame.to_csv(cumulative_r2_summary,f'R2_summary_{DI_method}.csv')
+    pd.DataFrame.to_csv(highest_r2_scores,f'Highest_Scores_{DI_method}.csv')
     
     # plot the highest scores 
     fig = plt.figure(figsize=(5, 6))
     ax = fig.add_subplot()
-    ax.scatter(highest_r2['Best_Method'], highest_r2['Highest_score'])
+    ax.scatter(highest_r2_scores['data_size'], highest_r2_scores['mean_r2_score'])
     ax.grid()
     ax.set_title(f'R2 Scores for {DI_method}', fontsize=15)
     ax.set_xlabel('Number of Values', fontsize=15)
@@ -189,22 +186,23 @@ for DI_method in DIs_used:
     # fig.savefig('.png')
     fig.show()
 
-
-    highest_r2_methods[DI_method] = highest_r2
+    highest_r2_methods[DI_method] = highest_r2_scores
+    
 
 # plot the graph with both DI generation methods 
-
-# plot the highest scores 
 fig = plt.figure(figsize=(5, 6))
 ax = fig.add_subplot()
-ax.scatter(highest_r2_methods['DI_crit']['Best_Method'], highest_r2_methods['DI_crit']['Highest_score'], label='With Clustering')
-ax.scatter(highest_r2_methods['DI_all']['Best_Method'], highest_r2_methods['DI_all']['Highest_score'], label='Without Clustering')
+ax.scatter(highest_r2_methods['DI_crit']['data_size'], highest_r2_methods['DI_crit']['mean_r2_score'], label='DI Critical Eigs')
+ax.scatter(highest_r2_methods['DI_all']['data_size'], highest_r2_methods['DI_all']['mean_r2_score'], label='DI All Eigs')
 ax.grid()
-ax.set_title(f'R2 Scores', fontsize=15)
-ax.set_xlabel('Number of Values', fontsize=15)
+# ax.set_title('R2 Scores', fontsize=15)
+ax.set_xlabel('Number of Training Instances', fontsize=15)
+ax.set_ylabel('R2 Scores of Regression Models', fontsize = 15)
 ax.legend()
 fig.tight_layout()
-# fig.savefig('.png')
+fig.savefig('R2_scores.png')
 fig.show()
+
+
 
 

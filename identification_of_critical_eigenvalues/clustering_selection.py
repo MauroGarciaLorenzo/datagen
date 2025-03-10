@@ -197,18 +197,15 @@ def get_clustering_region_data(x_region, y_region, df_real_clean, df_imag_clean)
     return selected_df
    
 if __name__ == "__main__":
-    
-    #%% import and clean data (training data)
-    
+
     [df_real_clean, df_imag_clean]=import_and_clean('../results/datagen_ACOPF_LF09_seed17_nc5_ns5_d5_20241119_115327_8464')
     n_cases_clean= len(df_real_clean)
-    
-    #%% plot the full modal map with highest values 
     
     # select the eigenvalues that have the highest real parts in each row 
     df_real_clean_max = df_real_clean[df_real_clean.columns[0:2]]
     df_imag_clean_max = df_imag_clean[df_imag_clean.columns[0:2]]
     
+    #%% plot the full modal map with highest values 
     fig=plt.figure()
     ax=fig.add_subplot()
     ax.set_xlabel('Real Axis',fontsize=25)
