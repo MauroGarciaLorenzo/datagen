@@ -53,9 +53,10 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def main():
+def main(working_dir='', path_data='', setup_path=''):
     # %% Parse arguments
-    working_dir, path_data, setup_path = parse_args(sys.argv)
+    working_dir, path_data, setup_path = parse_args(
+       [None, working_dir, path_data, setup_path])
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile,
      _, _, _) = \
@@ -147,7 +148,18 @@ def main():
             trafo.rate = lines_ratings.loc[
                 lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                     0], 'Max Flow (MW)']
+    if grid_name == 'IEEE9':
+        gridCal_grid.fBase=60
+        for idx_gen,gen in enumerate(gridCal_grid.get_generators()):
+            gen.Pf=0.95 
 
+            gen.Pmax=d_op['Generators'].loc[idx_gen,'Pmax']
+            gen.Pmin=d_op['Generators'].loc[idx_gen,'Pmin']
+            gen.Qmax=d_op['Generators'].loc[idx_gen,'Qmax']
+            gen.Qmin=d_op['Generators'].loc[idx_gen,'Qmin']
+            
+            gridCal_grid.transformers2w[idx_gen].rate=gen.Snom
+            
     # %% READ EXCEL FILE
     # Read data of grid elements from Excel file
     d_grid, d_grid_0 = read_data.read_sys_data(excel_sys)
@@ -232,14 +244,15 @@ def main():
     stability_array = []
     output_dataframes_array = []
     for _, case in cases_df.iterrows():
-        stability, output_dataframes = eval_stability(
-            case=case,
-            f=feasible_power_flow_ACOPF,
-            func_params=func_params,
-            generator=generator)
-        stability_array.append(stability)
-        output_dataframes_array.append(output_dataframes)
-        n_pf = n_pf + 1
+        if _ == 5:
+            stability, output_dataframes = eval_stability(
+                case=case,
+                f=feasible_power_flow_ACOPF,
+                func_params=func_params,
+                generator=generator)
+            stability_array.append(stability)
+            output_dataframes_array.append(output_dataframes)
+            n_pf = n_pf + 1
 
     # %% SAVE RESULTS
     stability_array = compss_wait_on(stability_array)
@@ -268,4 +281,4 @@ def main():
 
             
 if __name__ == "__main__":
-    main()
+    main()#setup_path="./setup/default_setup_9buses.yaml")
