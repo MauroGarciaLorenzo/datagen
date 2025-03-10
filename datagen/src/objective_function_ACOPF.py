@@ -97,7 +97,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # d_grid, gridCal_grid, data_old = process_opal.update_OP_from_RT(d_grid, gridCal_grid, data_old)
 
     # Get Power-Flow results with GridCal
-    pf_results = GridCal_powerflow.run_powerflow(gridCal_grid)
+    pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
 
     print('Converged:', pf_results.convergence_reports[0].converged_[0])
 
@@ -111,8 +111,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     nc.generator_data.cost_0[:] = 0
     nc.generator_data.cost_1[:] = 0
     nc.generator_data.cost_2[:] = 0
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1)#, tolerance=1e-8, max_iter=100)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-8, ips_iterations=100)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.NoControl)#, max_iter=100)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-4, ips_iterations=200)
 
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
 
@@ -155,8 +155,11 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     p_sg = np.sum(d_grid['T_gen'].query('element == "SG"')['P']) * 100
     p_cig = np.sum(d_grid['T_gen'].query('element != "SG"')['P']) * 100
-    perc_gfor = np.sum(d_grid['T_gen'].query('element == "GFOR"')['P']) / p_cig*100
-
+    if p_cig!=0:
+        perc_gfor = np.sum(d_grid['T_gen'].query('element == "GFOR"')['P']) / p_cig*100
+    else:
+        perc_gfor=0
+        
     if dimensions:
         valid_point = True
         for d in dimensions:
