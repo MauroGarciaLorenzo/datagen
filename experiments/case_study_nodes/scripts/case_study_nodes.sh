@@ -19,7 +19,7 @@ username="${parts[-1]}"
 
 # Set up variables and directories
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-cd "${SCRIPT_DIR}"/../.. || exit
+cd "${SCRIPT_DIR}"/../../.. || exit
 datagen_root_dir=$(pwd)
 stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
@@ -29,6 +29,9 @@ export PYTHONPATH="${datagen_root_dir}/packages/:${PYTHONPATH}:${datagen_root_di
 
 # Print user information
 echo "Username is: $username"
+echo "Stability dir: $stability_dir"
+echo "Input data: $input_data"
+echo "Yaml file: $yaml_file"
 echo "Using $working_dir as the working directory"
 echo "Current directory is $(pwd)"
 

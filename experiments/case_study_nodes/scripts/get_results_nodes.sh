@@ -7,16 +7,11 @@ username="${parts[-1]}"
 # Set up variables and directories
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 cd "${SCRIPT_DIR}"/../.. || exit
-results_path="/gpfs/scratch/bsc19/${username}/tests/case_study_nodes/results/results.csv"
-results_dir="${SCRIPT_DIR}/../../results"
+results_dir="${SCRIPT_DIR}/../results/raw"
+results_path="${results_dir}/results.csv"
 
-# Create the directory for the results file if it doesn't exist
-mkdir -p "$(dirname "$results_path")"
-
-# Create the results file if it doesn't exist
-if [ ! -f "$results_path" ]; then
-    echo "JobID|JobName|Elapsed|NNodes|AllocCPUS|State|ExitCode|n_cases" > "$results_path"
-fi
+# Ensure results directory exists
+mkdir -p "$results_dir"
 
 # Print user information
 echo "Username is: $username"
