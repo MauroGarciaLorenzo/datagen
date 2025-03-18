@@ -84,7 +84,8 @@ def main(csv_path):
     if grouped.empty:
         print("No valid data to plot.")
         return
-    output_dir = "../../figures/experiment_1_scalability"
+    dirname = os.path.dirname(__file__)
+    output_dir = f"{dirname}/../results"
     plot_scaling(grouped, output_dir)
 
 
