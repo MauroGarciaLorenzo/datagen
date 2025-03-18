@@ -165,6 +165,7 @@ logs/
 *.jpg
 #*.png
 *.csv
+!results.csv
 *.txt
 *.out
 *.err
