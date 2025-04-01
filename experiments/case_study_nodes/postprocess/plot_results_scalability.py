@@ -71,7 +71,7 @@ def plot_scaling(grouped, output_dir):
 
     # Strong Scaling Plot
     plt.figure(figsize=(6.4, 4.8))
-    plt.errorbar(nodes, speedup, yerr=errors_speedup, fmt='o-', markersize=4, label='Measured Speedup', capsize=5)
+    plt.errorbar(nodes, speedup, yerr=errors_speedup, fmt='o-', markersize=2, label='Measured Speedup', capsize=5)
     plt.plot(nodes, nodes, '--', label='Ideal Speedup')
     plt.xlabel("Number of Nodes")
     plt.ylabel("Speedup")
@@ -84,7 +84,7 @@ def plot_scaling(grouped, output_dir):
     plt.figure(figsize=(6.4, 4.8))
     times_hours = times / 3600  # Convert seconds to hours
     errors_hours = errors_time / 3600
-    plt.errorbar(nodes, times_hours, yerr=errors_hours, fmt='o-', markersize=4, label='Execution Time', capsize=5)
+    plt.errorbar(nodes, times_hours, yerr=errors_hours, fmt='o-', markersize=2, label='Execution Time', capsize=5)
     plt.xlabel("Number of Nodes")
     plt.ylabel("Execution Time (hours)")
     plt.legend()
@@ -95,7 +95,7 @@ def plot_scaling(grouped, output_dir):
 
     # Efficiency Plot
     plt.figure(figsize=(6.4, 4.8))
-    plt.errorbar(nodes, efficiency, yerr=errors_efficiency, fmt='o-', markersize=4, label='Measured Efficiency', capsize=5)
+    plt.errorbar(nodes, efficiency, yerr=errors_efficiency, fmt='o-', markersize=2, label='Measured Efficiency', capsize=5)
     plt.axhline(y=1, linestyle='--', color='r', label='Ideal Efficiency')
     plt.xlabel("Number of Nodes")
     plt.ylabel("Efficiency")
@@ -109,14 +109,14 @@ def plot_scaling(grouped, output_dir):
     for filename in ["strong_scaling", "execution_time", "efficiency"]:
         plt.figure(figsize=(6.4, 4.8))
         if filename == "execution_time":
-            plt.errorbar(nodes, times_hours, yerr=errors_hours, fmt='o-', markersize=4, label='Execution Time', capsize=5)
+            plt.errorbar(nodes, times_hours, yerr=errors_hours, fmt='o-', markersize=2, label='Execution Time', capsize=5)
             plt.ylabel("Execution Time (hours)")
         elif filename == "strong_scaling":
-            plt.errorbar(nodes, speedup, yerr=errors_speedup, fmt='o-', markersize=4, label='Measured Speedup', capsize=5)
+            plt.errorbar(nodes, speedup, yerr=errors_speedup, fmt='o-', markersize=2, label='Measured Speedup', capsize=5)
             plt.plot(nodes, nodes, '--', label='Ideal Speedup')
             plt.ylabel("Speedup")
         else:
-            plt.errorbar(nodes, efficiency, yerr=errors_efficiency, fmt='o-', markersize=4, label='Measured Efficiency', capsize=5)
+            plt.errorbar(nodes, efficiency, yerr=errors_efficiency, fmt='o-', markersize=2, label='Measured Efficiency', capsize=5)
             plt.axhline(y=1, linestyle='--', color='r', label='Ideal Efficiency')
             plt.ylabel("Efficiency")
 
