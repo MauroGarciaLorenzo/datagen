@@ -75,7 +75,11 @@ def plot_scaling(grouped, output_dir):
     plt.plot(nodes, nodes, '--', label='Ideal Speedup')
     plt.xlabel("Number of Nodes")
     plt.ylabel("Speedup")
-    plt.legend()
+    plt.legend(
+        frameon=True,
+        framealpha=0.7,
+        facecolor='white'
+    )
     plt.grid()
     plt.savefig(os.path.join(output_dir, "strong_scaling.png"), dpi=300)
     plt.savefig(os.path.join(output_dir, "strong_scaling.pdf"), dpi=300)
@@ -87,7 +91,11 @@ def plot_scaling(grouped, output_dir):
     plt.errorbar(nodes, times_hours, yerr=errors_hours, fmt='o-', markersize=2, label='Execution Time', capsize=5)
     plt.xlabel("Number of Nodes")
     plt.ylabel("Execution Time (hours)")
-    plt.legend()
+    plt.legend(
+        frameon=True,
+        framealpha=0.7,
+        facecolor='white'
+    )
     plt.grid()
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "execution_time.png"), dpi=300)
@@ -99,7 +107,11 @@ def plot_scaling(grouped, output_dir):
     plt.axhline(y=1, linestyle='--', color='r', label='Ideal Efficiency')
     plt.xlabel("Number of Nodes")
     plt.ylabel("Efficiency")
-    plt.legend()
+    plt.legend(
+        frameon=True,
+        framealpha=0.7,
+        facecolor='white'
+    )
     plt.grid()
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "efficiency.png"), dpi=300)
@@ -122,7 +134,11 @@ def plot_scaling(grouped, output_dir):
 
         plt.xlabel("Number of Nodes")
         plt.xscale("log")  # Logarithmic scale
-        plt.legend()
+        plt.legend(
+            frameon=True,
+            framealpha=0.7,
+            facecolor='white'
+        )
         plt.grid()
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, f"{filename}_log.png"), dpi=300)
