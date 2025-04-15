@@ -29,6 +29,11 @@ def complex_2d_shape_obj_func(case, **kwargs):
     return np.where(z > 0, 1, 0), {}
 
 
+def test_sensitivity_obj_func(case, **kwargs):
+    x = case['tau_Dim_0']
+    return np.where(x > 0.5, 1, 0), {}
+
+
 def complex_2d_shape(x, y):
     z = (np.sin(x * np.pi) * np.cos(y * np.pi)
          + np.sin(3 * x) + np.cos(2 * y) + np.sin(x * y))

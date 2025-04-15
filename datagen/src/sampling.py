@@ -548,6 +548,8 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
             dim_max_importance.divs *= 2
             importances[index_max_importance] /= 2
     # plot_importances_and_divisions(dimensions, importances)
+    for d in dimensions:
+        print("Dimension:", d.label, ", divisions:", d.divs)
     return dimensions
 
 
