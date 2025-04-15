@@ -581,7 +581,7 @@ def gen_grid(dimensions):
     ini = tuple(dim.borders[0] for dim in independent_dims_subdv if dim.divs > 1)
     fin = tuple(dim.borders[1] for dim in independent_dims_subdv if dim.divs > 1)
     div = tuple(dim.divs for dim in independent_dims_subdv if dim.divs > 1)
-    total_div = np.prod(div)
+    total_div = int(np.prod(div))
     if total_div == 0:
         raise Exception(f"Too many divisions defined. div: {div}")
     grid = []
