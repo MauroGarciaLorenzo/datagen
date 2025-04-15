@@ -71,7 +71,7 @@ def main(working_dir='', path_data='', setup_path=''):
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    dir_name = f"ACOPF_standalone_NREL_LF085_seed{seed}_nc{n_cases}_ns{n_samples}" \
+    dir_name = f"ACOPF_standalone_NREL_LF09_seed{seed}_nc{n_cases}_ns{n_samples}" \
                f"_{timestamp}_{rnd_num}"
     path_results = os.path.join(
         working_dir, "results", dir_name)
@@ -83,7 +83,7 @@ def main(working_dir='', path_data='', setup_path=''):
     if grid_name == 'IEEE9':
         # IEEE 9
         raw = "ieee9_hypersim"
-        excel_headers = "IEEE_9_headers"
+        excel_headers = "Empty_template_V6"#"IEEE_9_headers"
         excel_data = "IEEE_9"
         excel_op = "OperationData_IEEE_9_hypersim"
     elif grid_name == 'IEEE118':
@@ -244,15 +244,15 @@ def main(working_dir='', path_data='', setup_path=''):
     stability_array = []
     output_dataframes_array = []
     for _, case in cases_df.iterrows():
-        if _ == 5:
-            stability, output_dataframes = eval_stability(
-                case=case,
-                f=feasible_power_flow_ACOPF,
-                func_params=func_params,
-                generator=generator)
-            stability_array.append(stability)
-            output_dataframes_array.append(output_dataframes)
-            n_pf = n_pf + 1
+#        if _ == 5:
+        stability, output_dataframes = eval_stability(
+            case=case,
+            f=feasible_power_flow_ACOPF,
+            func_params=func_params,
+            generator=generator)
+        stability_array.append(stability)
+        output_dataframes_array.append(output_dataframes)
+        n_pf = n_pf + 1
 
     # %% SAVE RESULTS
     stability_array = compss_wait_on(stability_array)
@@ -281,4 +281,4 @@ def main(working_dir='', path_data='', setup_path=''):
 
             
 if __name__ == "__main__":
-    main()#setup_path="./setup/default_setup_9buses.yaml")
+    main(setup_path="./setup/default_setup_9buses.yaml")
