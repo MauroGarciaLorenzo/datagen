@@ -30,7 +30,8 @@ import os
 import sys
 import random
 from datetime import datetime
-
+import warnings
+warnings.filterwarnings('ignore')
 
 from datagen.src.utils import save_dataframes, parse_setup_file, parse_args, concat_df_dict, save_results
 from datagen.src.dimensions import Dimension
@@ -52,9 +53,10 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
-def main():
+def main(working_dir='', path_data='', setup_path=''):
     # %% Parse arguments
-    working_dir, path_data, setup_path = parse_args(sys.argv)
+    working_dir, path_data, setup_path = parse_args(
+       [None, working_dir, path_data, setup_path])
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile,
      _, _, _) = \
@@ -69,7 +71,7 @@ def main():
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    dir_name = f"ACOPF_standalone_NREL_LF095_seed{seed}_nc{n_cases}_ns{n_samples}" \
+    dir_name = f"ACOPF_standalone_NREL_LF09_seed{seed}_nc{n_cases}_ns{n_samples}" \
                f"_{timestamp}_{rnd_num}"
     path_results = os.path.join(
         working_dir, "results", dir_name)
@@ -80,10 +82,10 @@ def main():
     # %% SET FILE NAMES AND PATHS
     if grid_name == 'IEEE9':
         # IEEE 9
-        raw = "ieee9_6"
-        excel_headers = "IEEE_9_headers"
+        raw = "ieee9_hypersim"
+        excel_headers = "Empty_template_V6"#"IEEE_9_headers"
         excel_data = "IEEE_9"
-        excel_op = "OperationData_IEEE_9"
+        excel_op = "OperationData_IEEE_9_hypersim"
     elif grid_name == 'IEEE118':
         # IEEE 118
         raw = "IEEE118busNREL"
@@ -132,20 +134,32 @@ def main():
     # %% Create GridCal Model
     gridCal_grid = GridCal_powerflow.create_model(raw_file)
 
-    for line in gridCal_grid.lines:
-        bf = int(line.bus_from.code)
-        bt = int(line.bus_to.code)
-        line.rate = lines_ratings.loc[
-            lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
-                0], 'Max Flow (MW)']
+    if grid_name == 'IEEE118':
+        for line in gridCal_grid.lines:
+            bf = int(line.bus_from.code)
+            bt = int(line.bus_to.code)
+            line.rate = lines_ratings.loc[
+                lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
+                    0], 'Max Flow (MW)']
+    
+        for trafo in gridCal_grid.transformers2w:
+            bf = int(trafo.bus_from.code)
+            bt = int(trafo.bus_to.code)
+            trafo.rate = lines_ratings.loc[
+                lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
+                    0], 'Max Flow (MW)']
+    if grid_name == 'IEEE9':
+        gridCal_grid.fBase=60
+        for idx_gen,gen in enumerate(gridCal_grid.get_generators()):
+            gen.Pf=0.95 
 
-    for trafo in gridCal_grid.transformers2w:
-        bf = int(trafo.bus_from.code)
-        bt = int(trafo.bus_to.code)
-        trafo.rate = lines_ratings.loc[
-            lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
-                0], 'Max Flow (MW)']
-
+            gen.Pmax=d_op['Generators'].loc[idx_gen,'Pmax']
+            gen.Pmin=d_op['Generators'].loc[idx_gen,'Pmin']
+            gen.Qmax=d_op['Generators'].loc[idx_gen,'Qmax']
+            gen.Qmin=d_op['Generators'].loc[idx_gen,'Qmin']
+            
+            gridCal_grid.transformers2w[idx_gen].rate=gen.Snom
+            
     # %% READ EXCEL FILE
     # Read data of grid elements from Excel file
     d_grid, d_grid_0 = read_data.read_sys_data(excel_sys)
@@ -230,6 +244,7 @@ def main():
     stability_array = []
     output_dataframes_array = []
     for _, case in cases_df.iterrows():
+#        if _ == 5:
         stability, output_dataframes = eval_stability(
             case=case,
             f=feasible_power_flow_ACOPF,
@@ -266,4 +281,4 @@ def main():
 
             
 if __name__ == "__main__":
-    main()
+    main(setup_path="./setup/default_setup_9buses.yaml")
