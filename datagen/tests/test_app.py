@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         returns 1 only depending on the value of the dimension tau_Dim_0, so
         this is the only "important" dimension.
         """
-        import sys
+
         n_samples = 10
         n_cases = 10
         max_depth = 1
@@ -73,7 +73,6 @@ class Test(unittest.TestCase):
 
             # Redirect stdout to capture the output
             from io import StringIO
-            import sys
 
             # Get the output of the main function
             captured_output = StringIO()
