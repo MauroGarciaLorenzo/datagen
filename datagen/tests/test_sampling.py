@@ -1,9 +1,13 @@
 from unittest import TestCase
 
 from datagen import *
+from datagen import gen_samples, eval_entropy
+from datagen.src.evaluator import calculate_entropy
+from datagen.src.explorer import get_children_parameters
+from datagen.src.grid import gen_grid
 from datagen.tests.utils import gen_df_for_dims, linear_function, \
     dim0_func, parab_func
-from datagen.src.sampling import sensitivity
+from datagen.src.sensitivity_analysis import sensitivity
 
 
 class Test(TestCase):

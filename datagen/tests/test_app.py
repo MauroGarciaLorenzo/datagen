@@ -110,7 +110,7 @@ class Test(unittest.TestCase):
             for fail, error in zip(failed, errors_failed):
                 print(f"Failed with configurations: {fail}")
                 print(f"Errors: {error}")
-        self.assertTrue(passed, f"Some configurations failed: {failed}")
+        self.assertTrue(passed, f"Some configurations failed: {failed}. Errors: {errors_failed}")
 
 
     def test_app(self):
@@ -176,7 +176,7 @@ class Test(unittest.TestCase):
                       f"=== Running with n_samples={n_samples}, "
                       f"n_cases={n_cases}, max_depth={max_depth} ==="
                       f'\n{"".join(["="] * 60)}\n', flush=True)
-                main(setup_path=yaml_path, working_dir=working_dir)
+                main(setup_path=yaml_path, working_dir=working_dir, warmup=False)
                 print(f"\n=== Everything went fine ===\n", flush=True)
             except Exception as e:
                 passed = False
@@ -199,7 +199,7 @@ class Test(unittest.TestCase):
                                    index_col=0)
             dims_df = pd.read_csv(os.path.join(case_dir, "dims_df.csv"),
                                   index_col=0)
-            
+
             # Launch tests
             self.no_duplicate_rows(cases_df, dims_df)
             self.column_sums_match(cases_df, dims_df)

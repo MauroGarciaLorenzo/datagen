@@ -57,17 +57,6 @@ def clean_dir(directory):
         os.makedirs(directory, exist_ok=True)
 
 
-def get_dimension(label, dimensions):
-    if label == "g_for" or label == "g_fol":
-        dim = next(
-            (d for d in dimensions
-             if d.label == "p_cig"), None)
-    else:
-        dim = next((d for d in dimensions
-                    if d.label == label), None)
-    return dim
-
-
 def check_dims(dimensions):
     """This method checks if the size of every dimension is smaller than the
     tolerance declared.

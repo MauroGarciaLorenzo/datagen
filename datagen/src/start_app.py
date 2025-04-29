@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 import time
 
-from .sampling import explore_cell
+from .explorer import explore_cell
 from .viz import print_results, boxplot
 from .utils import clean_dir, save_results
 
@@ -92,7 +92,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
         seed = random.randint(1,100)
 
     generator = np.random.default_rng(seed)
-    execution_logs, cases_df, dims_df, output_dataframes = (
+    cases_df, dims_df, execution_logs, output_dataframes = (
         explore_cell(func=func, n_samples=n_samples, parent_entropy=None,
                      depth=0, ax=ax, dimensions=dimensions,
                      cases_heritage_df=None, dims_heritage_df=pd.DataFrame(),

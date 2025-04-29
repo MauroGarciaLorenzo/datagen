@@ -24,7 +24,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 @task(on_failure='FAIL')
-def main(working_dir='', path_data='', setup_path=''):
+def main(working_dir='', path_data='', setup_path='', warmup=True):
     # %% Parse arguments (emulate sys.argv list as input)
     working_dir, path_data, setup_path = parse_args(
         [None, working_dir, path_data, setup_path])
@@ -217,7 +217,7 @@ def main(working_dir='', path_data='', setup_path=''):
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        dst_dir=path_results, warmup=True
+        dst_dir=path_results, warmup=warmup
     )
 
     stability_array = compss_wait_on(stability_array)

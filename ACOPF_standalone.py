@@ -36,9 +36,8 @@ warnings.filterwarnings('ignore')
 from datagen.src.utils import save_dataframes, parse_setup_file, parse_args, concat_df_dict, save_results
 from datagen.src.dimensions import Dimension
 from datagen.src.objective_function_ACOPF import *
-from datagen.src.sampling import gen_samples
-from datagen.src.sampling import gen_cases
-from datagen.src.sampling import eval_stability
+from datagen.src.case_generation import gen_cases, gen_samples
+from datagen.src.evaluator import eval_stability
 
 from stability_analysis.preprocess import preprocess_data, read_data, \
     process_raw

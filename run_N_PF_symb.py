@@ -256,8 +256,8 @@ for d in list(d_op['Generators']['BusNum']):
 
 #%%
 
-from datagen.src.sampling import gen_samples
-from datagen.src.sampling import gen_cases
+from datagen.src.case_generation import gen_cases, gen_samples
+
 # from datagen.src.objective_function import *
 
 seed=10
