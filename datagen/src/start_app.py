@@ -92,7 +92,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
         seed = random.randint(1,100)
 
     generator = np.random.default_rng(seed)
-    cases_df, dims_df, execution_logs, output_dataframes = (
+    result = (
         explore_cell(func=func, n_samples=n_samples, parent_entropy=None,
                      depth=0, ax=ax, dimensions=dimensions,
                      cases_heritage_df=None, dims_heritage_df=pd.DataFrame(),
@@ -100,10 +100,11 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
                      divs_per_cell=divs_per_cell, generator=generator,
                      feasible_rate=feasible_rate, func_params=func_params,
                      dst_dir=dst_dir))
-    execution_logs = compss_wait_on(execution_logs)
-    cases_df = compss_wait_on(cases_df)
-    dims_df = compss_wait_on(dims_df)
-    output_dataframes = compss_wait_on(output_dataframes)
+
+    execution_logs = compss_wait_on(result.children_info)
+    cases_df = compss_wait_on(result.cases_df)
+    dims_df = compss_wait_on(result.dims_df)
+    output_dataframes = compss_wait_on(result.output_dataframes)
     if not isinstance(execution_logs, list):
         execution_logs = [execution_logs]
 

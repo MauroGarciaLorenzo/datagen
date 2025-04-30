@@ -14,6 +14,15 @@ from datagen.src.grid import gen_grid
 from datagen.src.sensitivity_analysis import sensitivity
 from datagen.src.case_generation import gen_samples, gen_cases
 from datagen.src.evaluator import eval_entropy, eval_stability
+from dataclasses import dataclass
+
+@dataclass
+class ExplorationResult:
+    children_info: list
+    cases_df: pd.DataFrame
+    dims_df: pd.DataFrame
+    output_dataframes: dict
+
 
 @constraint(is_local=True)
 @task(returns=4, on_failure='FAIL', priority=True)
@@ -107,34 +116,47 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
           f"Delta_entropy={delta_entropy}", flush=True)
 
     total_cases = n_samples * dimensions[0].n_cases
+
     # Finish recursivity if entropy decreases or cell become too small
-    if (delta_entropy < 0 or not check_dims(dimensions) or depth >= max_depth or
-            feasible_cases/total_cases < feasible_rate):
+    if (delta_entropy < 0 or not check_dims(
+            dimensions) or depth >= max_depth or
+            feasible_cases / total_cases < feasible_rate):
 
         print("Stopped cell:", flush=True)
         print("    Entropy: ", parent_entropy, flush=True)
         print("    Delta entropy: ", delta_entropy, flush=True)
         print("    Depth: ", depth, flush=True)
-        return (cases_df, dims_df, (dimensions, parent_entropy, delta_entropy, depth),
-                total_dataframes)
+
+        # Return as ExplorationResult
+        return ExplorationResult(
+            children_info=[(dimensions, parent_entropy, delta_entropy, depth)],
+            cases_df=cases_df,
+            dims_df=dims_df,
+            output_dataframes=total_dataframes
+        )
     else:
         if use_sensitivity:
-            dimensions = sensitivity(cases_df, dimensions, divs_per_cell, generator)
+            dimensions = sensitivity(cases_df, dimensions, divs_per_cell,
+                                     generator)
         children_grid = gen_grid(dimensions)
 
         if ax is not None and len(dimensions) == 2:
             plot_divs(ax, children_grid, dst_dir)
 
-        cases_df, dims_df, children_total, total_dataframes = \
-            explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
-                         depth=depth, dims_df=dims_df, func=func,
-                         n_samples=n_samples, use_sensitivity=use_sensitivity,
-                         max_depth=max_depth, divs_per_cell=divs_per_cell,
-                         generator=generator, feasible_rate=feasible_rate,
-                         func_params=func_params, dataframes=total_dataframes,
-                         parent_entropy=parent_entropy, parent_name=cell_name,
-                         dst_dir=dst_dir)
-        return cases_df, dims_df, children_total, total_dataframes
+        # Recursive case returns an ExplorationResult
+        result = explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
+                              depth=depth, dims_df=dims_df, func=func,
+                              n_samples=n_samples,
+                              use_sensitivity=use_sensitivity,
+                              max_depth=max_depth, divs_per_cell=divs_per_cell,
+                              generator=generator, feasible_rate=feasible_rate,
+                              func_params=func_params,
+                              dataframes=total_dataframes,
+                              parent_entropy=parent_entropy,
+                              parent_name=cell_name,
+                              dst_dir=dst_dir)
+
+        return result
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
@@ -166,47 +188,53 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     """
     total_cases_df, total_dims_df, total_dataframes = (
         get_children_parameters(grid, dims_df, cases_df, dataframes))
-    children_total_params = []
-    list_cases_children_df = []
-    list_dims_children_df = []
-    list_dataframes_children = []
-    children_depth = depth + 1
+
+    results = []
     i = 0
+
     for (children_cell, cases_heritage_df, dims_heritage_df,
-         heritage_dataframes) \
-            in zip(grid, total_cases_df, total_dims_df, total_dataframes):
+         heritage_dataframes) in zip(grid, total_cases_df, total_dims_df,
+                                     total_dataframes):
         i += 1
         cell_name = f"{parent_name}.{i}"
-        dim = children_cell.dimensions
-        (cases_children_df, dims_children_df, child_total_params,
-         children_dataframes) = \
-            explore_cell(func=func, n_samples=n_samples,
-                         parent_entropy=parent_entropy, depth=children_depth,
-                         ax=ax, dimensions=dim,
-                         cases_heritage_df=cases_heritage_df,
-                         dims_heritage_df=dims_heritage_df,
-                         use_sensitivity=use_sensitivity, max_depth=max_depth,
-                         divs_per_cell=divs_per_cell, generator=generator,
-                         feasible_rate=feasible_rate, func_params=func_params,
-                         total_dataframes=heritage_dataframes,
-                         cell_name=cell_name, dst_dir=dst_dir)
 
-        children_total_params.append(child_total_params)
-        list_cases_children_df.append(cases_children_df)
-        list_dims_children_df.append(dims_children_df)
-        list_dataframes_children.append(children_dataframes)
+        # Get ExplorationResult from child cell
+        child_result = explore_cell(
+            func=func, n_samples=n_samples,
+            parent_entropy=parent_entropy, depth=depth + 1,
+            ax=ax, dimensions=children_cell.dimensions,
+            cases_heritage_df=cases_heritage_df,
+            dims_heritage_df=dims_heritage_df,
+            use_sensitivity=use_sensitivity, max_depth=max_depth,
+            divs_per_cell=divs_per_cell, generator=generator,
+            feasible_rate=feasible_rate, func_params=func_params,
+            total_dataframes=heritage_dataframes,
+            cell_name=cell_name, dst_dir=dst_dir
+        )
 
-    children_total_params = compss_wait_on(children_total_params)
-    list_cases_children_df = compss_wait_on(list_cases_children_df)
-    list_dims_children_df = compss_wait_on(list_dims_children_df)
-    list_dataframes_children = compss_wait_on(list_dataframes_children)
+        results.append(child_result)
 
-    cases_df = pd.concat(list_cases_children_df, ignore_index=True)
-    dims_df = pd.concat(list_dims_children_df, ignore_index=True)
-    children_total_params = flatten_list(children_total_params)
-    dataframes = concat_df_dict(list_dataframes_children)
+    # Wait for all results
+    results = compss_wait_on(results)
 
-    return cases_df, dims_df, children_total_params, dataframes
+    # Combine all results
+    combined_cases = pd.concat([r.cases_df for r in results],
+                               ignore_index=True)
+    combined_dims = pd.concat([r.dims_df for r in results], ignore_index=True)
+    combined_dataframes = concat_df_dict(
+        [r.output_dataframes for r in results])
+
+    # Flatten children info
+    children_info = []
+    for r in results:
+        children_info.extend(r.children_info)
+
+    return ExplorationResult(
+        children_info=children_info,
+        cases_df=combined_cases,
+        dims_df=combined_dims,
+        output_dataframes=combined_dataframes
+    )
 
 
 def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
