@@ -2,7 +2,8 @@
 import pandas as pd
 
 from unittest import TestCase
-from datagen.src.utils import sort_df_rows_by_another
+from datagen.src.data_ops import sort_df_rows_by_another
+
 
 class Test(TestCase):
     def test_sort_dataframe_by_another(self):

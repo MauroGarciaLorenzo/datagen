@@ -24,7 +24,8 @@ import time
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
-from .utils import clean_dir, save_results
+from .utils import clean_dir
+from .file_io import save_results
 
 try:
     from pycompss.api.task import task

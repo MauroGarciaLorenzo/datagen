@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from datagen import *
 from datagen import gen_samples, eval_entropy
+from datagen.src.data_ops import concat_df_dict
 from datagen.src.evaluator import calculate_entropy
 from datagen.src.explorer import get_children_parameters
 from datagen.src.grid import gen_grid

@@ -2,7 +2,7 @@ import os
 import sys
 
 from matplotlib import pyplot as plt
-from datagen import parse_setup_file
+from datagen.src.parsing import parse_setup_file
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
 from datagen.src.objective_function import test_sensitivity_obj_func

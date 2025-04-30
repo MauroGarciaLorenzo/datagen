@@ -8,7 +8,8 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
     from datagen.dummies.constraint import constraint
 
-from datagen.src.utils import concat_df_dict, check_dims, flatten_list
+from datagen.src.utils import check_dims
+from datagen.src.data_ops import flatten_list, concat_df_dict
 from datagen.src.viz import plot_stabilities, plot_divs
 from datagen.src.grid import gen_grid
 from datagen.src.sensitivity_analysis import sensitivity

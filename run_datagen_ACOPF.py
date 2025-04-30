@@ -3,7 +3,7 @@ import os
 import yaml
 from datetime import datetime
 
-from datagen import parse_args, parse_setup_file
+from datagen.src.parsing import parse_setup_file, parse_args
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
 from datagen.src.objective_function_ACOPF import feasible_power_flow_ACOPF
