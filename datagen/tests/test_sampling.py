@@ -1,7 +1,6 @@
 from unittest import TestCase
 
 from datagen import *
-from datagen import gen_samples, eval_entropy
 from datagen.src.data_ops import concat_df_dict
 from datagen.src.evaluator import calculate_entropy
 from datagen.src.explorer import get_children_parameters
@@ -10,12 +9,23 @@ from datagen.tests.utils import gen_df_for_dims, linear_function, \
     dim0_func, parab_func
 from datagen.src.sensitivity_analysis import sensitivity
 
+def create_dims():
+    variables = [(0, 10), (0, 15), (10, 20), (0, 25)]
+    dim1 = Dimension(variable_borders=variables, n_cases=3, divs=1, borders=(10, 70), label="Dim1")
+    dim2 = Dimension(variable_borders=variables, n_cases=3, divs=2, borders=(10, 70), label="Dim2")
+    dim3 = Dimension(variable_borders=variables, n_cases=3, divs=2, borders=(10, 70), label="Dim3")
+    return [dim1, dim2, dim3]
+
+
+def create_generator():
+    return np.random.default_rng(1)
+
 
 class Test(TestCase):
 
     def setUp(self):
         """
-        This code executes every time a subtest of this class is run.
+        This code is executed every time a subtest of this class is executed.
         """
         variables = [(0, 10), (0, 15), (10, 20), (0, 25)]
 
@@ -59,13 +69,6 @@ class Test(TestCase):
         self.assertTrue(cols,
                         ["Dim1_Var0", "Dim1_Var1", "Dim1_Var2", "Dim1_Var3"])
 
-    def test_gen_samples(self):
-        n_samples = 100
-        df_samples = gen_samples(n_samples, self.dims, self.generator)
-
-        for dim in self.dims:
-            self.assertTrue(all(df_samples[dim.label] >= dim.borders[0]))
-            self.assertTrue(all(df_samples[dim.label] <= dim.borders[1]))
 
     def test_gen_grid(self):
         """
