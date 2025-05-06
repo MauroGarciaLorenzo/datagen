@@ -271,6 +271,12 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
                             for t in range(len(cell_independent_dims))]
             belongs = all(cell_borders[t][0] <= row.iloc[t] <= cell_borders[t][1]
                           for t in range(len(cell_independent_dims)))
+            if all(cell_borders[t][0] == row.iloc[t] for t in
+                   range(len(cell_independent_dims))) and idx != 0:
+                belongs = False
+            if all(cell_borders[t][1] == row.iloc[t] for t in
+                   range(len(cell_independent_dims))) and idx != len(dims_heritage_df) - 1:
+                belongs = False
             if belongs:
                 cases.append(cases_heritage_df.iloc[[idx], :])
                 dims.append(dims_heritage_df.iloc[[idx], :])
