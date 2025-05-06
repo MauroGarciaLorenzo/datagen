@@ -5,13 +5,12 @@ import numpy as np
 from datagen.src.case_generation import gen_cases
 from datagen.src.dimensions import Dimension
 from datagen.src.grid import gen_grid
-from datagen.src.sampling import generate_columns
 from datagen.src.objective_function import dummy
 from datagen.tests.test_sampling import create_generator
 from datagen.src.explorer import explore_grid
 
 
-class TestExploreGrid(TestCase):
+class TestExplorer(TestCase):
     def setUp(self):
         # Create a dummy dimension
         self.variable_borders = np.array([(0.0, 1.0), (0.0, 1.0)])

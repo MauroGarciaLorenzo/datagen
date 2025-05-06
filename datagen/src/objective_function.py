@@ -42,10 +42,12 @@ def complex_2d_shape(x, y):
 
 # file where objective function is declared (dummy test)
 def dummy(case, **kwargs):
+    case = case.drop("case_id")
     time.sleep(0.0001)
     return round(math.sin(sum(case)) * 0.5 + 0.5), {}
 
 def matmul(case, **kwargs):
+    case = case.drop("case_id")
     t0 = time.time()
     while(time.time() - t0 < 0.0000):
         m0 = np.random.randint(0, 101, size=(1000, 1000))
@@ -54,6 +56,7 @@ def matmul(case, **kwargs):
     return round(math.sin(sum(case)) * 0.5 + 0.5), {}
 
 def dummy_linear(case, **kwargs):
+    case = case.drop("case_id")
     total_sum = sum(case)
     return total_sum/19 > 0.5, {}  # 19 => maximum value among all upper borders
 

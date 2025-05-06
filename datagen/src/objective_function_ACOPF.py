@@ -30,7 +30,6 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     :return: output_dataframes: Mandatory dictionary with at least the
         entries that contain dataframes (None entries if feasibility fails)
     """
-    print("EV", flush=True)
     func_params = kwargs.get("func_params")
     generator = kwargs.get("generator", None)
     dimensions = kwargs.get("dimensions", None)
