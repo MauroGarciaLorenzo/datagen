@@ -136,6 +136,20 @@ class Test(unittest.TestCase):
             for seed in seeds
         ]
 
+        expected_files = {
+            "case_df_computing_times.csv",
+            "case_df_damp.csv",
+            "case_df_freq.csv",
+            "case_df_imag.csv",
+            "case_df_op.csv",
+            "case_df_real.csv",
+            "case_setup.yaml",
+            "cases_df.csv",
+            "dims_df.csv",
+            "execution_logs.txt",
+            "execution_time.csv"
+        }
+
         # Directory initialization
         yaml_path = '../../setup/test_setup.yaml'
         working_dir = '.'
@@ -186,6 +200,7 @@ class Test(unittest.TestCase):
                 print(f"Exception caught: {e}", flush=True)
                 failed.append((n_samples, n_cases, max_depth))
                 errors_failed.append(e)
+                continue
 
             # Read results
             results_subdirs = os.listdir(self.results_dir)
@@ -201,6 +216,7 @@ class Test(unittest.TestCase):
                                   index_col=0)
 
             # Launch tests
+            self.check_output_files(case_dir, expected_files)
             self.no_duplicate_rows(cases_df, dims_df)
             self.column_sums_match(cases_df, dims_df)
 
@@ -214,6 +230,42 @@ class Test(unittest.TestCase):
                 print(f"Failed with configurations: {fail}")
                 print(f"Errors: {error}")
         self.assertTrue(passed, f"Some configurations failed: {failed}")
+
+    def check_output_files(self, case_dir, expected_files):
+        files_in_dir = set(os.listdir(case_dir))
+        missing_files = expected_files - files_in_dir
+
+        # Assert that every file exists
+        self.assertFalse(missing_files, f"Missing files: {missing_files}")
+
+        for filename in expected_files:
+            file_path = os.path.join(case_dir, filename)
+
+            # Assert file exists and is not empty
+            self.assertTrue(os.path.isfile(file_path),
+                            f"{filename} not found.")
+            self.assertGreater(os.path.getsize(file_path), 0,
+                               f"{filename} is empty.")
+
+            # Asserts for the csvs
+            if "df" in filename and filename.endswith(".csv"):
+                df = pd.read_csv(file_path)
+
+                if filename in ["dims_df.csv", "cases_df.csv"]:
+                    # dims_df and cases_df has no empty or NaN value
+                    self.assertFalse(
+                        df.isnull().values.any() or (df == '').values.any(),
+                        f"{filename} contains empty or NaN values.")
+                else:
+                    # case_id and Stability have value != NaN
+                    self.assertIn("case_id", df.columns,
+                                  f"{filename} missing 'case_id' column.")
+                    self.assertIn("Stability", df.columns,
+                                  f"{filename} missing 'Stability' column.")
+                    self.assertFalse(
+                        df[["case_id", "Stability"]].isnull().values.any() or
+                        (df[["case_id", "Stability"]] == '').values.any(),
+                        f"{filename} contains empty or NaN values in 'case_id' or 'Stability'.")
 
     def no_duplicate_rows(self, cases_df, dims_df):
         """ Check if there are any duplicated rows in cases_df. """
