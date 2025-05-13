@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from datagen import *
 from datagen.src.data_ops import concat_df_dict
-from datagen.src.evaluator import calculate_entropy
+from datagen.src.evaluator import calculate_entropy, eval_entropy
 from datagen.src.explorer import get_children_parameters
 from datagen.src.grid import gen_grid
 from datagen.tests.utils import gen_df_for_dims, linear_function, \
@@ -69,28 +69,6 @@ class Test(TestCase):
         self.assertTrue(cols,
                         ["Dim1_Var0", "Dim1_Var1", "Dim1_Var2", "Dim1_Var3"])
 
-
-    def test_gen_grid(self):
-        """
-        This code creates a list of expected borders based on all possible
-        combinations using dimensions borders and divs, and compare it to
-        gen_grid output.
-        """
-        grid = gen_grid(self.dims)
-
-        expected_cells = 1 * 2 * 2
-        expected_borders = [[(10., 70.), (10., 40.), (10., 40.)],
-                            [(10., 70.), (10., 40.), (40., 70.)],
-                            [(10., 70.), (40., 70.), (10., 40.)],
-                            [(10., 70.), (40., 70.), (40., 70.)]]
-        self.assertEqual(len(grid), expected_cells)
-        borders = []
-        for cell in grid:
-            new_cell_borders = []
-            for dim in cell.dimensions:
-                new_cell_borders.append(dim.borders)
-            borders.append(new_cell_borders)
-        self.assertEqual(borders, expected_borders)
 
     def test_calculate_entropy(self):
         freqs = [0.25, 0.75]

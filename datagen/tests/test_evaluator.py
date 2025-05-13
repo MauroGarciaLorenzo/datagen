@@ -35,4 +35,3 @@ class Test(TestCase):
                 self.assertEqual(delta, 1)
             else:
                 self.assertAlmostEqual(delta, expected_entropy - entropy_parent, places=6)
-
