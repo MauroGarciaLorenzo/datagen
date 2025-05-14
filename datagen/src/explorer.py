@@ -267,15 +267,24 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
             # Check if every dimension in row is within cell borders
             cell_independent_dims = [dim for dim in cell.dimensions
                                if dim.independent_dimension]
-            cell_borders = [cell_independent_dims[t].borders
-                            for t in range(len(cell_independent_dims))]
-            belongs = all(cell_borders[t][0] <= row.iloc[t] <= cell_borders[t][1]
-                          for t in range(len(cell_independent_dims)))
-            if all(cell_borders[t][0] == row.iloc[t] for t in
-                   range(len(cell_independent_dims))) and idx != 0:
+            cell_borders = {
+                cell_independent_dims[t].label: cell_independent_dims[t].borders
+                            for t in range(len(cell_independent_dims))
+            }
+            belongs = all(cell_borders[label][0] <= value <= cell_borders[label][1]
+                          for label, value in row.items()
+                          if label in cell_borders)
+            if all(
+                    value == cell_borders[label][0]
+                    for label, value in row.items()
+                    if label in cell_borders
+            ) and idx != 0:
                 belongs = False
-            if all(cell_borders[t][1] == row.iloc[t] for t in
-                   range(len(cell_independent_dims))) and idx != len(dims_heritage_df) - 1:
+            if all(
+                    value == cell_borders[label][1]
+                    for label, value in row.items()
+                    if label in cell_borders
+            ) and idx != len(dims_heritage_df) - 1:
                 belongs = False
             if belongs:
                 cases.append(cases_heritage_df.iloc[[idx], :])
