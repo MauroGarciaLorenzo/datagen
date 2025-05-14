@@ -1,3 +1,8 @@
+import os
+import random
+import logging
+from datetime import datetime
+
 from matplotlib import pyplot as plt
 
 from datagen.src.objective_function import dummy
@@ -54,6 +59,11 @@ def main():
     n_cases = 2
     rel_tolerance = 0.1
     max_depth = 3
+    use_sensitivity = True
+    seed = 1
+    logging_level = logging.WARNING
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    rnd_num = random.randint(1000, 9999)
     fig, ax = plt.subplots()
     dimensions = [
         Dimension(variable_borders=variables_d0, n_cases=n_cases, divs=2,
@@ -61,11 +71,15 @@ def main():
         Dimension(variable_borders=variables_d1, n_cases=n_cases, divs=1,
                   borders=(1, 6), label="Dim_1")
     ]
-    use_sensitivity = True
-    cases_df, dims_df, execution_logs = \
+
+    dir_name = f"dummy_seed{seed}_nc{n_cases}" \
+               f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
+    path_results = os.path.join("results", dir_name)
+    cases_df, dims_df, execution_logs, output_dataframes = \
         start(dimensions, n_samples, rel_tolerance, func=dummy, 
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax, 
-              divs_per_cell=2, plot_boxplot=True, seed=1)
+              divs_per_cell=2, plot_boxplot=True, seed=seed,
+              dst_dir=path_results, logging_level=logging_level)
 
 
 if __name__ == '__main__':
