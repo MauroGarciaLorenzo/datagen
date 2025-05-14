@@ -1,6 +1,8 @@
 import os
 
 import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 
 from datagen.src.data_ops import sort_df_rows_by_another, sort_df_last_columns
 
@@ -17,8 +19,8 @@ def write_dataframes_to_excel(df_dict, path, filename):
             if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
             else:
-                print(f'Warning: Not writing {sheet_name}. '
-                      f'Not a DataFrame or Series')
+                logger.warning("Not writing %s. Not a DataFrame or Series",
+                               sheet_name)
 
 
 def save_dataframes(output_dataframes_array, path_results, seed):
@@ -29,12 +31,12 @@ def save_dataframes(output_dataframes_array, path_results, seed):
         for key, value in dataframe.items():
             cu = os.environ.get("COMPUTING_UNITS")
             filename = f"cu{cu}_case_{str(index)}_{key}_seed{str(seed)}"
-            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-            print(key, flush=True)
-            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-            print(value, flush=True)
-            print("", flush=True)
-            print("", flush=True)
+            logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+            logger.info(key)
+            logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+            logger.info(value)
+            logger.info("")
+            logger.info("")
             if not os.path.exists(path_results):
                 os.makedirs(path_results)
             if isinstance(value, dict):
@@ -55,10 +57,14 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
     according to the case ids.
     """
     if dst_dir is None:
-        dst_dir = ""
+        dst_dir = "results"
 
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
+        logger.info(f"Created results directory: {os.path.abspath(dst_dir)}")
+    else:
+        logger.info(
+            f"Using existing results directory: {os.path.abspath(dst_dir)}")
 
     cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"))
     dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"))
@@ -80,7 +86,7 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
                 if isinstance(v, pd.DataFrame):
                     value.to_csv(os.path.join(dst_dir, f"case_{k}.csv"))
                 else:
-                    print("Wrong format for output dataframes")
+                    logger.warning(f"Invalid nested format for output '{k}'")
 
     if execution_logs!=None:
         with open(os.path.join(dst_dir, "execution_logs.txt"), "w") as log_file:

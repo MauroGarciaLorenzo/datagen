@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
@@ -56,7 +58,7 @@ def sensitivity(cases_df, dimensions, divs_per_cell, generator):
             importances[index_max_importance] /= 2
     # plot_importances_and_divisions(dimensions, importances)
     for d in dimensions:
-        print("Dimension:", d.label, ", divisions:", d.divs)
+        logger.info(f"Dimension: {d.label}, divisions: {d.divs}")
     return dimensions
 
 

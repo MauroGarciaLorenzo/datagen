@@ -25,6 +25,8 @@ maintaining the integrity of the sum of variable_borders.
 """
 
 import numpy as np
+import logging
+logger = logging.getLogger(__name__)
 
 
 class Cell:
@@ -108,6 +110,8 @@ class Dimension:
         min_val = sum([v[0] for v in self.variable_borders])
 
         if not (max_val >= sample >= min_val):
+            logger.error(f"Sample {sample} cannot be reached by dimension {self.label}, with "
+                         f"variable borders {self.variable_borders}")
             raise ValueError(f"Sample {sample} cannot be reached by "
                              f"dimension {self.label}, with variable_borders borders "
                              f"{self.variable_borders}")
@@ -121,17 +125,15 @@ class Dimension:
             if self.borders[0] < case_sum < self.borders[1]:
                 cases.append(case)
             else:
-                print(f"get_cases_normal: Iteration {iters + 1}")
-                print(f"Warning: (label {self.label}) Case sum {case_sum} out "
-                      f"of dimension borders {self.borders} in {case} for "
-                      f"sample {sample}. Retrying...")
+                logger.warning(
+                    f"Iteration {iters + 1}: (label {self.label}) Case sum {case_sum} out of dimension "
+                    f"borders {self.borders} in {case} for sample {sample}. Retrying...")
             iters += 1
-        print(f"Dim {self.label}: get_cases_normal run {iters} iterations.")
+        logger.info(f"Dim {self.label}: get_cases_normal ran {iters} iterations.")
 
         while len(cases) < self.n_cases:
-            print(f"Warning: Dim {self.label} - get_cases_normal exhausted "
-                  f"iterations: {iters} iterations.")
-            print("Adding NaN cases")
+            logger.warning(
+                f"Dim {self.label} - get_cases_normal exhausted iterations: {iters}. Adding NaN case.")
             cases.append([np.nan] * len(self.variable_borders))
 
         return cases
@@ -165,9 +167,12 @@ class Dimension:
         min_val = sum([v[0] for v in self.variable_borders])
 
         if not (max_val >= sample >= min_val):
-            raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {self.label}, with variable_borders borders "
-                             f"{self.variable_borders}")
+            logger.error(
+                f"Sample {sample} cannot be reached by dimension {self.label}, with variable_borders {self.variable_borders}")
+            raise ValueError(
+                f"Sample {sample} cannot be reached by dimension {self.label}, "
+                f"with variable_borders {self.variable_borders}"
+            )
 
         while len(cases) < self.n_cases and iters_cases < iter_limit:
             iters_cases += 1
@@ -192,14 +197,14 @@ class Dimension:
                     total_sum = sum(case)
 
             if iters_variables >= iter_limit_variables:
-                print(f"Warning: sample {sample} couldn't be reached"
-                      f" by total sum {total_sum}) in case {case}")
+                logger.warning(
+                    f"Sample {sample} couldn't be reached (total sum {total_sum}) in case {case}")
                 continue
             if np.isclose(total_sum, sample):
                 cases.append(case)
         if iters_cases >= iter_limit:
-            print("Warning: Iterations count exceeded. "
-                  "Retrying with normal sampling")
+            logger.warning("Extreme case: Iteration limit exceeded. Switching "
+                           "to normal sampling.")
             return self.get_cases_normal(sample, generator)
 
         return cases

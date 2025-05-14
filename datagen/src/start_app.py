@@ -17,6 +17,8 @@ goal is to explore the various cells (or combinations of dimensions) and
 produce both a record of execution logs and a DataFrame containing specific
 cases and their associated stability."""
 import random
+import logging
+logger = logging.getLogger(__name__)
 
 import numpy as np
 import pandas as pd
@@ -36,9 +38,9 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on, compss_barrier
 
 
-def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
+def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="results",
           seed=None, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0.5, func_params = {}, warmup=False):
+          feasible_rate=0.5, func_params = {}, warmup=False, logging_level=logging.ERROR):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -65,9 +67,22 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
     :param max_depth: Maximum depth for a cell to be subdivided
     :param plot_boxplot: Indicates whether a boxplot representing all variable_borders
     should be plotted
+    :param feasible_rate: Minimum rate of feasible cases to continue dividing the cell
+    :param func_params: Func params to pass to the objective function
+    :param warmup: Boolean specifying if the node warmup has to be performed
+    This will call a task for every accessible computing node and make the
+    appropriate imports
+    :param logging_level: Desired logging level.
+    Possible values [logging.INFO|logging.WARNING|logging.ERROR],
+    default [logging.ERROR]
     """
     # Load imports in every executor before execution
-    print("DESTINATION DIR:", dst_dir)
+    logger.info(f"DESTINATION DIR: {dst_dir}", )
+    # Set up the logging level for the execution
+    setup_logger(logging_level)
+
+    print(f"Current logging level: {logging.getLevelName(logging.getLogger().getEffectiveLevel())}")
+
     if warmup:
         for _ in range(200):
             warmup_nodes()
@@ -116,6 +131,15 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="",
 
     return cases_df, dims_df, execution_logs, output_dataframes
 
+
+def setup_logger(logging_level):
+    import sys
+    logger = logging.getLogger()
+    logger.setLevel(logging_level)
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+        logger.addHandler(handler)
 
 @task(is_replicated=True)
 def warmup_nodes():

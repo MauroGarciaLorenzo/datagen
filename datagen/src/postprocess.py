@@ -3,6 +3,8 @@ Utility functions to postprocess results.
 """
 import os
 import re
+import logging
+logger = logging.getLogger(__name__)
 
 from sys import argv
 
@@ -208,7 +210,7 @@ def create_gif_from_images(directory, output_file, gif_frame_count=20):
     # Select about gif_frame_count images evenly spaced
     total_images = len(images)
     if total_images < gif_frame_count:
-        print("Not enough images to create the GIF.")
+        logger.warning("Not enough images to create the GIF.")
         return
     step = total_images // gif_frame_count
     selected_images = [images[i] for i in range(0, total_images, step)][
@@ -222,7 +224,7 @@ def create_gif_from_images(directory, output_file, gif_frame_count=20):
         output_file, save_all=True, append_images=frames[1:], optimize=True,
         duration=800, loop=0
     )
-    print(f"GIF saved as {output_file}")
+    logger.info(f"GIF saved as {output_file}")
 
 
 if __name__ == "__main__":

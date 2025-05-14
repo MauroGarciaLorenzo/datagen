@@ -1,5 +1,7 @@
 import os
 import sys
+import logging
+logger = logging.getLogger(__name__)
 
 from matplotlib import pyplot as plt
 from datagen.src.parsing import parse_setup_file
@@ -22,6 +24,7 @@ def main(working_dir, setup_path):
     use_sensitivity = True
     divs_per_cell = 4
     feasible_rate = 0.5
+    logging_level = logging.INFO
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
@@ -52,7 +55,7 @@ def main(working_dir, setup_path):
               max_depth=max_depth, dst_dir=path_results,
               use_sensitivity=use_sensitivity,
               divs_per_cell=divs_per_cell, plot_boxplot=True, seed=seed,
-              feasible_rate=feasible_rate)
+              feasible_rate=feasible_rate, logging_level=logging_level)
 
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
@@ -60,4 +63,4 @@ def main(working_dir, setup_path):
 
 if __name__ == "__main__":
     args = sys.argv
-    main(sys.argv)
+    main(sys.argv[1], sys.argv[2])

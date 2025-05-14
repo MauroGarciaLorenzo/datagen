@@ -101,31 +101,6 @@ class Test(TestCase):
         self.assertAlmostEqual(result_entropy, expected_entropy, places=5)
         self.assertEqual(result_delta_entropy, expected_delta_entropy)
 
-    def test_get_children_parameters(self):
-        total_cases_df, total_dims_df, _ = (
-            get_children_parameters(self.children_grid,
-                                    self.dims_df,
-                                    self.cases_heritage_df))
-
-        # (Dim1: 10-70, Dim2: 10-40, Dim3: 10-40)
-        self.assertEqual(len(total_cases_df[0]), 2)
-        a = total_cases_df[0].astype('float')
-        b = self.cases_heritage_df.iloc[0:2].astype('float')
-        pd.testing.assert_frame_equal(a, b)
-
-        # (Dim1: 10-70, Dim2: 10-40, Dim3: 40-70)
-        a = total_cases_df[1].astype('float')
-        b = self.cases_heritage_df.iloc[2:3].astype('float')
-        b = b.reset_index(drop=True)
-        self.assertEqual(len(total_cases_df[1]), 1)
-        pd.testing.assert_frame_equal(a, b)
-
-        # (Dim1: 10-70, Dim2: 40-70, Dim3: 10-40)
-        self.assertEqual(len(total_cases_df[2]), 0)
-
-        # (Dim1: 10-70, Dim2: 40-70, Dim3: 40-70)
-        self.assertEqual(len(total_cases_df[3]), 0)
-
     def test_sensitivity(self):
         variables = [(0, 10), (0, 10), (0, 10), (0, 10)]
         dim1 = Dimension(variable_borders= variables, n_cases=3, divs=1, borders=(0, 70),

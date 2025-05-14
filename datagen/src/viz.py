@@ -23,6 +23,8 @@ import os
 import time
 import pandas as pd
 from matplotlib import pyplot as plt, patches
+import logging
+logger = logging.getLogger(__name__)
 
 
 def plot_importances_and_divisions(dimensions, importances):
@@ -101,25 +103,6 @@ def boxplot(cases_df):
         plt.savefig(fname=path, dpi=300)
 
 
-def print_grid(grid):
-    """Shows each cell's dimensions
-
-    :param grid: list of cells
-    """
-    print("")
-    for i in range(len(grid)):
-        print("------", "casilla", i, "------")
-        print("samples casilla", grid[i].n_samples)
-        for j in grid[i].dimensions:
-            print("        variable_borders:", j.variable_borders)
-            print("        cases", j.n_cases)
-            print("        divisiones", j.divs)
-            print("        limites", j.borders)
-            print("")
-        print("")
-        print("")
-
-
 def print_results(execution_logs, cases_df):
     """Shows the dataframe obtained by the application and the logs for each
     cell: dimensions, entropy, delta entropy and depth
@@ -133,23 +116,22 @@ def print_results(execution_logs, cases_df):
     pd.set_option('display.max_columns', 20)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
-    print("")
-    print("")
-    print("samples-stability:")
-    print(cases_df)
-    print("")
-    print("number of cells: ", len(execution_logs))
+    logger.info("")
+    logger.info("")
+    logger.info("samples-stability:")
+    logger.info(f"\n{cases_df.to_string()}", )
+    logger.info("")
+    logger.info(f"number of cells: {len(execution_logs)}" )
 
     for r in execution_logs:
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", flush=True)
-        print(r, flush=True)
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", flush=True)
-        #print("dimensions: ", r[0])
-        print("entropy: ", r[1])
-        print("delta entropy: ", r[2])
-        print("depth: ", r[3])
-        print("")
-        print("")
+        logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        logger.info(f"{r}")
+        logger.info("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        logger.info(f"entropy: {r[1]}")
+        logger.info(f"delta entropy: {r[2]}")
+        logger.info(f"depth: {r[3]}")
+        logger.info("")
+        logger.info("")
 
 
 def plot_sample(ax, x, y, z):
@@ -162,8 +144,8 @@ def print_dict_as_yaml(d, indent=0):
         # Create indentation based on the current nesting level
         prefix = '  ' * indent
         if isinstance(value, dict):
-            print(f"{prefix}{key}:")
+            logger.info(f"{prefix}{key}:")
             print_dict_as_yaml(value, indent + 1)
         else:
             # For simple values, print key-value pair
-            print(f"{prefix}{key}: {value}")
+            logger.info(f"{prefix}{key}: {value}")

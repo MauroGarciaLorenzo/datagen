@@ -1,23 +1,24 @@
 import os
 import sys
-
+import logging
+logger = logging.getLogger(__name__)
 import yaml
 from stability_analysis.data import get_data_path
 from datagen.src.viz import print_dict_as_yaml
 
 
 def parse_setup_file(setup_path):
-    print(setup_path)
     # Check setup file path
     if not setup_path:
         current_directory = os.path.dirname(__file__)
         setup_path = os.path.join(current_directory,
                                   "../../setup/default_setup.yaml")
-        print (f"Setup file not specified. Using default setup file: "
+        logger.warning(f"Setup file not specified. Using default setup file: "
                 f"{setup_path}")
     else:
-        print(f"Setup file: {setup_path}")
+        logger.info(f"Setup file: {setup_path}")
     if not os.path.exists(setup_path):
+        logging.error(f"Setup file {setup_path} not found")
         raise FileNotFoundError(f"Setup file {setup_path} not found")
 
     # Load case parameters
@@ -34,11 +35,10 @@ def parse_setup_file(setup_path):
     seed = setup["seed"]
     grid_name = setup["grid_name"]
     # Print case configuration
-    print(f"\n{''.join(['='] * 30)}\n"
+    logger.info(f"\n{''.join(['='] * 30)}\n"
           f"Running application with the following parameters:"
           f"\n{''.join(['='] * 30)}")
     print_dict_as_yaml(setup)
-    print()
     return generators_power_factor, grid_name, loads_power_factor, n_cases, \
         n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile, \
         rel_tolerance, max_depth, setup
@@ -71,27 +71,28 @@ def parse_args(argv):
                 setup_path = arg
         i += 1
     if not use_flag_args:
-        print("Using arguments without flags")
+        logger.info("Using arguments without flags")
 
     # Check paths
     if not working_dir:
         working_dir = ""
-        print(f"Working directory not specified. Using current directory: "
+        logger.warning(f"Working directory not specified. Using current directory: "
               f"{os.getcwd()}")
     else:
         if not os.path.exists(working_dir):
+            logger.error(f"Working directory {working_dir} not found")
             raise FileNotFoundError(
                 f"Working directory {working_dir} not found")
         else:
-            print("Working directory:", working_dir)
+            logger.info("Working directory:", working_dir)
     if not path_data:
         path_data = get_data_path()
-        print(f"Path data not specified. Using default path: {path_data}")
+        logger.warning(f"Path data not specified. Using default path: {path_data}")
     else:
         if not os.path.exists(path_data):
             raise FileNotFoundError(f"Path data {path_data} not found")
         else:
-            print("Path data:", path_data)
+            logger.info("Path data:", path_data)
 
     return working_dir, path_data, setup_path
 
@@ -107,5 +108,5 @@ def load_yaml(content):
             # If not a file, try to interpret content as a YAML string
             return yaml.safe_load(content)
         except yaml.YAMLError as exc:
-            print(f"Error parsing YAML content: {exc}")
+            logger.error(f"Error parsing YAML content: {exc}")
             sys.exit(1)

@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import logging
+logger = logging.getLogger(__name__)
 
 from datagen.src.sampling import generate_columns
 from datagen.src.dimensions import Dimension
@@ -86,10 +88,6 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
                 cases_g_for.append(case_g_for)
                 dims_g_fol.append(g_fol_sample)
                 cases_g_fol.append(np.array(case_g_fol).ravel())
-
-
-
-
 
         cases_g_for_df = pd.DataFrame(
             cases_g_for,
