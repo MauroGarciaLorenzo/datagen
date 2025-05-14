@@ -163,7 +163,7 @@ cython_debug/
 *.swp
 logs/
 *.jpg
-#*.png
+*.png
 *.csv
 !results.csv
 *.txt
