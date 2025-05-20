@@ -24,7 +24,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 @task(on_failure='FAIL')
-def main(working_dir='', path_data='', setup_path='', warmup=True):
+def main(working_dir='', path_data='', setup_path='', warmup=False):
     # %% Parse arguments (emulate sys.argv list as input)
     working_dir, path_data, setup_path = parse_args(
         [None, working_dir, path_data, setup_path])
@@ -32,6 +32,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=True):
      n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
      max_depth, setup_dict) = \
         parse_setup_file(setup_path)
+
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -63,7 +64,6 @@ def main(working_dir='', path_data='', setup_path='', warmup=True):
         working_dir, "results", dir_name)
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
-
     # Save yaml setup in the results directory
     with open(os.path.join(path_results, 'case_setup.yaml'), 'w') as f:
         yaml.dump(setup_dict, f)

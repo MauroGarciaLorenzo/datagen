@@ -15,7 +15,7 @@ cd "${SCRIPT_DIR}"/../.. || exit
 datagen_root_dir=$(pwd)
 stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
-yaml_file="${datagen_root_dir}/setup/default_setup.yaml"
+yaml_file="${datagen_root_dir}/setup/setup_test_exploration.yaml"
 working_dir="/gpfs/scratch/bsc19/$username"
 export PYTHONPATH="${datagen_root_dir}/packages/:${PYTHONPATH}:${datagen_root_dir}"
 
@@ -42,7 +42,6 @@ do
   --project_name=bsc19 \
   --qos=gp_debug \
   --log_dir=${working_dir} \
-  -d \
   --agents \
   run_datagen_ACOPF.py "${datagen_root_dir}" "${input_data}" "${yaml_file}"
 

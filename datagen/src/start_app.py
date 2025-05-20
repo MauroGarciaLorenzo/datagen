@@ -117,10 +117,12 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="result
                      feasible_rate=feasible_rate, func_params=func_params,
                      dst_dir=dst_dir))
 
-    execution_logs = compss_wait_on(result.children_info)
-    cases_df = compss_wait_on(result.cases_df)
-    dims_df = compss_wait_on(result.dims_df)
-    output_dataframes = compss_wait_on(result.output_dataframes)
+    result = compss_wait_on(result)
+
+    execution_logs = result.children_info
+    cases_df = result.cases_df
+    dims_df = result.dims_df
+    output_dataframes = result.output_dataframes
     if not isinstance(execution_logs, list):
         execution_logs = [execution_logs]
 

@@ -28,7 +28,7 @@ class ExplorationResult:
 
 
 @constraint(is_local=True)
-@task(returns=4, on_failure='FAIL', priority=True)
+@task(returns=1, on_failure='FAIL', priority=True)
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  cases_heritage_df, dims_heritage_df, use_sensitivity,
                  max_depth, divs_per_cell, generator, feasible_rate,
@@ -218,7 +218,10 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
         results.append(child_result)
 
     # Wait for all results
-    results = compss_wait_on(results)
+    for i in range(len(results)):
+        result = results[i]
+        results[i] = compss_wait_on(result)
+        
 
     # Combine all results
     combined_cases = pd.concat([r.cases_df for r in results],
