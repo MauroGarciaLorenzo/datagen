@@ -183,8 +183,7 @@ class Dimension:
             while (not np.isclose(total_sum - sample, 0) and
                    iters_variables < iter_limit):
                 indexes = list(range(len(self.variable_borders)))
-                generator.shuffle(indexes)
-
+                indexes = generator.permutation(indexes)
                 iters_variables += 1
                 for i in indexes:
                     if np.isclose(total_sum - sample, 0):
