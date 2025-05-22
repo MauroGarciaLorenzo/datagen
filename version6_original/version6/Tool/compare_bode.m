@@ -18,13 +18,13 @@ comb='1';
 % 
 % exportgraphics(gcf,['OP_7_comb',comb,'.pdf'],'ContentType','vector')
 % 
-TestDyn_allcigs=readtable(['TestDyn_windfarm_comb',comb,'_Y.xlsx']);
-TestDyn_eqcigs=readtable(['TestDyn_windfarm_comb',comb,'_eq_Y.xlsx']);
+TestDyn_allcigs=readtable(['TestDyn_example_model_scenario_',comb,'_Y.xlsx']);
+TestDyn_eqcigs=readtable(['TestDyn_example_model_scenario_',comb,'_eq_Y.xlsx']);
 
-plot_Y_systems_comparison(TestDyn_allcigs,TestDyn_eqcigs,4e3)
+%plot_Y_systems_comparison(TestDyn_allcigs,TestDyn_eqcigs,4e3)
 
-exportgraphics(gcf,['windfarm_comb',comb,'_maxfreq4e3.pdf'],'ContentType','vector')
+%exportgraphics(gcf,['TestDyn_example_model_scenario_',comb,'_maxfreq4e3.pdf'],'ContentType','vector')
 
-plot_Y_systems_comparison(TestDyn_allcigs,TestDyn_eqcigs,1e3)
+plot_Y_systems_comparison(TestDyn_allcigs,TestDyn_eqcigs,1e3, 'Individual IBRs', 'Aggregated GFOR IBRs')
 
-exportgraphics(gcf,['windfarm_comb',comb,'.pdf'],'ContentType','vector')
+exportgraphics(gcf,['TestDyn_example_model_scenario_',comb,'.pdf'],'ContentType','vector')

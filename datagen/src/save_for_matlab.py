@@ -33,3 +33,18 @@ def save_data_vsc(folder_path,filename,d_vsc,d_grid):
                   T_VSC_data=pd.DataFrame(columns=['number','bus']+list(d_vsc['User'+mode].columns))
             T_VSC_data.to_excel(writer, sheet_name=mode, index=False)         
               
+def modify_full(folder_path,filename,d_pf,d_grid):
+
+    #%%
+    # Create the folder if it doesn't exist
+    os.makedirs(folder_path, exist_ok=True)
+    
+    T_PF=d_pf['pf_bus'][['bus','Area','SyncArea','Vm','theta']]
+    with pd.ExcelWriter(folder_path+'/'+filename+'.xlsx', engine='openpyxl') as writer:
+        for key in d_grid:
+            print(key)
+            if key=='TH':
+                d_grid[key]
+                
+            
+           
