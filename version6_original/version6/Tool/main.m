@@ -9,7 +9,7 @@ addpath(genpath(pwd))
 %% SET INPUT DATA
 
 % Case name as in Excel files
-    caseName =  'IEEE118_FULL';%'/TestDyn_windfarm/comb1_eq';%'test_MPC'; %
+    caseName =  '/TestDyn_example_model/scenario_1_eq';%'/TestDyn_4CIGs/OP_7';%%'IEEE118_FULL';%'/TestDyn_windfarm/comb1_eq';%'test_MPC'; %
     caseNameNLin =  eraseBetween(regexprep(caseName,{'/'},{'_'}),1,1);%'test_MPC'; %
     caseNameLin =  caseNameNLin;%'OP_7'%'test_MPC'; %
 
@@ -17,7 +17,7 @@ addpath(genpath(pwd))
     path_results = '02_results\'; 
 
 % Set power-flow source (0: Excel, 1: Fanals, 2: MATPOWER, 3: MATACDC) 
-    fanals = 2; 
+    fanals = 0; 
 
 % Flag to indicate if T_case should be used (REE)
     shared_power = 0;
