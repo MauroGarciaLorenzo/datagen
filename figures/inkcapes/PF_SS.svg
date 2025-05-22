@@ -25,15 +25,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="1.0456808"
-     inkscape:cx="317.97468"
-     inkscape:cy="892.71988"
+     inkscape:zoom="0.73940798"
+     inkscape:cx="273.86775"
+     inkscape:cy="442.92191"
      inkscape:window-width="1920"
      inkscape:window-height="991"
-     inkscape:window-x="-9"
-     inkscape:window-y="-9"
+     inkscape:window-x="2391"
+     inkscape:window-y="125"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1" />
+     inkscape:current-layer="g6378" />
   <defs
      id="defs5867">
     <clipPath
@@ -843,6 +843,150 @@
          height="662362"
          id="rect6025-5-4" />
     </clipPath>
+    <clipPath
+       id="clip1-6">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-1" />
+    </clipPath>
+    <clipPath
+       id="clip3-6">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-1" />
+    </clipPath>
+    <clipPath
+       id="clip1-6-2">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-1-8" />
+    </clipPath>
+    <clipPath
+       id="clip3-6-2">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-1-8" />
+    </clipPath>
+    <clipPath
+       id="clip1-6-2-1">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-1-8-9" />
+    </clipPath>
+    <clipPath
+       id="clip3-6-2-4">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-1-8-3" />
+    </clipPath>
+    <clipPath
+       id="clip1-6-8">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-1-7" />
+    </clipPath>
+    <clipPath
+       id="clip3-6-1">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-1-6" />
+    </clipPath>
+    <clipPath
+       id="clip1-1">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-9" />
+    </clipPath>
+    <clipPath
+       id="clip3-7">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-6" />
+    </clipPath>
+    <clipPath
+       id="clip1-1-1">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-9-7" />
+    </clipPath>
+    <clipPath
+       id="clip3-7-2">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-6-5" />
+    </clipPath>
+    <clipPath
+       id="clip1-6-2-8">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-1-8-1" />
+    </clipPath>
+    <clipPath
+       id="clip3-6-2-8">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-1-8-7" />
+    </clipPath>
+    <clipPath
+       id="clip1-6-28">
+      <rect
+         x="0"
+         y="0"
+         width="1043940"
+         height="655320"
+         id="rect5994-1-9" />
+    </clipPath>
+    <clipPath
+       id="clip3-6-5">
+      <rect
+         x="0"
+         y="0"
+         width="1032840"
+         height="655320"
+         id="rect5998-1-82" />
+    </clipPath>
   </defs>
   <g
      inkscape:label="Livello 1"
@@ -854,7 +998,7 @@
        id="g6378">
       <rect
          x="379.04303"
-         y="483.21432"
+         y="499.21432"
          width="147.04915"
          height="22.798319"
          fill="#c5e0b4"
@@ -871,10 +1015,10 @@
          id="text6122"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="381.32184"
-         y="499.17316">Constant Input Data</text>
+         y="515.17316">Constant Input Data</text>
       <rect
          x="99.763626"
-         y="483.21432"
+         y="499.21432"
          width="276.4296"
          height="101.45251"
          stroke="#c5e0b4"
@@ -885,7 +1029,7 @@
          id="rect6124" />
       <rect
          x="112.87267"
-         y="549.32947"
+         y="565.32947"
          width="94.04306"
          height="23.368277"
          fill="#e2f0d9"
@@ -899,10 +1043,10 @@
          id="text6128"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="116.32389"
-         y="565.28827">.raw (PSS/E)</text>
+         y="581.28827">.raw (PSS/E)</text>
       <g
          clip-path="url(#clip1)"
-         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,120.85207,495.18345)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,120.85207,511.18345)"
          id="g6134">
         <g
            clip-path="url(#clip3)"
@@ -924,15 +1068,15 @@
          id="text6138"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="145.37424"
-         y="516.27191">Grid <tspan
+         y="532.27191">Grid <tspan
    font-size="13.109px"
    x="131.53851"
-   y="532.23071"
+   y="548.23071"
    id="tspan6136"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">topology</tspan></text>
       <rect
          x="300.9588"
-         y="549.32947"
+         y="565.32947"
          width="51.866173"
          height="23.368277"
          fill="#e2f0d9"
@@ -946,10 +1090,10 @@
          id="text6142"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="308.11813"
-         y="565.28827">Excel</text>
+         y="581.28827">Excel</text>
       <g
          clip-path="url(#clip4)"
-         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,287.84975,495.18345)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,287.84975,511.18345)"
          id="g6148">
         <g
            clip-path="url(#clip5)"
@@ -971,15 +1115,15 @@
          id="text6152"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="300.94446"
-         y="516.27191">Control <tspan
+         y="532.27191">Control <tspan
    font-size="13.109px"
    x="288.00168"
-   y="532.23071"
+   y="548.23071"
    id="tspan6150"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">parameters</tspan></text>
       <rect
          x="99.193672"
-         y="594.35614"
+         y="610.35614"
          width="786.54199"
          height="163.57793"
          stroke="#bfbfbf"
@@ -990,7 +1134,7 @@
          id="rect6154" />
       <rect
          x="711.32849"
-         y="567.56812"
+         y="583.56812"
          width="171.55734"
          height="23.368277"
          fill="#bfbfbf"
@@ -1004,10 +1148,10 @@
          id="text6160"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="727.1637"
-         y="583.52692">Small-signal analysis</text>
+         y="599.52692">Small-signal analysis</text>
       <rect
          x="574.23944"
-         y="775.94427"
+         y="791.94427"
          width="146.47919"
          height="22.798319"
          fill="#a0bed6"
@@ -1021,11 +1165,11 @@
          id="text6184-1"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="577.75146"
-         y="791.37177">Sampled Input Data</text>
+         y="807.37177">Sampled Input Data</text>
       <g
          clip-path="url(#clip6)"
          id="g6170"
-         transform="matrix(0.56995795,0,0,0.56995795,42.197876,376.99778)">
+         transform="matrix(0.56995795,0,0,0.56995795,42.197876,392.99778)">
         <g
            clip-path="url(#clip7)"
            id="g6168">
@@ -1051,7 +1195,7 @@
       </g>
       <rect
          x="124.27182"
-         y="727.72632"
+         y="743.72632"
          width="66.685081"
          height="23.368277"
          fill="#ebeaea"
@@ -1065,10 +1209,10 @@
          id="text6174"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="130.25037"
-         y="744.68488">GridCal</text>
+         y="760.68488">GridCal</text>
       <rect
          x="111.16279"
-         y="684.40948"
+         y="700.40948"
          width="87.773521"
          height="38.757141"
          fill="#d9d9d9"
@@ -1082,15 +1226,15 @@
          id="text6180"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="117.3494"
-         y="701.13678">Power flow <tspan
+         y="717.13678">Power flow <tspan
    font-size="13.109px"
    x="118.32782"
-   y="717.09564"
+   y="733.09564"
    id="tspan6178"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">calculation</tspan></text>
       <rect
          x="98.856194"
-         y="776.97516"
+         y="792.97516"
          width="144.27652"
          height="86.168655"
          stroke="#a0bed6"
@@ -1101,7 +1245,7 @@
          id="rect6186" />
       <g
          clip-path="url(#clip9)"
-         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,125.98169,780.16243)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,125.98169,796.16243)"
          id="g6192">
         <g
            clip-path="url(#clip10)"
@@ -1123,15 +1267,15 @@
          id="text6196"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="129.89844"
-         y="801.00452">Operating<tspan
+         y="817.00452">Operating<tspan
    font-size="13.109px"
    x="144.66508"
-   y="816.96338"
+   y="832.96338"
    id="tspan6194"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">point</tspan></text>
       <g
          id="g6952"
-         transform="translate(0,1.8305574)">
+         transform="translate(0,17.830557)">
         <text
            fill="#7f7f7f"
            font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
@@ -1160,7 +1304,7 @@
       </g>
       <g
          id="g6676"
-         transform="matrix(1.086039,0,0,1.086039,-28.338392,-53.711067)">
+         transform="matrix(1.086039,0,0,1.086039,-28.338392,-37.711067)">
         <g
            clip-path="url(#clip13)"
            transform="matrix(7.4797862e-5,0,0,7.4797862e-5,331.16656,642.2326)"
@@ -1356,7 +1500,7 @@
       </g>
       <rect
          x="267.33127"
-         y="685.54938"
+         y="701.54938"
          width="123.68088"
          height="39.327099"
          fill="#d9d9d9"
@@ -1370,15 +1514,15 @@
          id="text6292"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="288.52863"
-         y="701.21173">State space <tspan
+         y="717.21173">State space <tspan
    font-size="13.109px"
    x="269.78174"
-   y="717.17053"
+   y="733.17053"
    id="tspan6290"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">blocks generation</tspan></text>
       <g
          clip-path="url(#clip40)"
-         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,421.21991,599.48576)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,421.21991,615.48576)"
          id="g6298">
         <g
            clip-path="url(#clip42)"
@@ -1394,7 +1538,7 @@
       </g>
       <rect
          x="412.67053"
-         y="685.54938"
+         y="701.54938"
          width="137.92982"
          height="39.327099"
          fill="#d9d9d9"
@@ -1408,15 +1552,15 @@
          id="text6306"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="424.24924"
-         y="701.50824">State space blocks <tspan
+         y="717.50824">State space blocks <tspan
    font-size="13.109px"
    x="432.8699"
-   y="717.46704"
+   y="733.46704"
    id="tspan6304"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">interconnection</tspan></text>
       <g
          clip-path="url(#clip43)"
-         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,569.97894,626.84374)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,569.97894,642.84374)"
          id="g6312">
         <g
            clip-path="url(#clip45)"
@@ -1432,7 +1576,7 @@
       </g>
       <rect
          x="585.93774"
-         y="670.73047"
+         y="686.73047"
          width="91.763229"
          height="38.757141"
          fill="#d9d9d9"
@@ -1446,14 +1590,14 @@
          id="text6320"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="595.54956"
-         y="686.68933">State space <tspan
+         y="702.68933">State space <tspan
    font-size="13.109px"
    x="612.05463"
-   y="702.64813"
+   y="718.64813"
    id="tspan6318"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">model</tspan></text>
       <path
-         d="m 388.16235,639.95277 h 13.67899 v -3.98971 l 7.97942,7.97942 -7.97942,7.97941 v -3.98971 h -13.67899 z"
+         d="m 388.16235,655.95277 h 13.67899 v -3.98971 l 7.97942,7.97942 -7.97942,7.97941 v -3.98971 h -13.67899 z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1461,7 +1605,7 @@
          fill-rule="evenodd"
          id="path6322" />
       <path
-         d="m 537.49134,639.5253 h 13.39401 v -4.13219 l 8.26439,8.26439 -8.26439,8.26439 v -4.1322 h -13.39401 z"
+         d="m 537.49134,655.5253 h 13.39401 v -4.13219 l 8.26439,8.26439 -8.26439,8.26439 v -4.1322 h -13.39401 z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1473,11 +1617,11 @@
          height="100%"
          xlink:href="#img46"
          fill="none"
-         transform="matrix(0.56995795,0,0,0.56995795,736.97662,597.20592)"
+         transform="matrix(0.56995795,0,0,0.56995795,736.97662,613.20592)"
          id="use6326" />
       <rect
          x="354.53482"
-         y="731.14606"
+         y="747.14606"
          width="242.80209"
          height="23.368277"
          fill="#ebeaea"
@@ -1491,9 +1635,9 @@
          id="text6330"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="365.58496"
-         y="746.80841">Python Control Systems Library</text>
+         y="762.80841">Python Control Systems Library</text>
       <path
-         d="m 318.18417,773.2537 v -33.27876 h -6.99782 l 13.99565,-12.83984 13.99565,12.83984 h -6.99783 v 33.27876 z"
+         d="m 318.18417,789.2537 v -33.27876 h -6.99782 l 13.99565,-12.83984 13.99565,12.83984 h -6.99783 v 33.27876 z"
          stroke="#7f7f7f"
          stroke-width="0.911927"
          stroke-miterlimit="8"
@@ -1501,7 +1645,7 @@
          fill-rule="evenodd"
          id="path6332" />
       <path
-         d="m 163.8839,578.39731 v 19.94853 h 7.12447 l -14.24895,14.24895 -14.24894,-14.24895 h 7.12447 v -19.94853 z"
+         d="m 163.8839,594.39731 v 19.94853 h 7.12447 l -14.24895,14.24895 -14.24894,-14.24895 h 7.12447 v -19.94853 z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1510,7 +1654,7 @@
          id="path6334" />
       <rect
          x="105.46321"
-         y="835.44836"
+         y="851.44836"
          width="131.09033"
          height="22.798319"
          fill="#a0bed6"
@@ -1524,14 +1668,14 @@
          id="text6340"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="108.21642"
-         y="850.77557">Python <tspan
+         y="866.77557">Python <tspan
    font-size="13.109px"
    x="155.47546"
-   y="850.77557"
+   y="866.77557"
    id="tspan6338"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">DataFrame</tspan></text>
       <path
-         d="m 336.15369,578.96727 v 11.39916 h 6.98198 l -13.96397,11.39916 -13.96397,-11.39916 h 6.98199 v -11.39916 z"
+         d="m 336.15369,594.96727 v 11.39916 h 6.98198 l -13.96397,11.39916 -13.96397,-11.39916 h 6.98199 v -11.39916 z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1539,7 +1683,15 @@
          fill-rule="evenodd"
          id="path6348" />
       <path
-         d="m 152.34225,775.31264 v -11.39916 h -6.98198 l 13.96397,-11.39916 13.96396,11.39916 h -6.98198 v 11.39916 z"
+         d="m 240.56534,349.20604 h 11.39916 v -6.98198 l 11.39916,13.96397 -11.39916,13.96397 v -6.98199 h -11.39916 z"
+         stroke="#7f7f7f"
+         stroke-width="0.949932"
+         stroke-miterlimit="8"
+         fill="#bfbfbf"
+         fill-rule="evenodd"
+         id="path6348-3" />
+      <path
+         d="m 152.34225,791.31264 v -11.39916 h -6.98198 l 13.96397,-11.39916 13.96396,11.39916 h -6.98198 v 11.39916 z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1547,7 +1699,7 @@
          fill-rule="evenodd"
          id="path6350" />
       <path
-         d="m 705.86261,641.24942 11.07999,-7.64484 -2.29123,-3.32457 11.23387,2.06268 -2.06325,11.23615 -2.29123,-3.32456 -11.08568,7.64484 z"
+         d="m 705.86261,657.24942 11.07999,-7.64484 -2.29123,-3.32457 11.23387,2.06268 -2.06325,11.23615 -2.29123,-3.32456 -11.08568,7.64484 z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1555,7 +1707,7 @@
          fill-rule="evenodd"
          id="path6352" />
       <path
-         d="m 714.1327,666.16286 9.27322,9.76224 2.92958,-2.7814 -0.29637,11.42025 -11.42196,-0.2941 2.92958,-2.78139 -9.27321,-9.76224 z"
+         d="m 714.1327,682.16286 9.27322,9.76224 2.92958,-2.7814 -0.29637,11.42025 -11.42196,-0.2941 2.92958,-2.78139 -9.27321,-9.76224 z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1564,7 +1716,7 @@
          id="path6354" />
       <rect
          x="738.11652"
-         y="677.57001"
+         y="693.57001"
          width="49.016384"
          height="27.92794"
          stroke="#828282"
@@ -1580,10 +1732,10 @@
          id="text6358"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="748.74225"
-         y="695.52295">G(s)</text>
+         y="711.52295">G(s)</text>
       <rect
          x="840.70898"
-         y="613.16473"
+         y="629.16473"
          width="22.798319"
          height="27.357983"
          stroke="#828282"
@@ -1599,10 +1751,10 @@
          id="text6362"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="848.67065"
-         y="630.81476">ξ</text>
+         y="646.81476">ξ</text>
       <rect
          x="813.92096"
-         y="677.57001"
+         y="693.57001"
          width="70.674789"
          height="43.316803"
          stroke="#828282"
@@ -1619,28 +1771,28 @@
          id="text6372"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="816.31207"
-         y="695.80865">H<tspan
+         y="711.80865">H<tspan
    font-size="11.3992px"
    x="827.94867"
-   y="699.79834"
+   y="715.79834"
    id="tspan6366"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">2</tspan><tspan
    font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
    font-style="normal"
    font-size="13.109px"
    x="836.73547"
-   y="695.80865"
+   y="711.80865"
    id="tspan6368"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">norm</tspan><tspan
    font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
    font-style="normal"
    font-size="13.109px"
    x="816.31207"
-   y="714.0473"
+   y="730.0473"
    id="tspan6370"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">DC Gains</tspan></text>
       <path
-         d="m 810.5012,622.28407 h 13.67899 v -3.9897 l 7.97941,7.97941 -7.97941,7.97941 v -3.98971 H 810.5012 Z"
+         d="m 810.5012,638.28407 h 13.67899 v -3.9897 l 7.97941,7.97941 -7.97941,7.97941 v -3.98971 H 810.5012 Z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1648,7 +1800,7 @@
          fill-rule="evenodd"
          id="path6374" />
       <path
-         d="m 789.41275,687.40179 h 13.39401 v -4.1322 l 8.26439,8.26439 -8.26439,8.26439 v -4.13219 h -13.39401 z"
+         d="m 789.41275,703.40179 h 13.39401 v -4.1322 l 8.26439,8.26439 -8.26439,8.26439 v -4.13219 h -13.39401 z"
          stroke="#7f7f7f"
          stroke-width="0.949932"
          stroke-miterlimit="8"
@@ -1657,7 +1809,7 @@
          id="path6376" />
       <rect
          x="251.94783"
-         y="778.37878"
+         y="794.37878"
          width="310.62708"
          height="85.49369"
          stroke="#a0bed6"
@@ -1668,7 +1820,7 @@
          id="rect6186-9" />
       <g
          clip-path="url(#clip9-2)"
-         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,278.73585,781.22857)"
+         transform="matrix(7.4797862e-5,0,0,7.4797862e-5,278.73585,797.22857)"
          id="g6192-7">
         <g
            clip-path="url(#clip10-8)"
@@ -1690,15 +1842,15 @@
          id="text6196-0"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="282.65259"
-         y="802.07068">Operating<tspan
+         y="818.07068">Operating<tspan
    font-size="13.109px"
    x="297.41925"
-   y="818.02954"
+   y="834.02954"
    id="tspan6194-8"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">point</tspan></text>
       <g
          clip-path="url(#clip11-8)"
-         transform="matrix(8.0294241e-5,0,0,7.4797862e-5,444.02366,781.22857)"
+         transform="matrix(8.0294241e-5,0,0,7.4797862e-5,444.02366,797.22857)"
          id="g6202">
         <g
            clip-path="url(#clip12-6)"
@@ -1720,15 +1872,15 @@
          id="text6210"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="460.18484"
-         y="802.31702">Control <tspan
+         y="818.31702">Control <tspan
    font-size="13.109px"
    x="447.24207"
-   y="818.27588"
+   y="834.27588"
    id="tspan6204"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">parameters</tspan></text>
       <rect
          x="258.21738"
-         y="836.51453"
+         y="852.51453"
          width="131.09033"
          height="22.798319"
          fill="#a0bed6"
@@ -1742,15 +1894,15 @@
          id="text6340-7"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="260.97058"
-         y="851.84174">Python <tspan
+         y="867.84174">Python <tspan
    font-size="13.109px"
    x="308.22961"
-   y="851.84174"
+   y="867.84174"
    id="tspan6338-2"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">DataFrame</tspan></text>
       <rect
          x="420.6554"
-         y="834.80463"
+         y="850.80463"
          width="131.66029"
          height="22.798319"
          fill="#a0bed6"
@@ -1764,12 +1916,297 @@
          id="text6346"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
          x="423.69363"
-         y="850.76343">Python <tspan
+         y="866.76343">Python <tspan
    font-size="13.109px"
    x="470.95261"
-   y="850.76343"
+   y="866.76343"
    id="tspan6344"
    style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">DataFrame</tspan></text>
+      <rect
+         x="114.31066"
+         y="223.7606"
+         width="118.89701"
+         height="264.85486"
+         stroke="#c5e0b4"
+         stroke-width="2.26485"
+         stroke-miterlimit="8"
+         stroke-dasharray="11.25, 3.75"
+         fill="#ecf5e7"
+         id="rect6124-3" />
+      <g
+         id="g3468"
+         transform="translate(0.97025681)">
+        <rect
+           x="125.76738"
+           y="459.51654"
+           width="94.04306"
+           height="23.368277"
+           fill="#e2f0d9"
+           id="rect6126-1"
+           style="stroke-width:0.569958" />
+        <text
+           fill="#7f7f7f"
+           font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+           font-weight="400"
+           font-size="13.109px"
+           id="text6128-2"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+           x="129.2186"
+           y="475.47534">.raw (PSS/E)</text>
+        <g
+           clip-path="url(#clip1-1)"
+           transform="matrix(7.4797862e-5,0,0,7.4797862e-5,133.74678,405.37053)"
+           id="g6134-2">
+          <g
+             clip-path="url(#clip3-7)"
+             transform="matrix(1.01075,0,0,1,-0.0673828,-0.105957)"
+             id="g6132-1">
+            <use
+               width="100%"
+               height="100%"
+               xlink:href="#img2"
+               transform="scale(7123.04)"
+               id="use6130-05" />
+          </g>
+        </g>
+        <text
+           fill="#7f7f7f"
+           font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+           font-weight="400"
+           font-size="13.109px"
+           id="text6138-3"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+           x="158.26895"
+           y="426.45898">Grid <tspan
+   font-size="13.109px"
+   x="144.43323"
+   y="442.41779"
+   id="tspan6136-2"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.324852">topology</tspan></text>
+      </g>
+      <g
+         id="g3459"
+         transform="translate(3.6279123,-3.3180823)">
+        <g
+           clip-path="url(#clip1-6-2)"
+           transform="matrix(8.029424e-5,0,0,7.4797862e-5,128.22007,322.14558)"
+           id="g6134-3-3">
+          <g
+             clip-path="url(#clip3-6-2)"
+             transform="matrix(1.01075,0,0,1,-0.0673828,-0.105957)"
+             id="g6132-4-3">
+            <use
+               width="100%"
+               height="100%"
+               xlink:href="#img2"
+               transform="scale(7123.04)"
+               id="use6130-1-9" />
+          </g>
+        </g>
+        <text
+           fill="#7f7f7f"
+           font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+           font-weight="400"
+           font-size="13.109px"
+           id="text6138-1-1"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+           x="170.06682"
+           y="347.23401"><tspan
+             sodipodi:role="line"
+             id="tspan2985-3"
+             x="170.06682"
+             y="347.23401"
+             style="text-align:center;text-anchor:middle">Loads</tspan><tspan
+             sodipodi:role="line"
+             id="tspan2987-8"
+             x="170.06682"
+             y="365.56738"
+             style="text-align:center;text-anchor:middle">info</tspan></text>
+        <rect
+           x="144.1982"
+           y="376.33319"
+           width="51.866173"
+           height="23.368277"
+           fill="#e2f0d9"
+           id="rect6140-0-9"
+           style="stroke-width:0.569958" />
+        <text
+           fill="#7f7f7f"
+           font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+           font-weight="400"
+           font-size="13.109px"
+           id="text6142-2-1"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+           x="151.35747"
+           y="392.29199">Excel</text>
+      </g>
+      <rect
+         x="112.9514"
+         y="194.1693"
+         width="102.41885"
+         height="22.798319"
+         fill="#c5e0b4"
+         id="rect6120-9"
+         style="stroke-width:0.475665"
+         inkscape:export-filename="PF_SS.pdf"
+         inkscape:export-xdpi="320"
+         inkscape:export-ydpi="320" />
+      <text
+         xml:space="preserve"
+         style="font-size:14.6667px;line-height:1.3;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';text-align:center;text-anchor:middle;fill:#7f7f7f;fill-opacity:1;stroke-width:1.00157;stroke-dasharray:3.00472, 3.00472"
+         x="164.02834"
+         y="209.54666"
+         id="text1535"><tspan
+           sodipodi:role="line"
+           id="tspan1533"
+           x="164.02834"
+           y="209.54666"
+           style="font-size:14.6667px;fill:#7f7f7f;fill-opacity:1">System Info</tspan></text>
+      <g
+         id="g3449"
+         transform="translate(4.9170923,-4)">
+        <g
+           clip-path="url(#clip1-6)"
+           transform="matrix(8.029424e-5,0,0,7.4797862e-5,126.93089,236.28446)"
+           id="g6134-3">
+          <g
+             clip-path="url(#clip3-6)"
+             transform="matrix(1.01075,0,0,1,-0.0673828,-0.105957)"
+             id="g6132-4">
+            <use
+               width="100%"
+               height="100%"
+               xlink:href="#img2"
+               transform="scale(7123.04)"
+               id="use6130-1" />
+          </g>
+        </g>
+        <text
+           fill="#7f7f7f"
+           font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+           font-weight="400"
+           font-size="13.109px"
+           id="text6138-1"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+           x="168.77762"
+           y="261.37289"><tspan
+             sodipodi:role="line"
+             id="tspan2985"
+             x="168.77762"
+             y="261.37289"
+             style="text-align:center;text-anchor:middle">Generators</tspan><tspan
+             sodipodi:role="line"
+             id="tspan2987"
+             x="168.77762"
+             y="279.70627"
+             style="text-align:center;text-anchor:middle">info</tspan></text>
+        <rect
+           x="142.90898"
+           y="290.47208"
+           width="51.866173"
+           height="23.368277"
+           fill="#e2f0d9"
+           id="rect6140-0"
+           style="stroke-width:0.569958" />
+        <text
+           fill="#7f7f7f"
+           font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+           font-weight="400"
+           font-size="13.109px"
+           id="text6142-2"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+           x="150.06827"
+           y="306.43088">Excel</text>
+      </g>
+      <rect
+         x="409.1102"
+         y="223.27106"
+         width="106.35178"
+         height="95.427353"
+         stroke="#c5e0b4"
+         stroke-width="1.28576"
+         stroke-miterlimit="8"
+         stroke-dasharray="11.25, 3.75"
+         fill="#ecf5e7"
+         id="rect6124-3-7" />
+      <rect
+         x="407.50696"
+         y="194.57491"
+         width="102.41885"
+         height="22.798319"
+         fill="#c5e0b4"
+         id="rect6120-9-4"
+         style="stroke-width:0.475665"
+         inkscape:export-filename="PF_SS.pdf"
+         inkscape:export-xdpi="320"
+         inkscape:export-ydpi="320" />
+      <text
+         xml:space="preserve"
+         style="font-size:14.6667px;line-height:1.3;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';text-align:center;text-anchor:middle;fill:#7f7f7f;fill-opacity:1;stroke-width:1.00157;stroke-dasharray:3.00472, 3.00472"
+         x="458.58389"
+         y="209.95226"
+         id="text1535-3"><tspan
+           sodipodi:role="line"
+           id="tspan1533-2"
+           x="458.58389"
+           y="209.95226"
+           style="font-size:14.6667px;fill:#7f7f7f;fill-opacity:1">System Setup</tspan></text>
+      <g
+         id="g3449-0"
+         transform="translate(295.47266,-3.5944023)">
+        <g
+           clip-path="url(#clip1-6-28)"
+           transform="matrix(8.029424e-5,0,0,7.4797862e-5,126.93089,236.28446)"
+           id="g6134-3-8">
+          <g
+             clip-path="url(#clip3-6-5)"
+             transform="matrix(1.01075,0,0,1,-0.0673828,-0.105957)"
+             id="g6132-4-9">
+            <use
+               width="100%"
+               height="100%"
+               xlink:href="#img2"
+               transform="scale(7123.04)"
+               id="use6130-1-0" />
+          </g>
+        </g>
+        <text
+           fill="#7f7f7f"
+           font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+           font-weight="400"
+           font-size="13.109px"
+           id="text6138-1-6"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+           x="168.77762"
+           y="261.37289"><tspan
+             sodipodi:role="line"
+             id="tspan2987-0"
+             x="168.77762"
+             y="261.37289"
+             style="text-align:center;text-anchor:middle">Operational</tspan><tspan
+             sodipodi:role="line"
+             x="168.77762"
+             y="279.70627"
+             style="text-align:center;text-anchor:middle"
+             id="tspan3692">range</tspan></text>
+        <rect
+           x="142.90898"
+           y="290.47208"
+           width="51.866173"
+           height="23.368277"
+           fill="#e2f0d9"
+           id="rect6140-0-7"
+           style="stroke-width:0.569958" />
+        <text
+           fill="#7f7f7f"
+           font-family="'Open Sans', 'Open Sans_MSFontService', sans-serif"
+           font-weight="400"
+           font-size="13.109px"
+           id="text6142-2-0"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.6667px;font-family:'Century Schoolbook';-inkscape-font-specification:'Century Schoolbook';stroke-width:0.569958"
+           x="150.06827"
+           y="306.43088">Excel</text>
+      </g>
     </g>
     <rect
        x="380.39548"
