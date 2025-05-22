@@ -282,4 +282,9 @@ def main(working_dir='', path_data='', setup_path=''):
 
             
 if __name__ == "__main__":
-    main(setup_path="./setup/default_setup_9buses.yaml")
+    args = sys.argv
+    if len(args) == 1:
+        setup_path = "./setup/default_setup_9buses.yaml"
+    else:
+        setup_path = args[1]
+    main(setup_path=setup_path)
