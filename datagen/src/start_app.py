@@ -16,8 +16,11 @@
 goal is to explore the various cells (or combinations of dimensions) and
 produce both a record of execution logs and a DataFrame containing specific
 cases and their associated stability."""
+import os
 import random
 import logging
+import sys
+
 logger = logging.getLogger(__name__)
 
 import numpy as np
@@ -77,9 +80,9 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="result
     default [logging.ERROR]
     """
     # Load imports in every executor before execution
-    logger.info(f"DESTINATION DIR: {dst_dir}", )
+    logger.info(f"DESTINATION DIR: {dst_dir}")
     # Set up the logging level for the execution
-    setup_logger(logging_level)
+    setup_logger(logging_level, dst_dir)
 
     print(f"Current logging level: {logging.getLevelName(logging.getLogger().getEffectiveLevel())}")
 
@@ -140,14 +143,24 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="result
     return cases_df, dims_df, execution_logs, output_dataframes
 
 
-def setup_logger(logging_level):
-    import sys
+def setup_logger(logging_level, dst_dir):
+    os.makedirs(dst_dir, exist_ok=True)
+    log_file = os.path.join(dst_dir, "log.txt")
+
     logger = logging.getLogger()
     logger.setLevel(logging_level)
+
     if not logger.handlers:
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-        logger.addHandler(handler)
+        format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        # Stream handler (console)
+        stream_handler = logging.StreamHandler(sys.stdout)
+        stream_handler.setFormatter(logging.Formatter(format))
+        logger.addHandler(stream_handler)
+
+        # File handler
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(logging.Formatter(format))
+        logger.addHandler(file_handler)
 
 @task(is_replicated=True)
 def warmup_nodes():
