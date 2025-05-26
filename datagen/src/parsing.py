@@ -80,9 +80,9 @@ def parse_args(argv):
               f"{os.getcwd()}")
     else:
         if not os.path.exists(working_dir):
-            logger.error(f"Working directory {working_dir} not found")
-            raise FileNotFoundError(
-                f"Working directory {working_dir} not found")
+            message = f"Working directory {working_dir} not found"
+            logger.error(message)
+            raise FileNotFoundError(message)
         else:
             logger.info("Working directory:", working_dir)
     if not path_data:

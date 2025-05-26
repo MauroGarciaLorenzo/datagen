@@ -31,12 +31,6 @@ def save_dataframes(output_dataframes_array, path_results, seed):
         for key, value in dataframe.items():
             cu = os.environ.get("COMPUTING_UNITS")
             filename = f"cu{cu}_case_{str(index)}_{key}_seed{str(seed)}"
-            logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-            logger.info(key)
-            logger.info("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-            logger.info(value)
-            logger.info("")
-            logger.info("")
             if not os.path.exists(path_results):
                 os.makedirs(path_results)
             if isinstance(value, dict):

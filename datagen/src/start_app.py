@@ -93,8 +93,14 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="result
     clean_dir("results")
     if ax is not None and len(dimensions) == 2:
         clean_dir("results/figures")
-
+    dim_labels = set()
     for dim in dimensions:
+        if dim.label in dim_labels:
+            message = f"The label {dim.label} is already in use"
+            logger.error(message)
+            raise Exception(message)
+
+        dim_labels.add(dim.label)
         if dim.independent_dimension:
             dim.tolerance = (dim.borders[1] - dim.borders[0]) * rel_tolerance
 

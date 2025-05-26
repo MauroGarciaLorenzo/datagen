@@ -1,6 +1,7 @@
 import random
 import os
 import yaml
+import sys
 from datetime import datetime
 
 from datagen.src.parsing import parse_setup_file, parse_args

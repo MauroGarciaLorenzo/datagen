@@ -263,8 +263,9 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
             # Cell dimensions don't include g_for and g_fol, but dims_df do
             if 'p_g_for' in row.index and 'p_g_fol' in row.index:
                 if not isinstance(row, pd.Series):
-                    logger.error("Row is not a pd.Series object")
-                    raise TypeError("Row is not a pd.Series object")
+                    message = "Row is not a pd.Series object"
+                    logger.error(message)
+                    raise TypeError(message)
                 columns_to_drop = ['p_g_for', 'p_g_fol', 'p_load']
                 q_columns = row.filter(regex=r'^q_')
                 columns_to_drop.extend(q_columns.index)
@@ -320,6 +321,7 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
     if cases_heritage_df is None:
         cases_heritage_df = pd.DataFrame()
     if sum([len(cases) for cases in total_cases]) != len(cases_heritage_df):
-        logger.error("Not every case was assigned to a child")
-        raise Exception("Not every case was assigned to a child")
+        message = "Not every case was assigned to a child"
+        logger.error(message)
+        raise Exception(message)
     return total_cases, total_dims, total_dataframes

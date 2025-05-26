@@ -110,11 +110,10 @@ class Dimension:
         min_val = sum([v[0] for v in self.variable_borders])
 
         if not (max_val >= sample >= min_val):
-            logger.error(f"Sample {sample} cannot be reached by dimension {self.label}, with "
-                         f"variable borders {self.variable_borders}")
-            raise ValueError(f"Sample {sample} cannot be reached by "
-                             f"dimension {self.label}, with variable_borders borders "
-                             f"{self.variable_borders}")
+            message = (f"Sample {sample} cannot be reached by dimension {self.label}, "
+                       f"with variable borders {self.variable_borders}")
+            logger.error(message)
+            raise ValueError(message)
 
         while len(cases) < self.n_cases and iters < iter_limit:
             case = generator.normal(scaled_avgs, stds)
@@ -167,12 +166,11 @@ class Dimension:
         min_val = sum([v[0] for v in self.variable_borders])
 
         if not (max_val >= sample >= min_val):
-            logger.error(
-                f"Sample {sample} cannot be reached by dimension {self.label}, with variable_borders {self.variable_borders}")
-            raise ValueError(
-                f"Sample {sample} cannot be reached by dimension {self.label}, "
-                f"with variable_borders {self.variable_borders}"
-            )
+            message = (f"Sample {sample} cannot be reached by dimension "
+                       f"{self.label}, with variable_borders {self.variable_borders}")
+            logger.error(message)
+            raise ValueError(message)
+
 
         while len(cases) < self.n_cases and iters_cases < iter_limit:
             iters_cases += 1
@@ -201,6 +199,7 @@ class Dimension:
                 continue
             if np.isclose(total_sum, sample):
                 cases.append(case)
+
         if iters_cases >= iter_limit:
             logger.warning("Extreme case: Iteration limit exceeded. Switching "
                            "to normal sampling.")
