@@ -61,7 +61,7 @@ def main():
     max_depth = 3
     use_sensitivity = True
     seed = 1
-    logging_level = logging.WARNING
+    logging_level = logging.DEBUG
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
     fig, ax = plt.subplots()

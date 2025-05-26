@@ -150,17 +150,18 @@ def setup_logger(logging_level, dst_dir):
     logger = logging.getLogger()
     logger.setLevel(logging_level)
 
-    if not logger.handlers:
-        format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        # Stream handler (console)
-        stream_handler = logging.StreamHandler(sys.stdout)
-        stream_handler.setFormatter(logging.Formatter(format))
-        logger.addHandler(stream_handler)
+    logger.handlers.clear()
 
-        # File handler
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setFormatter(logging.Formatter(format))
-        logger.addHandler(file_handler)
+    format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    # Stream handler (console)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(logging.Formatter(format))
+    logger.addHandler(stream_handler)
+
+    # File handler
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(logging.Formatter(format))
+    logger.addHandler(file_handler)
 
 @task(is_replicated=True)
 def warmup_nodes():

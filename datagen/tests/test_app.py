@@ -68,21 +68,12 @@ class Test(unittest.TestCase):
                   f"n_cases={n_cases}, max_depth={max_depth} ==="
                   f'\n{"=" * 60}\n', flush=True)
 
-            # Capture logger output
-            from io import StringIO
-            log_stream = StringIO()
-            handler = logging.StreamHandler(log_stream)
-            formatter = logging.Formatter("%(message)s")
-            handler.setFormatter(formatter)
+            # Get logger output
+            path_results = main(setup_path=yaml_path, working_dir=working_dir)
+            log_file = os.path.join(path_results, "log.txt")
 
-            logger = logging.getLogger()
-            logger.addHandler(handler)
-
-            main(setup_path=yaml_path, working_dir=working_dir)
-
-            handler.flush()
-            log_output = log_stream.getvalue()
-            logger.removeHandler(handler)
+            with open(log_file, 'r') as f:
+                log_output = f.read()
 
             # Parse log output for dimension divisions
             dim_divisions = {}

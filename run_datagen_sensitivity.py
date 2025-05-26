@@ -24,7 +24,7 @@ def main(working_dir, setup_path):
     use_sensitivity = True
     divs_per_cell = 4
     feasible_rate = 0.5
-    logging_level = logging.INFO
+    logging_level = logging.DEBUG
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
      n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
@@ -59,6 +59,7 @@ def main(working_dir, setup_path):
 
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
+    return os.path.abspath(path_results)
 
 
 if __name__ == "__main__":
