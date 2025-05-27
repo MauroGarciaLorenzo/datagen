@@ -260,6 +260,7 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
         cases = []
         dataframes = {}
         for idx, row in dims_heritage_df.iterrows():
+            case_id = row["case_id"]
             # Cell dimensions don't include g_for and g_fol, but dims_df do
             if 'p_g_for' in row.index and 'p_g_fol' in row.index:
                 if not isinstance(row, pd.Series):
@@ -294,19 +295,36 @@ def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
             ) and idx != len(dims_heritage_df) - 1:
                 belongs = False
             if belongs:
-                cases.append(cases_heritage_df.iloc[[idx], :])
-                dims.append(dims_heritage_df.iloc[[idx], :])
-                if heritage_dataframes:
-                    for label in heritage_dataframes.keys():
-                        # If the dataframe is not empty, concatenate it
-                        if label in dataframes.keys():
-                            dataframes[label] = (
-                                pd.concat([dataframes[label],
-                                           heritage_dataframes[label].iloc[[idx], :]],
-                                          axis=0))
+                matching_case = cases_heritage_df[
+                    cases_heritage_df["case_id"] == case_id]
+                matching_dim = dims_heritage_df[
+                    dims_heritage_df["case_id"] == case_id]
+                cases.append(matching_case)
+                dims.append(matching_dim)
+
+            if heritage_dataframes:
+                assert dims_heritage_df["case_id"].is_unique
+                assert cases_heritage_df["case_id"].is_unique
+                assert set(cases_heritage_df["case_id"]) == set(
+                    dims_heritage_df["case_id"])
+
+                for label in heritage_dataframes.keys():
+                    df = heritage_dataframes[label]
+
+                    # Get the row where case_id matches
+                    row_df = df[df["case_id"] == case_id]
+
+                    if not row_df.empty:
+                        if label in dataframes:
+                            dataframes[label] = pd.concat(
+                                [dataframes[label], row_df], axis=0)
                         else:
-                            dataframes[label] = heritage_dataframes[label].iloc[
-                                                [idx], :]
+                            dataframes[label] = row_df
+                    else:
+                        message = (f"Line with case_id {case_id} not found "
+                                   f"in dataframe {label}")
+                        logger.error(message)
+                        raise Exception(message)
 
         if cases and dims:
             cases_df = pd.concat(cases, axis=0, ignore_index=True)
