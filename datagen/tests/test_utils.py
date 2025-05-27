@@ -1,3 +1,5 @@
+import os
+import sys
 
 import pandas as pd
 
@@ -6,6 +8,8 @@ from datagen.src.data_ops import sort_df_rows_by_another
 
 
 class Test(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
     def test_sort_dataframe_by_another(self):
         # Define df1 and df2
         df1 = pd.DataFrame({'id': [3, 1, 2], 'value': ['C', 'A', 'B']})

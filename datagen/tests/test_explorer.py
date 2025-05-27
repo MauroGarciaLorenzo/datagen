@@ -1,3 +1,5 @@
+import os
+import sys
 from unittest import TestCase
 import pandas as pd
 import numpy as np
@@ -11,6 +13,8 @@ from datagen.src.explorer import explore_grid
 
 
 class TestExplorer(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
     def setUp(self):
         # Create a dummy dimension
         self.variable_borders = np.array([(0.0, 1.0), (0.0, 1.0)])

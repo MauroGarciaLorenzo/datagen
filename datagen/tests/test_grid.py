@@ -1,3 +1,5 @@
+import os
+import sys
 from unittest import TestCase
 import numpy as np
 from itertools import product
@@ -7,6 +9,8 @@ from datagen.src.grid import gen_grid
 
 
 class TestGrid(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
     def setUp(self):
         self.variable_borders = np.array([(0.0, 1.0)])
         self.dim_x = Dimension(

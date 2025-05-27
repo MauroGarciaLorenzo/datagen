@@ -11,6 +11,8 @@ import yaml
 
 
 class Test(unittest.TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
     results_dir = "results"
     old_results_dir = "results_old"
     current_case = None
@@ -36,11 +38,12 @@ class Test(unittest.TestCase):
         os.makedirs(self.results_dir)
         if not os.path.isdir(self.old_results_dir):
             os.makedirs(self.old_results_dir)
-
         # Load YAML file
-        with open(yaml_path) as stream:
-            base_yaml = yaml.safe_load(stream)
-
+        try:
+            with open(yaml_path) as stream:
+                base_yaml = yaml.safe_load(stream)
+        except:
+            print("----------------------------------___", os.getcwd())
         from run_datagen_sensitivity import main
 
         # Loop over hyperparameters

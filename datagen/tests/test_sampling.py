@@ -22,6 +22,7 @@ def create_generator():
 
 
 class Test(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     def setUp(self):
         """

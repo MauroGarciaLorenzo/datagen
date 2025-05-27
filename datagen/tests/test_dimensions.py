@@ -1,3 +1,5 @@
+import os
+import sys
 from unittest import TestCase
 
 import numpy as np
@@ -6,6 +8,8 @@ from datagen import Dimension
 
 
 class Test(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
     def setUp(self):
         """
         This code executes every time a subtest of this class is run.

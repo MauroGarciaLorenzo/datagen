@@ -1,3 +1,5 @@
+import os
+import sys
 from unittest import TestCase
 import numpy as np
 
@@ -5,6 +7,8 @@ from datagen.src.evaluator import calculate_entropy, eval_entropy
 
 
 class Test(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
     def test_calculate_entropy(self):
         frequency_pairs = [
             ([0.5, 0.5], np.log(2)),       # entropy = -0.5*ln(0.5) -0.5*ln(0.5) = ln(2)

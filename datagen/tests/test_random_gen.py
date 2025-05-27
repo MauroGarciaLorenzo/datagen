@@ -1,3 +1,5 @@
+import os
+import sys
 from random import random
 
 import numpy as np
@@ -18,6 +20,7 @@ def compute_avg_distance(cases):
 
 
 class Test(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     def test_plot_sparsity(self):
         """

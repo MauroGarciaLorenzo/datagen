@@ -1,3 +1,5 @@
+import os
+import sys
 from unittest import TestCase
 
 import pandas as pd
@@ -12,6 +14,8 @@ from datagen.src.sampling import generate_columns
 
 
 class Test(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+
     def setUp(self):
         self.dims = create_dims()
         self.n_samples = 100

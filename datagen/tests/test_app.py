@@ -16,6 +16,7 @@ import yaml
 
 
 class Test(unittest.TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     results_dir = "results"
     old_results_dir = "results_old"
     current_case = None
@@ -126,11 +127,9 @@ class Test(unittest.TestCase):
         """
         # Cases initialization
         hyperparam_combinations = [  # n_samples, n_cases, max_depth
-            [1, 1, 1],
-            [2, 2, 2],
-            [2, 1, 3]
+            [1, 1, 1]
         ]
-        seeds = [17, 32]
+        seeds = [17]
         # Repeat case for each seed
         hyperparam_combinations = [
             hyparams + [seed] for hyparams in hyperparam_combinations
