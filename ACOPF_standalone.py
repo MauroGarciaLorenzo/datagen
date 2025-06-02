@@ -58,7 +58,7 @@ def main(working_dir='', path_data='', setup_path=''):
     working_dir, path_data, setup_path = parse_args(
        [None, working_dir, path_data, setup_path])
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
-     n_samples, seed, v_min_v_max_delta_v, voltage_profile,
+     n_samples, seed, v_min_v_max_delta_v, voltage_profile, v_set,
      _, _, _) = \
         parse_setup_file(setup_path)
         
@@ -238,21 +238,22 @@ def main(working_dir='', path_data='', setup_path=''):
     func_params = {"n_pf": n_pf, "d_raw_data": d_raw_data, "d_op": d_op,
                    "gridCal_grid": gridCal_grid, "d_grid": d_grid,
                    "d_sg": d_sg,
-                   "d_vsc": d_vsc, "voltage_profile": voltage_profile,
+                   "d_vsc": d_vsc, "voltage_profile": voltage_profile, 'v_set': v_set,
                    "v_min_v_max_delta_v": v_min_v_max_delta_v}
 
     stability_array = []
     output_dataframes_array = []
     for _, case in cases_df.iterrows():
-#        if _ == 5:
-        stability, output_dataframes = eval_stability(
-            case=case,
-            f=feasible_power_flow_ACOPF,
-            func_params=func_params,
-            generator=generator)
-        stability_array.append(stability)
-        output_dataframes_array.append(output_dataframes)
-        n_pf = n_pf + 1
+        if _ in [13]:#[106, 268, 270, 271]:
+            print('stop')
+            stability, output_dataframes = eval_stability(
+                case=case,
+                f=feasible_power_flow_ACOPF,
+                func_params=func_params,
+                generator=generator)
+            stability_array.append(stability)
+            output_dataframes_array.append(output_dataframes)
+            n_pf = n_pf + 1
 
     # %% SAVE RESULTS
     stability_array = compss_wait_on(stability_array)
@@ -281,4 +282,5 @@ def main(working_dir='', path_data='', setup_path=''):
 
             
 if __name__ == "__main__":
-    main(setup_path="./setup/default_setup_9buses.yaml")
+#    main(setup_path="./setup/test_default_vset.yaml")
+    main(setup_path="./setup/test_setup.yaml")
