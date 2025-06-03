@@ -1,6 +1,7 @@
 import os
 import random
 import logging
+import sys
 from datetime import datetime
 
 from matplotlib import pyplot as plt
@@ -8,6 +9,7 @@ from matplotlib import pyplot as plt
 from datagen.src.objective_function import dummy
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
+import yaml
 
 try:
     from pycompss.api.task import task
@@ -18,7 +20,7 @@ except ImportError:
 
 
 @task(on_failure='FAIL')
-def main():
+def main(setup_path="setup/setup_run_dummy.yaml"):
     """
     In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
@@ -55,10 +57,12 @@ def main():
     
     variables_d0 = [(0, 2), (0, 1.5), (0, 1.5)]
     variables_d1 = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
-    n_samples = 5
-    n_cases = 2
-    rel_tolerance = 0.1
-    max_depth = 3
+    args_dict = parse_yaml_args(setup_path)
+    n_samples = args_dict["n_samples"]
+    n_cases = args_dict["n_cases"]
+    rel_tolerance = args_dict["rel_tolerance"]
+    max_depth = args_dict["max_depth"]
+    print(n_samples, n_cases, rel_tolerance, max_depth)
     use_sensitivity = True
     seed = 1
     logging_level = logging.DEBUG
@@ -82,5 +86,34 @@ def main():
               dst_dir=path_results, logging_level=logging_level)
 
 
+def parse_yaml_args(setup_path):
+    """Parses arguments from a YAML file and returns them as a dictionary."""
+    if not os.path.isabs(setup_path):
+        os.path.join(os.path.dirname(__file__), setup_path)
+    try:
+        with open(setup_path, 'r') as f:
+            config = yaml.safe_load(f)
+    except Exception as e:
+        raise RuntimeError(f"Failed to parse YAML file: {e}")
+
+    required_keys = ['n_samples', 'n_cases', 'rel_tolerance', 'max_depth', 'seed']
+    missing_keys = [key for key in required_keys if key not in config]
+    if missing_keys:
+        raise ValueError(f"Missing required keys in YAML: {missing_keys}")
+
+    return {
+        'n_samples': int(config['n_samples']),
+        'n_cases': int(config['n_cases']),
+        'rel_tolerance': float(config['rel_tolerance']),
+        'max_depth': int(config['max_depth']),
+        'seed': int(config['seed']),
+    }
+
+
 if __name__ == '__main__':
-    main()
+    args = sys.argv
+    if len(args) < 2:
+        yaml_path = "setup/setup_run_dummy.yaml"
+    else:
+        yaml_path = args[1]
+    main(yaml_path)
