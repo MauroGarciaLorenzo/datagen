@@ -1,5 +1,8 @@
 from unittest import TestCase
-
+import sys
+import os
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..')))
 from datagen import *
 from datagen.src.data_ops import concat_df_dict
 from datagen.src.evaluator import calculate_entropy, eval_entropy
@@ -22,7 +25,7 @@ def create_generator():
 
 
 class Test(TestCase):
-    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     def setUp(self):
         """

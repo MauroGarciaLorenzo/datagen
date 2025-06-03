@@ -61,7 +61,6 @@ def main(setup_path="setup/default_setup.yaml"):
     rel_tolerance = args_dict["rel_tolerance"]
     max_depth = args_dict["max_depth"]
     seed = args_dict["seed"]
-    print(n_samples, n_cases, rel_tolerance, max_depth)
 
     # Set up seeded generator
     generator = np.random.default_rng(seed)
@@ -114,7 +113,7 @@ def main(setup_path="setup/default_setup.yaml"):
     cases_df, dims_df, execution_logs, output_dataframes = \
         start(dimensions, n_samples, rel_tolerance, func=dummy,
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
-              divs_per_cell=2, plot_boxplot=True, seed=seed,
+              divs_per_cell=2, plot_boxplot=False, seed=seed,
               dst_dir=path_results, logging_level=logging_level)
 
 

@@ -1,5 +1,7 @@
 import os
 import sys
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..')))
 
 import pandas as pd
 
@@ -8,7 +10,7 @@ from datagen.src.data_ops import sort_df_rows_by_another
 
 
 class Test(TestCase):
-    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     def test_sort_dataframe_by_another(self):
         print("RUNNING TEST SORT DATAFRAME")

@@ -3,6 +3,8 @@ import sys
 from unittest import TestCase
 
 import pandas as pd
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from datagen.src.case_generation import gen_samples, gen_cases
 from datagen.src.dimension_processing import process_p_load_dimension, \
@@ -14,7 +16,7 @@ from datagen.src.sampling import generate_columns
 
 
 class Test(TestCase):
-    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     def setUp(self):
         self.dims = create_dims()

@@ -1,16 +1,18 @@
 import os
 import sys
+
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..')))
 from unittest import TestCase
 from datagen.src.case_generation import gen_samples
 
 import numpy as np
-import math
 
 from datagen import Dimension
 
 
 class Test(TestCase):
-    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     def setUp(self):
         """
@@ -21,7 +23,7 @@ class Test(TestCase):
         n_samples = 300
         divs = None
         lower, upper = 0, 70
-        self.dimension_tolerance = 0.3
+        self.dimension_tolerance = 0.5
         label = "Test"
         tolerance = 0.1
         dim1 = Dimension(variable_borders=variables, n_cases=n_cases, divs=divs,

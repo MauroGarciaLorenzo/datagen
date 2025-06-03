@@ -54,7 +54,7 @@ def main(working_dir, setup_path):
               func=test_sensitivity_obj_func,
               max_depth=max_depth, dst_dir=path_results,
               use_sensitivity=use_sensitivity,
-              divs_per_cell=divs_per_cell, plot_boxplot=True, seed=seed,
+              divs_per_cell=divs_per_cell, plot_boxplot=False, seed=seed,
               feasible_rate=feasible_rate, logging_level=logging_level)
 
     stability_array = compss_wait_on(stability_array)

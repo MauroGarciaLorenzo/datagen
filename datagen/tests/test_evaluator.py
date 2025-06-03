@@ -1,5 +1,8 @@
 import os
 import sys
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from unittest import TestCase
 import numpy as np
 
@@ -7,7 +10,7 @@ from datagen.src.evaluator import calculate_entropy, eval_entropy
 
 
 class Test(TestCase):
-    os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     def test_calculate_entropy(self):
         print("RUNNING TEST CALCULATE ENTROPY")
