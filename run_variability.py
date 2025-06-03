@@ -54,16 +54,16 @@ def main(setup_path="setup/default_setup.yaml"):
         -plot_boxplot: a boolean indicating whether boxplots for each variable
         must be obtained or not. Plots saved in "datagen/results/figures".
     """
-    
-    variables_d0 = [(0, 2), (0, 1.5), (0, 1.5)]
-    variables_d1 = [(0, 1), (0, 1.5), (0, 1.5), (0, 2)]
+
+    variables_d0 = [(0, 2), (2, 2.5), (3, 3.5)]
+    variables_d1 = [(10,20), (0, 1.5), (3, 4), (4, 5)]
     args_dict = parse_yaml_args(setup_path)
     n_samples = args_dict["n_samples"]
     n_cases = args_dict["n_cases"]
     rel_tolerance = args_dict["rel_tolerance"]
     max_depth = args_dict["max_depth"]
     seed = args_dict["seed"]
-
+    print(n_samples, n_cases, rel_tolerance, max_depth)
     use_sensitivity = True
     logging_level = logging.DEBUG
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -71,17 +71,17 @@ def main(setup_path="setup/default_setup.yaml"):
     fig, ax = plt.subplots()
     dimensions = [
         Dimension(variable_borders=variables_d0, n_cases=n_cases, divs=2,
-                  borders=(0, 5), label="Dim_0"),
+                  borders=(5, 8), label="Dim_0"),
         Dimension(variable_borders=variables_d1, n_cases=n_cases, divs=1,
-                  borders=(1, 6), label="Dim_1")
+                  borders=(17, 30.5), label="Dim_1")
     ]
 
     dir_name = f"dummy_seed{seed}_nc{n_cases}" \
                f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
     path_results = os.path.join("results", dir_name)
     cases_df, dims_df, execution_logs, output_dataframes = \
-        start(dimensions, n_samples, rel_tolerance, func=dummy, 
-              max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax, 
+        start(dimensions, n_samples, rel_tolerance, func=dummy,
+              max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
               divs_per_cell=2, plot_boxplot=True, seed=seed,
               dst_dir=path_results, logging_level=logging_level)
 
@@ -96,7 +96,8 @@ def parse_yaml_args(setup_path):
     except Exception as e:
         raise RuntimeError(f"Failed to parse YAML file: {e}")
 
-    required_keys = ['n_samples', 'n_cases', 'rel_tolerance', 'max_depth', 'seed']
+    required_keys = ['n_samples', 'n_cases', 'rel_tolerance', 'max_depth',
+                     'seed']
     missing_keys = [key for key in required_keys if key not in config]
     if missing_keys:
         raise ValueError(f"Missing required keys in YAML: {missing_keys}")

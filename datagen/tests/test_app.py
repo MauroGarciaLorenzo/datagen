@@ -233,6 +233,7 @@ class Test(unittest.TestCase):
                 print(f"Errors: {error}")
         self.assertTrue(passed, f"Some configurations failed: {failed}")
 
+
     def test_run_dummy(self):
         """
         Run 'run_dummy.py' with different depths and check for errors.
@@ -247,7 +248,6 @@ class Test(unittest.TestCase):
 
         # Paths
         yaml_path = '../../setup/test_setup.yaml'
-        working_dir = '.'
 
         # Ensure clean results directory
         if os.path.isdir(self.results_dir):
@@ -269,6 +269,100 @@ class Test(unittest.TestCase):
         errors_failed = []
 
         for depth in depths:
+            # Update YAML
+            base_yaml['n_samples'] = n_samples
+            base_yaml['n_cases'] = n_cases
+            base_yaml['max_depth'] = depth
+            base_yaml['seed'] = seed
+
+            # Save YAML
+            with open(yaml_path, 'w') as stream:
+                yaml.dump(base_yaml, stream)
+
+            try:
+                print(f"\n=== Running with max_depth={depth} ===\n",
+                      flush=True)
+                main(setup_path=yaml_path)
+                print(f"\n=== Success with max_depth={depth} ===\n",
+                      flush=True)
+            except Exception as e:
+                passed = False
+                print(
+                    f"\n=== Failed with max_depth={depth} ===\nException: {e}",
+                    flush=True)
+                failed.append(depth)
+                errors_failed.append(e)
+                continue
+
+            # Get latest results directory
+            subdirs = [
+                d for d in os.listdir(self.results_dir)
+                if os.path.isdir(os.path.join(self.results_dir, d))
+            ]
+            if not subdirs:
+                raise ValueError("No results directories found.")
+            latest_subdir = max(
+                subdirs,
+                key=lambda d: os.path.getmtime(
+                    os.path.join(self.results_dir, d))
+            )
+
+            case_dir = os.path.join(self.results_dir, latest_subdir)
+            cases_df = pd.read_csv(os.path.join(case_dir, "cases_df.csv"),
+                                   index_col=0)
+            dims_df = pd.read_csv(os.path.join(case_dir, "dims_df.csv"),
+                                  index_col=0)
+
+            # Run checks
+            self.no_duplicate_rows(cases_df, dims_df)
+            self.column_sums_match(cases_df, dims_df)
+
+            # Move directory
+            dst_dir = os.path.join(self.old_results_dir, latest_subdir)
+            shutil.move(case_dir, dst_dir)
+
+        # Final check
+        if not passed:
+            for d, e in zip(failed, errors_failed):
+                print(f"Failed depth: {d}\nError: {e}")
+        self.assertTrue(passed, f"Failures for depths: {failed}")
+
+
+    def test_run_variability(self):
+        """
+        Run 'run_variability.py' with different depths and check for errors.
+        """
+        print("RUNNING TEST RUN_VARIABILITY")
+
+        # Parameters
+        depth = 3
+        n_samples = 3
+        n_cases = 3
+        seeds = [16, 17, 18]
+
+        # Paths
+        yaml_path = '../../setup/test_setup.yaml'
+
+        # Ensure clean results directory
+        if os.path.isdir(self.results_dir):
+            shutil.rmtree(self.results_dir)
+        os.makedirs(self.results_dir)
+        if not os.path.isdir(self.old_results_dir):
+            os.makedirs(self.old_results_dir)
+
+        # Load YAML
+        with open(yaml_path) as stream:
+            base_yaml = yaml.safe_load(stream)
+
+        # Import target function
+        sys.path.append('../../')
+        from run_variability import main
+
+        passed = True
+        failed = []
+        errors_failed = []
+
+        for seed in seeds:
             # Update YAML
             base_yaml['n_samples'] = n_samples
             base_yaml['n_cases'] = n_cases
