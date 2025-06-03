@@ -27,6 +27,7 @@ class Test(TestCase):
         Generate samples with get_cases_normal and get_cases_extreme to
         visualize how well-distributed data is.
         """
+        print("RUNNING TEST PLOT SPARSITY")
         generator = np.random.default_rng(1)
         variables = np.array([(0, 10), (0, 15), (5, 20), (0, 25)])
         n_cases = 30

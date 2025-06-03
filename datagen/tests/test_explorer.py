@@ -55,6 +55,7 @@ class TestExplorer(TestCase):
         self.dst_dir = "results"
 
     def test_explore_grid(self):
+        print("RUNNING TEST EXPLORE GRID")
         result = explore_grid(
             ax=self.ax,
             cases_df=self.cases_df,

@@ -27,6 +27,7 @@ class Test(unittest.TestCase):
         The function 'test_sensitivity_obj_func' returns 1 only depending on
         the value of dimension tau_Dim_0, so this should be the only important one.
         """
+        print("RUNNING TEST SENSITIVITY")
         n_samples = 10
         n_cases = 10
         max_depth = 1
@@ -125,6 +126,7 @@ class Test(unittest.TestCase):
             seed
         and check for errors during execution.
         """
+        print("RUNNING TEST APP")
         # Cases initialization
         hyperparam_combinations = [  # n_samples, n_cases, max_depth
             [1, 1, 1]

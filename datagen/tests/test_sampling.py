@@ -66,18 +66,21 @@ class Test(TestCase):
         })
 
     def test_generate_columns(self):
+        print("RUNNING TEST GENERATE COLUMNS")
         cols = generate_columns(self.dim1)
         self.assertTrue(cols,
                         ["Dim1_Var0", "Dim1_Var1", "Dim1_Var2", "Dim1_Var3"])
 
 
     def test_calculate_entropy(self):
+        print("RUNNING TEST CALCULATE ENTROPY")
         freqs = [0.25, 0.75]
         expected_entropy = -0.25 * np.log(0.25) - 0.75 * np.log(0.75)
         result_entropy = calculate_entropy(freqs)
         self.assertAlmostEqual(result_entropy, expected_entropy, places=5)
 
     def test_eval_entropy(self):
+        print("RUNNING TEST EVAL ENTROPY")
         stabilities = [1, 0, 0, 0]
         entropy_parent = None
         expected_freqs = [0.25, 0.75]
@@ -103,6 +106,7 @@ class Test(TestCase):
         self.assertEqual(result_delta_entropy, expected_delta_entropy)
 
     def test_sensitivity(self):
+        print("RUNNING TEST SENSITIVITY ANALYSIS")
         variables = [(0, 10), (0, 10), (0, 10), (0, 10)]
         dim1 = Dimension(variable_borders= variables, n_cases=3, divs=1, borders=(0, 70),
                          label="Dim1")
@@ -145,6 +149,7 @@ class Test(TestCase):
         Test the 'concat_total_dataframes()' function in a nested dictionary of
         dataframes so that the recursive feature is tested.
         """
+        print("RUNNING TEST CONCAT DF DICT")
         df1 = pd.DataFrame({
             'A': [1, 2, 3, 4, 5],
             'B': ['alpha', 'beta', 'gamma', 'delta', 'epsilon'],

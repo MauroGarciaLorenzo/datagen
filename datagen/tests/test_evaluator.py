@@ -10,6 +10,7 @@ class Test(TestCase):
     os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     def test_calculate_entropy(self):
+        print("RUNNING TEST CALCULATE ENTROPY")
         frequency_pairs = [
             ([0.5, 0.5], np.log(2)),       # entropy = -0.5*ln(0.5) -0.5*ln(0.5) = ln(2)
             ([1.0, 0.0], 0.0),             # entropy = 0 (fully stable)
@@ -21,6 +22,7 @@ class Test(TestCase):
             self.assertAlmostEqual(entropy, expected_entropy, places=6)
 
     def test_eval_entropy(self):
+        print("RUNNING TEST EVAL ENTROPY")
         cases = [
             ([1, 1, 1, 1], None),
             ([0, 0, 0, 0], None),

@@ -42,6 +42,7 @@ class TestGrid(TestCase):
         )
 
     def test_gen_grid(self):
+        print("RUNNING TEST GEN GRID")
         grid = gen_grid([self.dim_x, self.dim_y, self.dim_z])
         self.assertEqual(len(grid), 8)
 

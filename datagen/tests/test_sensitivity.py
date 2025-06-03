@@ -24,6 +24,7 @@ class Test(unittest.TestCase):
         returns 1 only depending on the value of the dimension tau_Dim_0, so
         this is the only "important" dimension.
         """
+        print("RUNNING TEST SENSITIVITY")
 
         n_samples = 10
         n_cases = 10

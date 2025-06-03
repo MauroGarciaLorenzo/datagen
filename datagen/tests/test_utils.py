@@ -11,6 +11,7 @@ class Test(TestCase):
     os.chdir(os.path.dirname(os.path.abspath(sys.argv[0])))
 
     def test_sort_dataframe_by_another(self):
+        print("RUNNING TEST SORT DATAFRAME")
         # Define df1 and df2
         df1 = pd.DataFrame({'id': [3, 1, 2], 'value': ['C', 'A', 'B']})
         df2 = pd.DataFrame({'id': [1, 2, 3], 'info': ['X', 'Y', 'Z']})

@@ -23,6 +23,7 @@ class Test(TestCase):
         self.df_samples = gen_samples(self.n_samples, self.dims, self.generator)
 
     def test_gen_samples(self):
+        print("RUNNING TEST GEN SAMPLES")
         df_samples = gen_samples(self.n_samples, self.dims, self.generator)
 
         for dim in self.dims:
@@ -30,6 +31,7 @@ class Test(TestCase):
             self.assertTrue(all(df_samples[dim.label] <= dim.borders[1]))
 
     def test_gen_cases(self):
+        print("RUNNING TEST GEN CASES")
         cases_df, dims_df = gen_cases(self.df_samples, self.dims,
                                       self.generator)
 
@@ -44,6 +46,7 @@ class Test(TestCase):
                     self.assertAlmostEqual(exp, calc, places=2)
 
     def test_process_p_cig_dimension(self):
+        print("RUNNING TEST PROCESS P_CIG DIMENSION")
         # Create a p_cig dimension
         p_cig = Dimension(
             variable_borders=[(0, 50), (0, 50)],
@@ -75,6 +78,7 @@ class Test(TestCase):
 
 
     def test_process_p_load_dimension(self):
+        print("RUNNING TEST PROCESS P_LOAD DIMENSION")
         dim = Dimension(
             values=[0.5, 1.0],
             n_cases=1,
@@ -102,6 +106,7 @@ class Test(TestCase):
         self.assertEqual(len(cases_df), len(df_samples) * dim.n_cases)
 
     def test_process_control_dimension(self):
+        print("RUNNING TEST PROCESS CONTROL DIMENSION")
         dim = Dimension(
             label="tau_g_for",
             n_cases=2
@@ -121,6 +126,7 @@ class Test(TestCase):
         self.assertEqual(len(cases_df), len(df_samples) * dim.n_cases)
 
     def test_process_other_dimensions(self):
+        print("RUNNING TEST PROCESS OTHER DIMENSION")
         dim = Dimension(
             variable_borders=[(0, 10), (0, 20)],
             n_cases=2,
