@@ -4,6 +4,7 @@ import logging
 import sys
 from datetime import datetime
 
+import numpy as np
 from matplotlib import pyplot as plt
 
 from datagen.src.objective_function import dummy
@@ -54,9 +55,6 @@ def main(setup_path="setup/default_setup.yaml"):
         -plot_boxplot: a boolean indicating whether boxplots for each variable
         must be obtained or not. Plots saved in "datagen/results/figures".
     """
-
-    variables_d0 = [(0, 2), (2, 2.5), (3, 3.5)]
-    variables_d1 = [(10,20), (0, 1.5), (3, 4), (4, 5)]
     args_dict = parse_yaml_args(setup_path)
     n_samples = args_dict["n_samples"]
     n_cases = args_dict["n_cases"]
@@ -64,21 +62,55 @@ def main(setup_path="setup/default_setup.yaml"):
     max_depth = args_dict["max_depth"]
     seed = args_dict["seed"]
     print(n_samples, n_cases, rel_tolerance, max_depth)
-    use_sensitivity = True
-    logging_level = logging.DEBUG
+
+    # Set up seeded generator
+    generator = np.random.default_rng(seed)
+
+    # Helper function to generate valid (min, max) pairs
+    def generate_variable_borders(n_vars, low=0, high=10):
+        borders = []
+        for _ in range(n_vars):
+            a = generator.uniform(low, high)
+            b = generator.uniform(low, high)
+            min_val, max_val = sorted([a, b])
+            min_val = max(min_val, 0)
+            max_val = max(max_val, 0)
+            borders.append((min_val, max_val))
+        return borders
+
+    # Generate dimensions
+    variables_d0 = generate_variable_borders(3, low=0, high=5)
+    variables_d1 = generate_variable_borders(4, low=0, high=10)
+
+    # Compute borders from generated variable ranges
+    borders_d0 = (
+        sum([v[0] for v in variables_d0]),
+        sum([v[1] for v in variables_d0])
+    )
+    borders_d1 = (
+        sum([v[0] for v in variables_d1]),
+        sum([v[1] for v in variables_d1])
+    )
+
+    # Directory for output
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    fig, ax = plt.subplots()
+    dir_name = f"dummy_seed{seed}_nc{n_cases}_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
+    path_results = os.path.join("results", dir_name)
+    
+    # Dimensions
     dimensions = [
         Dimension(variable_borders=variables_d0, n_cases=n_cases, divs=2,
-                  borders=(5, 8), label="Dim_0"),
+                  borders=borders_d0, label="Dim_0"),
         Dimension(variable_borders=variables_d1, n_cases=n_cases, divs=1,
-                  borders=(17, 30.5), label="Dim_1")
+                  borders=borders_d1, label="Dim_1")
     ]
 
-    dir_name = f"dummy_seed{seed}_nc{n_cases}" \
-               f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
-    path_results = os.path.join("results", dir_name)
+    # Run experiment
+    fig, ax = plt.subplots()
+    use_sensitivity = True
+    logging_level = logging.DEBUG
+
     cases_df, dims_df, execution_logs, output_dataframes = \
         start(dimensions, n_samples, rel_tolerance, func=dummy,
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,

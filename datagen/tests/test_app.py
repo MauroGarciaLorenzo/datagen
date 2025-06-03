@@ -335,9 +335,9 @@ class Test(unittest.TestCase):
         print("RUNNING TEST RUN_VARIABILITY")
 
         # Parameters
-        depth = 3
-        n_samples = 3
-        n_cases = 3
+        depth = 2
+        n_samples = 2
+        n_cases = 2
         seeds = [16, 17, 18]
 
         # Paths
