@@ -65,7 +65,7 @@ def main(setup_path="setup/default_setup.yaml"):
     # Set up seeded generator
     generator = np.random.default_rng(seed)
 
-    # Helper function to generate valid (min, max) pairs
+    # Helper function to generate valid (min, max) pairs from the seed received
     def generate_variable_borders(n_vars, low=0, high=10):
         borders = []
         for _ in range(n_vars):

@@ -116,7 +116,7 @@ class Test(unittest.TestCase):
                             errors_failed))
 
 
-    def test_app(self):
+    def test_ACOPF(self):
         """
         Run 'run_datagen_ACOPF.py' with different configurations
         of parameters:
@@ -126,7 +126,7 @@ class Test(unittest.TestCase):
             seed
         and check for errors during execution.
         """
-        print("RUNNING TEST APP")
+        print("RUNNING TEST ACOPF")
         # Cases initialization
         hyperparam_combinations = [  # n_samples, n_cases, max_depth
             [1, 1, 1]
@@ -234,11 +234,12 @@ class Test(unittest.TestCase):
         self.assertTrue(passed, f"Some configurations failed: {failed}")
 
 
-    def test_run_dummy(self):
+    def test_depth(self):
         """
-        Run 'run_dummy.py' with different depths and check for errors.
+        Run 'run_dummy.py' with different depths and check for errors. In this
+        case, test_setup yaml is modified to use different depth cfgs.
         """
-        print("RUNNING TEST RUN_DUMMY")
+        print("RUNNING TEST DEPTH")
 
         # Parameters
         depths = [3, 5]
@@ -328,11 +329,14 @@ class Test(unittest.TestCase):
         self.assertTrue(passed, f"Failures for depths: {failed}")
 
 
-    def test_run_variability(self):
+    def test_variability(self):
         """
-        Run 'run_variability.py' with different depths and check for errors.
+        Run run_variability.py with different seeds and check for errors.
+        The seeds are used to initialize a generator that creates the variable
+        borders. This ensures that the execution is tested with different
+        variable ranges.
         """
-        print("RUNNING TEST RUN_VARIABILITY")
+        print("RUNNING TEST VARIABILITY")
 
         # Parameters
         depth = 2
