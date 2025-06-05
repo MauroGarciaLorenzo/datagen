@@ -20,6 +20,7 @@ import os
 import random
 import logging
 import sys
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ except ImportError:
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
           feasible_rate=0.5, func_params = {}, warmup=False, logging_level=logging.ERROR,
-          working_dir=os.getcwd()):
+          working_dir=None):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -79,8 +80,16 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     Possible values [logging.INFO|logging.WARNING|logging.ERROR],
     default [logging.ERROR]
     """
+
+    # Set working dir to datagen root directory
+    if working_dir is None:
+        working_dir = os.path.join(os.path.dirname(__file__), "..", "..")
+
+    print("Working dir", working_dir, flush=True)
+    print("Logger file paths", get_log_file_paths(logger), flush=True)
     if dst_dir is None:
         calling_module = get_calling_module()
+        print("CALLING: ", calling_module)
         n_cases = dimensions[0].n_cases
         dst_dir = init_dst_dir(calling_module, seed, n_cases, n_samples,
                                max_depth, working_dir, ax, dimensions)
@@ -172,5 +181,21 @@ def warmup_nodes():
     from . import sampling, utils, objective_function_ACOPF
     time.sleep(1)
 
+
 def get_calling_module():
-    return os.path.basename(sys.argv[0])
+    # Extract the raw traceback stack (no inspect)
+    stack = traceback.extract_stack()
+
+    if len(stack) >= 5:
+        calling_frame = stack[len(stack) - 3]
+        return os.path.basename(calling_frame.filename)
+    else:
+        return "unknown"
+
+def get_log_file_paths(logger=None):
+    logger = logger or logging.getLogger()
+    paths = []
+    for handler in logger.handlers:
+        if isinstance(handler, logging.FileHandler):
+            paths.append(handler.baseFilename)
+    return paths

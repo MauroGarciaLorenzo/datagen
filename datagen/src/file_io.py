@@ -54,7 +54,7 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
     """
     if dst_dir is None:
         dst_dir = "results"
-
+    print("Dst dir: ", os.path.abspath(dst_dir), flush=True)
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
         logger.info(f"Created results directory: {os.path.abspath(dst_dir)}")
