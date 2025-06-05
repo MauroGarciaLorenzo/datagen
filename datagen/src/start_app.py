@@ -29,8 +29,7 @@ import time
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
-from .utils import clean_dir
-from .file_io import save_results
+from .file_io import save_results, init_dst_dir
 
 try:
     from pycompss.api.task import task
@@ -41,9 +40,10 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on, compss_barrier
 
 
-def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="results",
-          seed=None, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0.5, func_params = {}, warmup=False, logging_level=logging.ERROR):
+def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
+          seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
+          feasible_rate=0.5, func_params = {}, warmup=False, logging_level=logging.ERROR,
+          working_dir=os.getcwd()):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -79,6 +79,12 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="result
     Possible values [logging.INFO|logging.WARNING|logging.ERROR],
     default [logging.ERROR]
     """
+    if dst_dir is None:
+        calling_module = get_calling_module()
+        n_cases = dimensions[0].n_cases
+        dst_dir = init_dst_dir(calling_module, seed, n_cases, n_samples,
+                               max_depth, working_dir, ax, dimensions)
+
     # Load imports in every executor before execution
     logger.info(f"DESTINATION DIR: {dst_dir}")
     # Set up the logging level for the execution
@@ -93,9 +99,6 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="result
 
     t0 = time.time()
 
-    clean_dir("results")
-    if ax is not None and len(dimensions) == 2:
-        clean_dir("results/figures")
     dim_labels = set()
     for dim in dimensions:
         if dim.label in dim_labels:
@@ -136,7 +139,8 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir="result
         execution_logs = [execution_logs]
 
     if plot_boxplot:
-        boxplot(cases_df)
+        boxplot(cases_df, dst_dir)
+
     print_results(execution_logs, cases_df)
     save_results(cases_df, dims_df, execution_logs, output_dataframes, dst_dir, time.time()-t0)
 
@@ -167,3 +171,6 @@ def setup_logger(logging_level, dst_dir):
 def warmup_nodes():
     from . import sampling, utils, objective_function_ACOPF
     time.sleep(1)
+
+def get_calling_module():
+    return os.path.basename(sys.argv[0])

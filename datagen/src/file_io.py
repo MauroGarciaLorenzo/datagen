@@ -1,5 +1,7 @@
 import os
-
+import random
+from datetime import datetime
+from .utils import clean_dir
 import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
@@ -92,3 +94,40 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
                 log_file.write(f"Delta Entropy: {log_entry[2]}\n")
                 log_file.write(f"Depth: {log_entry[3]}\n")
                 log_file.write("\n")
+
+def init_dst_dir(calling_module, seed, n_cases, n_samples, max_depth,
+                 working_dir, ax, dimensions):
+    # Get slurm job id
+    slurm_job_id = os.getenv("SLURM_JOB_ID", default=None)
+    slurm_str = ""
+    if slurm_job_id:
+        slurm_str = f"_slurm{slurm_job_id}"
+
+    # Get slurm n_nodes
+    slurm_num_nodes = os.environ.get('SLURM_JOB_NUM_NODES', default=None)
+    slurm_nodes_str = ""
+    if slurm_num_nodes:
+        slurm_nodes_str = f"_nodes{slurm_num_nodes}"
+
+    # Get computing units assigned to the objective function
+    cu = os.environ.get("COMPUTING_UNITS", default=None)
+    cu_str = ""
+    if cu:
+        cu_str = f"_cu{cu}"
+
+    # Get random number
+    rnd_num = random.randint(1000, 9999)
+
+    # Get timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    dir_name = f"{calling_module}{slurm_str}{cu_str}{slurm_nodes_str}_LF09_seed{seed}_nc{n_cases}" \
+               f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
+    path_results = os.path.join(
+        working_dir, "results", dir_name)
+
+    clean_dir(os.path.join(path_results))
+    if ax is not None and len(dimensions) == 2:
+        clean_dir(os.path.join(path_results, "figures"))
+
+    return path_results

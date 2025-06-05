@@ -81,10 +81,11 @@ def plot_divs(ax, children_grid, dst_dir):
     ax.figure.savefig(fname=path, dpi=300)
 
 
-def boxplot(cases_df):
+def boxplot(cases_df, dst_dir):
     labels = list(set(
         col.rsplit('_Var')[0] for col in cases_df.columns if '_Var' in col))
     dims = {}
+    dir_path = os.path.join(dst_dir, "figures")
 
     for label in labels:
         matching_columns = cases_df.filter(regex=f'^{label}_', axis=1)
@@ -97,7 +98,7 @@ def boxplot(cases_df):
         ax.set_title(dim)
         labels = [str(i) for i in range(variables.shape[1])]
         ax.set_xticklabels(labels)
-        dir_path = "results/figures"
+
         file_name = "boxplot_" + dim + ".png"
         path = os.path.join(dir_path, file_name)
         plt.savefig(fname=path, dpi=300)
