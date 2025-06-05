@@ -23,7 +23,7 @@ class Test(TestCase):
         n_samples = 300
         divs = None
         lower, upper = 0, 70
-        self.dimension_tolerance = 0.5
+        self.dimension_tolerance = 0.05
         label = "Test"
         tolerance = 0.1
         dim1 = Dimension(variable_borders=variables, n_cases=n_cases, divs=divs,
@@ -78,7 +78,6 @@ class Test(TestCase):
                 else:
                     cases = dim.get_cases_normal(sample, self.generator)
                     for idx in range(len(cases)):
-                        print(sum(cases[idx]), sample)
                         # Assert that the sum of the resulting case is within
                         # dimension_tolerance of the range of the dimension
                         self.assertLessEqual(sum(cases[idx]) - sample,
