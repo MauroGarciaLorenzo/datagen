@@ -120,6 +120,27 @@ class Dimension:
             lower_bounds = self.variable_borders[:, 0]
             upper_bounds = self.variable_borders[:, 1]
             case = np.clip(case, lower_bounds, upper_bounds)
+            residual = sample - case.sum()
+
+            # Sum values to the variables to get closer to the sample
+            if abs(residual) > 1e-6:
+                if residual > 0:
+                    # Room to increase without exceeding upper bounds
+                    room = self.variable_borders[:, 1] - case
+                else:
+                    # Room to decrease without going below lower bounds
+                    room = case - self.variable_borders[:, 0]
+
+                mask = room > 0  # Only adjust variables that have room
+                total_room = room[mask].sum()
+
+                if total_room > 0:
+                    adjustment = np.zeros_like(case)
+                    adjustment[mask] = residual * (room[mask] / total_room)
+                    case += adjustment
+                    case = np.clip(case, self.variable_borders[:, 0],
+                                   self.variable_borders[:, 1])
+
             case_sum = case.sum()
             if self.borders[0] < case_sum < self.borders[1]:
                 cases.append(case)
