@@ -4,7 +4,6 @@ import logging
 logger = logging.getLogger(__name__)
 import yaml
 from stability_analysis.data import get_data_path
-from datagen.src.viz import print_dict_as_yaml
 
 
 def parse_setup_file(setup_path):
@@ -22,26 +21,8 @@ def parse_setup_file(setup_path):
         raise FileNotFoundError(f"Setup file {setup_path} not found")
 
     # Load case parameters
-    setup = load_yaml(setup_path)
-    n_pf = setup["n_pf"]
-    voltage_profile = setup["voltage_profile"]
-    v_min_v_max_delta_v = setup["v_min_v_max_delta_v"]
-    loads_power_factor = setup["loads_power_factor"]
-    generators_power_factor = setup["generators_power_factor"]
-    n_samples = setup["n_samples"]
-    n_cases = setup["n_cases"]
-    rel_tolerance = setup["rel_tolerance"]
-    max_depth = setup["max_depth"]
-    seed = setup["seed"]
-    grid_name = setup["grid_name"]
-    # Print case configuration
-    logger.info(f"\n{''.join(['='] * 30)}\n"
-          f"Running application with the following parameters:"
-          f"\n{''.join(['='] * 30)}")
-    print_dict_as_yaml(setup)
-    return generators_power_factor, grid_name, loads_power_factor, n_cases, \
-        n_pf, n_samples, seed, v_min_v_max_delta_v, voltage_profile, \
-        rel_tolerance, max_depth, setup
+    return load_yaml(setup_path)
+
 
 
 def parse_args(argv):

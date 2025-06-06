@@ -31,6 +31,9 @@ import sys
 import random
 from datetime import datetime
 import warnings
+
+from datagen import print_dict_as_yaml
+
 warnings.filterwarnings('ignore')
 
 from datagen.src.data_ops import concat_df_dict
@@ -58,10 +61,23 @@ def main(working_dir='', path_data='', setup_path=''):
     # %% Parse arguments
     working_dir, path_data, setup_path = parse_args(
        [None, working_dir, path_data, setup_path])
-    (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
-     n_samples, seed, v_min_v_max_delta_v, voltage_profile,
-     _, _, _) = \
-        parse_setup_file(setup_path)
+    setup = parse_setup_file(setup_path)
+
+    n_pf = setup["n_pf"]
+    voltage_profile = setup["voltage_profile"]
+    v_min_v_max_delta_v = setup["v_min_v_max_delta_v"]
+    loads_power_factor = setup["loads_power_factor"]
+    generators_power_factor = setup["generators_power_factor"]
+    n_samples = setup["n_samples"]
+    n_cases = setup["n_cases"]
+    seed = setup["seed"]
+    grid_name = setup["grid_name"]
+
+    # Print case configuration
+    print(f"\n{''.join(['='] * 30)}\n"
+                f"Running application with the following parameters:"
+                f"\n{''.join(['='] * 30)}")
+    print_dict_as_yaml(setup)
         
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))

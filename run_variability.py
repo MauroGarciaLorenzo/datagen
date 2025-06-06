@@ -9,6 +9,7 @@ from matplotlib import pyplot as plt
 
 from datagen.src.objective_function import dummy
 from datagen.src.dimensions import Dimension
+from datagen.src.parsing import parse_setup_file
 from datagen.src.start_app import start
 import yaml
 
@@ -55,12 +56,12 @@ def main(setup_path="setup/default_setup.yaml"):
         -plot_boxplot: a boolean indicating whether boxplots for each variable
         must be obtained or not. Plots saved in "datagen/results/figures".
     """
-    args_dict = parse_yaml_args(setup_path)
-    n_samples = args_dict["n_samples"]
-    n_cases = args_dict["n_cases"]
-    rel_tolerance = args_dict["rel_tolerance"]
-    max_depth = args_dict["max_depth"]
-    seed = args_dict["seed"]
+    setup = parse_setup_file(setup_path)
+    n_samples = setup["n_samples"]
+    n_cases = setup["n_cases"]
+    rel_tolerance = setup["rel_tolerance"]
+    max_depth = setup["max_depth"]
+    seed = setup["seed"]
 
     # Set up seeded generator
     generator = np.random.default_rng(seed)
@@ -115,31 +116,6 @@ def main(setup_path="setup/default_setup.yaml"):
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
               divs_per_cell=2, plot_boxplot=False, seed=seed,
               dst_dir=path_results, logging_level=logging_level)
-
-
-def parse_yaml_args(setup_path):
-    """Parses arguments from a YAML file and returns them as a dictionary."""
-    if not os.path.isabs(setup_path):
-        os.path.join(os.path.dirname(__file__), setup_path)
-    try:
-        with open(setup_path, 'r') as f:
-            config = yaml.safe_load(f)
-    except Exception as e:
-        raise RuntimeError(f"Failed to parse YAML file: {e}")
-
-    required_keys = ['n_samples', 'n_cases', 'rel_tolerance', 'max_depth',
-                     'seed']
-    missing_keys = [key for key in required_keys if key not in config]
-    if missing_keys:
-        raise ValueError(f"Missing required keys in YAML: {missing_keys}")
-
-    return {
-        'n_samples': int(config['n_samples']),
-        'n_cases': int(config['n_cases']),
-        'rel_tolerance': float(config['rel_tolerance']),
-        'max_depth': int(config['max_depth']),
-        'seed': int(config['seed']),
-    }
 
 
 if __name__ == '__main__':

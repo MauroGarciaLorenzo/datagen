@@ -85,7 +85,6 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     if working_dir is None:
         working_dir = os.path.join(os.path.dirname(__file__), "..", "..")
 
-    print("Working dir", working_dir, flush=True)
     if dst_dir is None:
         calling_module = get_calling_module()
         n_cases = dimensions[0].n_cases
@@ -95,7 +94,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     # Load imports in every executor before execution
     logger.info(f"DESTINATION DIR: {dst_dir}")
     # Set up the logging level for the execution
-    setup_logger(logging_level, dst_dir, working_dir)
+    setup_logger(logging_level, dst_dir)
 
     print(f"Current logging level: {logging.getLevelName(logging.getLogger().getEffectiveLevel())}")
 

@@ -1,6 +1,9 @@
 import os
 import sys
 import logging
+
+from datagen import print_dict_as_yaml
+
 logger = logging.getLogger(__name__)
 
 from matplotlib import pyplot as plt
@@ -20,16 +23,28 @@ import warnings
 warnings.filterwarnings("ignore")
 
 @task(on_failure='FAIL')
-def main(working_dir, setup_path):
+def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     use_sensitivity = True
     divs_per_cell = 4
     feasible_rate = 0.5
     logging_level = logging.DEBUG
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
-    (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
-     n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
-     max_depth, setup_dict) = \
-        parse_setup_file(setup_path)
+    setup = parse_setup_file(setup_path)
+
+    if working_dir is None:
+        working_dir = os.path.join(os.path.dirname(__file__), "..", "..")
+
+    n_samples = setup["n_samples"]
+    n_cases = setup["n_cases"]
+    rel_tolerance = setup["rel_tolerance"]
+    max_depth = setup["max_depth"]
+    seed = setup["seed"]
+
+    # Print case configuration
+    print(f"\n{''.join(['='] * 30)}\n"
+          f"Running application with the following parameters:"
+          f"\n{''.join(['='] * 30)}")
+    print_dict_as_yaml(setup)
 
     dimensions = [
         Dimension(label="tau_Dim_0", n_cases=n_cases, divs=1, borders=(-1, 1)),
@@ -64,4 +79,7 @@ def main(working_dir, setup_path):
 
 if __name__ == "__main__":
     args = sys.argv
-    main(sys.argv[1], sys.argv[2])
+    if len(args) == 3:
+        main(sys.argv[1], sys.argv[2])
+    else:
+        main()
