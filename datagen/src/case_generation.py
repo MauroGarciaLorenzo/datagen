@@ -68,6 +68,10 @@ def gen_samples(n_samples, dimensions, generator):
 
     samples_scaled = lower_bounds + samples * (upper_bounds - lower_bounds)
 
+    print("SAMPLESSS", flush=True)
+    print(samples_scaled, flush=True)
+    print("SAMPLESSS", flush=True)
+
     df_samples = pd.DataFrame(samples_scaled,
                               columns=[dim.label for dim in indepedent_dims])
 
