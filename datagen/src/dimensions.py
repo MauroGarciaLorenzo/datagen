@@ -210,6 +210,7 @@ class Dimension:
                 iters_variables += 1
                 print("PERMUTATIONNNN", flush=True)
                 for i in indexes:
+                    print("INDEX: ", i, flush=True)
                     if np.isclose(total_sum - sample, 0):
                         break
                     print("BORDERS:", self.variable_borders[i], flush=True)
