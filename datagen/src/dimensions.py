@@ -199,29 +199,20 @@ class Dimension:
             case = initial_case.copy()
             total_sum = sum(case)
             iters_variables = 0
-            print("SAMPLE:", sample, flush=True)
             while (not np.isclose(total_sum - sample, 0) and
                    iters_variables < iter_limit):
                 indexes = list(range(len(self.variable_borders)))
-                print("INDEXESSS", flush=True)
-                for index in indexes:
-                    print(index)
                 indexes = generator.permutation(indexes)
                 iters_variables += 1
-                print("PERMUTATIONNNN", flush=True)
                 for i in indexes:
-                    print("INDEX: ", i, flush=True)
                     if np.isclose(total_sum - sample, 0):
                         break
-                    print("BORDERS:", self.variable_borders[i], flush=True)
                     new_var = generator.uniform(case[i],
                                                 self.variable_borders[i, 1])
                     new_var = np.clip(new_var, case[i],
                                       case[i] + sample - total_sum)
                     case[i] = new_var
-                    print("NEW VAR:", new_var, flush=True)
                     total_sum = sum(case)
-                print("INDEXESSS", flush=True)
             if iters_variables >= iter_limit_variables:
                 logger.warning(
                     f"Sample {sample} couldn't be reached (total sum {total_sum}) in case {case}")

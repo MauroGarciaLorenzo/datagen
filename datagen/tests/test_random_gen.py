@@ -53,14 +53,8 @@ class Test(TestCase):
             cases_normal = dim.get_cases_normal(sample, generator)
             cases_extreme = dim.get_cases_extreme(sample, generator)
 
-            print(f"Sample: {sample}")
-            print("get_cases_normal:")
             none_flag = False
-            for case in cases_normal:
-                if None not in case:
-                    print(case, sum(case))
 
-            print("get_cases_extreme:")
             for case in cases_extreme:
                 if None not in case:
                     print(case, sum(case))
