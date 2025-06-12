@@ -83,7 +83,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                                                       dimensions=dimensions,
                                                       generator=generator
                                                       )
-        feasible_cases += 1
+        if stability >= 0:
+            feasible_cases += 1
         stabilities.append(stability)
         output_dataframes_list.append(output_dataframes)
 
