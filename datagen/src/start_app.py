@@ -43,7 +43,7 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0.5, func_params = {}, warmup=False, logging_level=logging.ERROR,
+          feasible_rate=0.5, func_params = {}, warmup=False, logging_level=logging.INFO,
           working_dir=None):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
@@ -91,10 +91,11 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         dst_dir = init_dst_dir(calling_module, seed, n_cases, n_samples,
                                max_depth, working_dir, ax, dimensions)
 
-    # Load imports in every executor before execution
-    logger.info(f"DESTINATION DIR: {dst_dir}")
     # Set up the logging level for the execution
     setup_logger(logging_level, dst_dir)
+
+    # Load imports in every executor before execution
+    logger.info(f"DESTINATION DIR: {dst_dir}")
 
     print(f"Current logging level: {logging.getLevelName(logging.getLogger().getEffectiveLevel())}")
 

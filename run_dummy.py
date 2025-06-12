@@ -65,7 +65,7 @@ def main(setup_path="setup/default_setup.yaml"):
     seed = setup["seed"]
 
     use_sensitivity = True
-    logging_level = logging.DEBUG
+    logging_level = logging.INFO
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
     fig, ax = plt.subplots()

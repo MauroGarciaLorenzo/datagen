@@ -1,6 +1,7 @@
 import pandas as pd
 import logging
 logger = logging.getLogger(__name__)
+
 try:
     from pycompss.api.task import task
     from pycompss.api.api import compss_wait_on
@@ -83,13 +84,16 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                                                       dimensions=dimensions,
                                                       generator=generator
                                                       )
-        if stability >= 0:
-            feasible_cases += 1
         stabilities.append(stability)
         output_dataframes_list.append(output_dataframes)
 
     stabilities = compss_wait_on(stabilities)
     output_dataframes_list = compss_wait_on(output_dataframes_list)
+
+    for stability in stabilities:
+        if stability >= 0:
+            feasible_cases += 1
+            
     cases_df["Stability"] = stabilities
     # Collect each cases dictionary of dataframes into total_dataframes
     for output_dfs in output_dataframes_list:
