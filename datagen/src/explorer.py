@@ -120,8 +120,10 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     dims_df = pd.concat([dims_df, dims_heritage_df], ignore_index=True)
 
     parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy)
-    logger.info(f"Depth={depth}, Entropy={parent_entropy}, "
-          f"Delta_entropy={delta_entropy}")
+
+    message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
+    print(message)
+    logger.info(message)
 
     total_cases = n_samples * dimensions[0].n_cases
 
