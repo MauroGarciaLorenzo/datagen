@@ -122,7 +122,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy)
 
     message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
-    print(message)
+    print(message, flush=True)
     logger.info(message)
 
     total_cases = n_samples * dimensions[0].n_cases
