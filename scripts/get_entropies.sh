@@ -4,6 +4,7 @@
 log_dir="/gpfs/scratch/bsc19/bsc019019/.COMPSs"
 job_id=""
 
+# Parse arguments
 for arg in "$@"; do
     case $arg in
         --log_dir=*)
@@ -33,13 +34,9 @@ if [ ! -d "$target_dir" ]; then
     exit 1
 fi
 
-# Temp file for grep output
 tmp_file=$(mktemp)
-
-# Extract relevant lines
 grep -ri "Depth=" "$target_dir" > "$tmp_file"
 
-# Compute averages
 awk -F'[:,=]' '
 {
     for (i = 1; i <= NF; i++) {
@@ -47,13 +44,16 @@ awk -F'[:,=]' '
         if ($i ~ /Entropy/ && $(i-1) != "Delta") e=$(i+1);
         if ($i ~ /Delta_entropy/) de=$(i+1);
     }
-    count[d]++; sum_e[d] += e; sum_de[d] += de;
+    count[d]++
+    sum_e[d] += e
+    sum_de[d] += de
+    if (!(d in max_e) || e > max_e[d]) max_e[d] = e
 }
 END {
-    printf "%5s %15s %20s\n", "Depth", "Avg Entropy", "Avg Delta Entropy";
+    printf "%5s %15s %20s %15s\n", "Depth", "Avg Entropy", "Avg Delta Entropy", "Max Entropy";
     PROCINFO["sorted_in"] = "@ind_num_asc";
     for (d in count) {
-        printf "%5d %15.6f %20.6f\n", d, sum_e[d]/count[d], sum_de[d]/count[d];
+        printf "%5d %15.6f %20.6f %15.6f\n", d, sum_e[d]/count[d], sum_de[d]/count[d], max_e[d];
     }
 }' "$tmp_file"
 
