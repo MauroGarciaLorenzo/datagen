@@ -91,6 +91,13 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         dst_dir = init_dst_dir(calling_module, seed, n_cases, n_samples,
                                max_depth, working_dir, ax, dimensions)
 
+    if not os.path.exists(dst_dir):
+        os.makedirs(dst_dir)
+        logger.info(f"Created results directory: {os.path.abspath(dst_dir)}")
+    else:
+        logger.info(
+            f"Using existing results directory: {os.path.abspath(dst_dir)}")
+
     # Set up the logging level for the execution
     setup_logger(logging_level, dst_dir)
 

@@ -4,6 +4,7 @@ from datetime import datetime
 from .utils import clean_dir
 import pandas as pd
 import logging
+import csv
 logger = logging.getLogger(__name__)
 
 from datagen.src.data_ops import sort_df_rows_by_another, sort_df_last_columns
@@ -54,13 +55,6 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
     """
     if dst_dir is None:
         dst_dir = "results"
-
-    if not os.path.exists(dst_dir):
-        os.makedirs(dst_dir)
-        logger.info(f"Created results directory: {os.path.abspath(dst_dir)}")
-    else:
-        logger.info(
-            f"Using existing results directory: {os.path.abspath(dst_dir)}")
 
     cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"))
     dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"))
@@ -131,3 +125,14 @@ def init_dst_dir(calling_module, seed, n_cases, n_samples, max_depth,
         clean_dir(os.path.join(path_results, "figures"))
 
     return path_results
+
+
+def log_cell_info(cell_name, depth, delta_entropy, feasible_ratio, status, dst_dir):
+    csv_path = os.path.join(dst_dir, "cell_info.csv")
+    file_exists = os.path.isfile(csv_path)
+
+    with open(csv_path, mode='a', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        if not file_exists:
+            writer.writerow(["Cell Name", "Depth", "Delta Entropy", "Feasible Ratio", "Status"])
+        writer.writerow([cell_name, depth, delta_entropy, feasible_ratio, status])

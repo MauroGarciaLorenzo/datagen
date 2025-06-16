@@ -1,5 +1,8 @@
 import pandas as pd
 import logging
+
+from datagen.src.file_io import log_cell_info
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -121,11 +124,12 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
     parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy)
 
+    total_cases = n_samples * dimensions[0].n_cases
     message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
-    print(message, flush=True)
+    log_cell_info(cell_name, depth, delta_entropy, feasible_cases / total_cases,
+                  1, dst_dir)
     logger.info(message)
 
-    total_cases = n_samples * dimensions[0].n_cases
 
     # Finish recursivity if entropy decreases or cell become too small
     if (delta_entropy < 0 or not check_dims(
@@ -136,6 +140,10 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         logger.info(f"    Entropy: {parent_entropy}")
         logger.info(f"    Delta entropy: {delta_entropy}")
         logger.info(f"    Depth: {depth}")
+
+        log_cell_info(cell_name, depth, delta_entropy,
+                      feasible_cases / total_cases,
+                      0, dst_dir)
 
         # Return as ExplorationResult
         return ExplorationResult(
