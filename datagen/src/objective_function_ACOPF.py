@@ -74,69 +74,133 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     # slack_bus_num=80
     assign_SlackBus_to_grid.assign_slack_bus(gridCal_grid, slack_bus_num)
+    
+    assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
+#%%
     if voltage_profile != None:
         vmin = v_min_v_max_delta_v[0]
         vmax = v_min_v_max_delta_v[1]
         delta_v = v_min_v_max_delta_v[2]
-
+        convergence=False
+        #for ii in range(14):
+        #    if convergence!=True:
         voltage_profile_list, indx_id = gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
                                                                      gridCal_grid, generator=generator)
 
         assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
                                                voltage_profile_list=voltage_profile_list, indx_id=indx_id)
+        
+        # %% Run 1st POWER-FLOW
 
+        # # Get Power-Flow results with GridCal
+        # pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
+
+        # print('Converged:', pf_results.convergence_reports[0].converged_[0])
+
+
+        # # Update PF results and operation point of generator elements
+        # d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
+        # d_pf_original['info']=pd.DataFrame()
+        # d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
+        
+        #%%
+
+        nc = compile_numerical_circuit_at(gridCal_grid)
+        nc.generator_data.cost_0[:] = 0
+        nc.generator_data.cost_1[:] = 0
+        nc.generator_data.cost_2[:] = 0
+        pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.Direct)#, max_iter=100)
+        opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-4, ips_iterations=50)
+
+    #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
+
+        start = time.perf_counter()
+
+        pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+
+        d_opf_results = ac_optimal_power_flow(nc= nc,
+                                              pf_options= pf_options,
+                                              opf_options= opf_options,
+                                              # debug: bool = False,
+                                              #use_autodiff = True,
+                                              pf_init= True,
+                                              Sbus_pf= pf_results.Sbus,
+                                              voltage_pf= pf_results.voltage,
+                                              plot_error= False)
+
+
+        end = time.perf_counter()
+        computing_times['time_powerflow'] = end - start
+        computing_times['n_iterations']= d_opf_results.iterations
+        d_opf = process_optimal_power_flow.update_OP(gridCal_grid, d_opf_results, d_raw_data)
+        d_opf['info']=pd.DataFrame()
+        d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
+        
+        print('Converged:', d_opf_results.converged)
+        
+        convergence=d_opf_results.converged
+        
+        with open('C:/Users/Francesca/miniconda3/envs/gridcal_original2/datagen/results/'+case_id+'.txt', 'w') as f:
+            for item in voltage_profile_list:
+                f.write(f"{item}\n")
+                
+#%%
     elif v_set != None:
-        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
 
-    assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
+        indx_id = np.stack([np.arange(118), np.arange(1, 119)], axis=1)
+        voltage_profile_list = [0.9422795864374686, 0.964955933394586, 0.9576475170917216, 1.0124133297572444, 1.0154633370197117, 0.9951657482889802, 0.992350196816262, 1.0140749276252947, 1.0462410188183175, 1.0505587621707737, 0.9874442911045904, 0.9935370827677812, 0.965713216496189, 0.9836528404916146, 0.9804945483198176, 0.9850502808012735, 1.0079880248745072, 0.9919112403203582, 0.982359060871046, 0.9611168974902262, 0.9585207043746752, 0.9694103722497208, 1.012021506303396, 1.0202743592352022, 1.0424517084121292, 1.029558849995919, 0.9748332325955154, 0.962679532278627, 0.9635863657846566, 0.9977766197862517, 0.9723229345719728, 0.989668858882766, 0.9885383273330716, 1.0134910622879023, 1.012382534601708, 1.0129775662222456, 1.0182843458879505, 1.0063749373816555, 1.0120458798438765, 1.007878540100683, 1.000307700730365, 1.0087294948043528, 0.993694793138082, 0.9858458597895028, 0.9886548991910328, 1.0130788846687784, 1.0155852366641658, 1.0135138230050789, 1.0190799858490271, 1.004281959289629, 0.9856221837089704, 0.9791146225958572, 0.9788847582750166, 0.990193732407798, 0.9898581735456772, 0.9894786661417644, 0.9922037685891928, 0.9845785977333046, 1.001554983260809, 1.0228361572198506, 1.0288770467578243, 1.0264901863555451, 1.0222590279152683, 1.0354399943597965, 1.059698355327095, 1.0460891936994254, 1.03012667245492, 1.070002818608136, 1.056712265906222, 1.0217713385063616, 1.0220013455209245, 1.0432647183311967, 1.0222747065809024, 0.9975473832343944, 1.0090108891192984, 1.0231818179270071, 1.0430158945578805, 1.037301493282056, 1.0368972423832277, 1.0491912717258054, 1.0686170329981697, 1.0542985208233515, 1.0364837030066492, 1.0251234315305915, 1.035416299630262, 0.9732748918473176, 1.0796567633835876, 1.0485738273928171, 1.0991335489323055, 1.0670189325757975, 1.093427003452236, 1.091996846564232, 1.054975293858037, 1.0374332314572086, 1.0175362072901348, 1.0288404528618778, 1.0365307367426295, 1.0437311189605762, 1.0776340287438506, 1.064629386477628, 1.056943002184324, 1.0783606882298593, 1.0470498025454416, 1.0356692527798554, 1.0290281037890472, 1.0158249499540528, 1.043690613063012, 1.0236713587448265, 1.0221051517387831, 1.0280071924823764, 1.0504875355371306, 1.0255058567425424, 1.020869226683825, 0.9748398716501836, 0.9730389636109872, 1.0707923173260236, 0.9670332501458544, 1.010628241294511]
+        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
+                                               voltage_profile_list=voltage_profile_list, indx_id=indx_id)#, V_set=v_set)
 
-    # %% Run 1st POWER-FLOW
-
-    # Receive system status from OPAL
-    # d_grid, gridCal_grid, data_old = process_opal.update_OP_from_RT(d_grid, gridCal_grid, data_old)
-
-    # Get Power-Flow results with GridCal
-    pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
-
-    print('Converged:', pf_results.convergence_reports[0].converged_[0])
-
-
-    # Update PF results and operation point of generator elements
-    d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
-    d_pf_original['info']=pd.DataFrame()
-    d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
-
-    nc = compile_numerical_circuit_at(gridCal_grid)
-    nc.generator_data.cost_0[:] = 0
-    nc.generator_data.cost_1[:] = 0
-    nc.generator_data.cost_2[:] = 0
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.Direct)#, max_iter=100)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-4, ips_iterations=200)
-
-#    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
-
-    start = time.perf_counter()
-
-    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
-
-    d_opf_results = ac_optimal_power_flow(nc= nc,
-                                          pf_options= pf_options,
-                                          opf_options= opf_options,
-                                          # debug: bool = False,
-                                          #use_autodiff = True,
-                                          pf_init= True,
-                                          Sbus_pf= pf_results.Sbus,
-                                          voltage_pf= pf_results.voltage,
-                                          plot_error= False)
-
-
-    end = time.perf_counter()
-    computing_times['time_powerflow'] = end - start
-
-    d_opf = process_optimal_power_flow.update_OP(gridCal_grid, d_opf_results, d_raw_data)
-    d_opf['info']=pd.DataFrame()
-    d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
+        # %% Run 1st POWER-FLOW
+    
+        # # Get Power-Flow results with GridCal
+        # pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
+    
+        # print('Converged:', pf_results.convergence_reports[0].converged_[0])
+    
+    
+        # # Update PF results and operation point of generator elements
+        # d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
+        # d_pf_original['info']=pd.DataFrame()
+        # d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
+        
+        #%%
+    
+        nc = compile_numerical_circuit_at(gridCal_grid)
+        nc.generator_data.cost_0[:] = 0
+        nc.generator_data.cost_1[:] = 0
+        nc.generator_data.cost_2[:] = 0
+        pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.Direct)#, max_iter=100)
+        opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-4, ips_iterations=100)
+    
+    #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
+    
+        start = time.perf_counter()
+    
+        pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+    
+        d_opf_results = ac_optimal_power_flow(nc= nc,
+                                              pf_options= pf_options,
+                                              opf_options= opf_options,
+                                              # debug: bool = False,
+                                              #use_autodiff = True,
+                                              pf_init= True,
+                                              Sbus_pf= pf_results.Sbus,
+                                              voltage_pf= pf_results.voltage,
+                                              plot_error= True)
+    
+    
+        end = time.perf_counter()
+        computing_times['time_powerflow'] = end - start
+        computing_times['n_iterations']= d_opf_results.iterations
+        d_opf = process_optimal_power_flow.update_OP(gridCal_grid, d_opf_results, d_raw_data)
+        d_opf['info']=pd.DataFrame()
+        d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
+        
+        print('Converged:', d_opf_results.converged)
+    #%%
 
     if not d_opf_results.converged:
         # Exit function
