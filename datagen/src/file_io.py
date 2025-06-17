@@ -127,12 +127,12 @@ def init_dst_dir(calling_module, seed, n_cases, n_samples, max_depth,
     return path_results
 
 
-def log_cell_info(cell_name, depth, delta_entropy, feasible_ratio, status, dst_dir):
+def log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_ratio, status, dst_dir):
     csv_path = os.path.join(dst_dir, "cell_info.csv")
     file_exists = os.path.isfile(csv_path)
 
     with open(csv_path, mode='a', newline='') as csvfile:
         writer = csv.writer(csvfile)
         if not file_exists:
-            writer.writerow(["Cell Name", "Depth", "Delta Entropy", "Feasible Ratio", "Status"])
-        writer.writerow([cell_name, depth, delta_entropy, feasible_ratio, status])
+            writer.writerow(["Cell Name", "Depth", "Entropy", "Delta Entropy", "Feasible Ratio", "Status"])
+        writer.writerow([cell_name, depth, parent_entropy, delta_entropy, feasible_ratio, status])

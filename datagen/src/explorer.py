@@ -126,7 +126,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
     total_cases = n_samples * dimensions[0].n_cases
     message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
-    log_cell_info(cell_name, depth, delta_entropy, feasible_cases / total_cases,
+    log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_cases / total_cases,
                   1, dst_dir)
     logger.info(message)
 
@@ -141,7 +141,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         logger.info(f"    Delta entropy: {delta_entropy}")
         logger.info(f"    Depth: {depth}")
 
-        log_cell_info(cell_name, depth, delta_entropy,
+        log_cell_info(cell_name, depth, parent_entropy, delta_entropy,
                       feasible_cases / total_cases,
                       0, dst_dir)
 
