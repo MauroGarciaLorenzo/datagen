@@ -244,15 +244,15 @@ def main(working_dir='', path_data='', setup_path=''):
     stability_array = []
     output_dataframes_array = []
     for _, case in cases_df.iterrows():
-#        if _ == 5:
-        stability, output_dataframes = eval_stability(
-            case=case,
-            f=feasible_power_flow_ACOPF,
-            func_params=func_params,
-            generator=generator)
-        stability_array.append(stability)
-        output_dataframes_array.append(output_dataframes)
-        n_pf = n_pf + 1
+        if _ == 10:
+            stability, output_dataframes = eval_stability(
+                case=case,
+                f=feasible_power_flow_ACOPF,
+                func_params=func_params,
+                generator=generator)
+            stability_array.append(stability)
+            output_dataframes_array.append(output_dataframes)
+            n_pf = n_pf + 1
 
     # %% SAVE RESULTS
     stability_array = compss_wait_on(stability_array)
@@ -281,4 +281,4 @@ def main(working_dir='', path_data='', setup_path=''):
 
             
 if __name__ == "__main__":
-    main(setup_path="./setup/default_setup_9buses.yaml")
+    main(setup_path="./setup/default_setup.yaml")
