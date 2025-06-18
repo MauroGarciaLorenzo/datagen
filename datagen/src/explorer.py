@@ -130,9 +130,12 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                   1, dst_dir)
     logger.info(message)
 
+    check_entropy = False
+    if delta_entropy > 0 or parent_entropy > 0.2:
+        check_entropy = True
 
     # Finish recursivity if entropy decreases or cell become too small
-    if (delta_entropy < 0 or not check_dims(
+    if (not check_entropy or not check_dims(
             dimensions) or depth >= max_depth or
             feasible_cases / total_cases < feasible_rate):
 
