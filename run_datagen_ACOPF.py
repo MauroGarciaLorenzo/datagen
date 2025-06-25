@@ -238,6 +238,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
+    return path_results
 
 
 if __name__ == "__main__":

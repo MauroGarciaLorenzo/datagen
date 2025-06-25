@@ -83,8 +83,8 @@ def main(setup_path="setup/default_setup.yaml"):
         start(dimensions, n_samples, rel_tolerance, func=dummy, 
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax, 
               divs_per_cell=2, plot_boxplot=False, seed=seed,
-              dst_dir=None, logging_level=logging_level)
-
+              dst_dir=path_results, logging_level=logging_level)
+    return path_results
 
 if __name__ == '__main__':
     args = sys.argv

@@ -5,11 +5,9 @@ resulting csv files for data integrity.
 To run the tests and send the output to a file, run from the terminal:
 >> python -m unittest test_app | tee test_app.txt
 """
-import logging
 import os
 import pandas as pd
 import re
-import shutil
 import sys
 import unittest
 import yaml
@@ -17,9 +15,8 @@ import yaml
 
 class Test(unittest.TestCase):
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    results_dir = "results"
-    old_results_dir = "results_old"
     current_case = None
+    working_dir = os.getcwd()
 
     def test_sensitivity(self):
         """
@@ -32,16 +29,7 @@ class Test(unittest.TestCase):
         n_cases = 10
         max_depth = 1
         seed = 17
-
         yaml_path = '../../setup/test_setup.yaml'
-        working_dir = '.'
-
-        # Clean up previous results
-        if os.path.isdir(self.results_dir):
-            shutil.rmtree(self.results_dir)
-        os.makedirs(self.results_dir)
-        if not os.path.isdir(self.old_results_dir):
-            os.makedirs(self.old_results_dir)
 
         # Load YAML config
         with open(yaml_path) as stream:
@@ -71,7 +59,7 @@ class Test(unittest.TestCase):
                   f'\n{"=" * 60}\n', flush=True)
 
             # Get logger output
-            path_results = main(setup_path=yaml_path, working_dir=working_dir)
+            path_results = main(setup_path=yaml_path, working_dir=self.working_dir)
             log_file = os.path.join(path_results, "log.txt")
 
             with open(log_file, 'r') as f:
@@ -154,12 +142,6 @@ class Test(unittest.TestCase):
 
         # Directory initialization
         yaml_path = '../../setup/test_setup.yaml'
-        working_dir = '.'
-        if os.path.isdir(self.results_dir):
-            shutil.rmtree(self.results_dir)
-        os.makedirs(self.results_dir)
-        if not os.path.isdir(self.old_results_dir):
-            os.makedirs(self.old_results_dir)
 
         # Load YAML file
         with open(yaml_path) as stream:
@@ -192,7 +174,7 @@ class Test(unittest.TestCase):
                       f"=== Running with n_samples={n_samples}, "
                       f"n_cases={n_cases}, max_depth={max_depth} ==="
                       f'\n{"".join(["="] * 60)}\n', flush=True)
-                main(setup_path=yaml_path, working_dir=working_dir, warmup=False)
+                path_results = main(setup_path=yaml_path, working_dir=self.working_dir, warmup=False)
                 print(f"\n=== Everything went fine ===\n", flush=True)
             except Exception as e:
                 passed = False
@@ -204,27 +186,15 @@ class Test(unittest.TestCase):
                 errors_failed.append(e)
                 continue
 
-            # Read results
-            results_subdirs = os.listdir(self.results_dir)
-            if len(results_subdirs) < 1:
-                raise ValueError("No directories found inside results.")
-            elif len(results_subdirs) > 1:
-                raise ValueError("More than one results directory found.")
-
-            case_dir = os.path.join(self.results_dir, results_subdirs[0])
-            cases_df = pd.read_csv(os.path.join(case_dir, "cases_df.csv"),
+            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"),
                                    index_col=0)
-            dims_df = pd.read_csv(os.path.join(case_dir, "dims_df.csv"),
+            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"),
                                   index_col=0)
 
             # Launch tests
-            self.check_output_files(case_dir, expected_files)
+            self.check_output_files(path_results, expected_files)
             self.no_duplicate_rows(cases_df, dims_df)
             self.column_sums_match(cases_df, dims_df)
-
-            # Move results directory when finished
-            dst_dir = os.path.join(self.old_results_dir, results_subdirs[0])
-            shutil.move(case_dir, dst_dir)
 
         # Assert executions that failed before running the subtests
         if not passed:
@@ -249,13 +219,6 @@ class Test(unittest.TestCase):
 
         # Paths
         yaml_path = '../../setup/test_setup.yaml'
-
-        # Ensure clean results directory
-        if os.path.isdir(self.results_dir):
-            shutil.rmtree(self.results_dir)
-        os.makedirs(self.results_dir)
-        if not os.path.isdir(self.old_results_dir):
-            os.makedirs(self.old_results_dir)
 
         # Load YAML
         with open(yaml_path) as stream:
@@ -283,7 +246,7 @@ class Test(unittest.TestCase):
             try:
                 print(f"\n=== Running with max_depth={depth} ===\n",
                       flush=True)
-                main(setup_path=yaml_path)
+                path_results = main(setup_path=yaml_path)
                 print(f"\n=== Success with max_depth={depth} ===\n",
                       flush=True)
             except Exception as e:
@@ -295,32 +258,15 @@ class Test(unittest.TestCase):
                 errors_failed.append(e)
                 continue
 
-            # Get latest results directory
-            subdirs = [
-                d for d in os.listdir(self.results_dir)
-                if os.path.isdir(os.path.join(self.results_dir, d))
-            ]
-            if not subdirs:
-                raise ValueError("No results directories found.")
-            latest_subdir = max(
-                subdirs,
-                key=lambda d: os.path.getmtime(
-                    os.path.join(self.results_dir, d))
-            )
 
-            case_dir = os.path.join(self.results_dir, latest_subdir)
-            cases_df = pd.read_csv(os.path.join(case_dir, "cases_df.csv"),
+            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"),
                                    index_col=0)
-            dims_df = pd.read_csv(os.path.join(case_dir, "dims_df.csv"),
+            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"),
                                   index_col=0)
 
             # Run checks
             self.no_duplicate_rows(cases_df, dims_df)
             self.column_sums_match(cases_df, dims_df)
-
-            # Move directory
-            dst_dir = os.path.join(self.old_results_dir, latest_subdir)
-            shutil.move(case_dir, dst_dir)
 
         # Final check
         if not passed:
@@ -346,13 +292,6 @@ class Test(unittest.TestCase):
 
         # Paths
         yaml_path = '../../setup/test_setup.yaml'
-
-        # Ensure clean results directory
-        if os.path.isdir(self.results_dir):
-            shutil.rmtree(self.results_dir)
-        os.makedirs(self.results_dir)
-        if not os.path.isdir(self.old_results_dir):
-            os.makedirs(self.old_results_dir)
 
         # Load YAML
         with open(yaml_path) as stream:
@@ -380,7 +319,7 @@ class Test(unittest.TestCase):
             try:
                 print(f"\n=== Running with max_depth={depth} ===\n",
                       flush=True)
-                main(setup_path=yaml_path)
+                path_results = main(setup_path=yaml_path)
                 print(f"\n=== Success with max_depth={depth} ===\n",
                       flush=True)
             except Exception as e:
@@ -392,32 +331,14 @@ class Test(unittest.TestCase):
                 errors_failed.append(e)
                 continue
 
-            # Get latest results directory
-            subdirs = [
-                d for d in os.listdir(self.results_dir)
-                if os.path.isdir(os.path.join(self.results_dir, d))
-            ]
-            if not subdirs:
-                raise ValueError("No results directories found.")
-            latest_subdir = max(
-                subdirs,
-                key=lambda d: os.path.getmtime(
-                    os.path.join(self.results_dir, d))
-            )
-
-            case_dir = os.path.join(self.results_dir, latest_subdir)
-            cases_df = pd.read_csv(os.path.join(case_dir, "cases_df.csv"),
+            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"),
                                    index_col=0)
-            dims_df = pd.read_csv(os.path.join(case_dir, "dims_df.csv"),
+            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"),
                                   index_col=0)
 
             # Run checks
             self.no_duplicate_rows(cases_df, dims_df)
             self.column_sums_match(cases_df, dims_df)
-
-            # Move directory
-            dst_dir = os.path.join(self.old_results_dir, latest_subdir)
-            shutil.move(case_dir, dst_dir)
 
         # Final check
         if not passed:
