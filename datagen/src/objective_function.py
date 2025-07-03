@@ -3,6 +3,8 @@ import time
 import numpy as np
 import copy
 
+import pandas as pd
+
 from datagen.src import sampling 
 
 from .utils import get_case_results
@@ -16,6 +18,9 @@ from stability_analysis.analysis import small_signal
 from stability_analysis.powerflow import check_feasibility
 
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
+
+from .. import gen_voltage_profile, COMPUTING_TIME_NAMES, OUTPUT_DF_NAMES, \
+    NAN_COLUMN_NAME
 
 
 def complex_2d_shape_obj_func(case, **kwargs):
@@ -264,6 +269,85 @@ def feasible_power_flow(case, **kwargs):
     return d_pf_original, d_pf, d_raw_data 
 
     # %% FILL d_grid
+
+
+def power_flow(case, **kwargs):
+    """
+    Runs the alternating current optimal power flow (ACOPF) stability analysis.
+    :param case: pandas DataFrame with the case parameters
+    :param kwargs: dictionary with additional parameters
+    :return: stability: 0 if the system is stable, 1 otherwise
+    :return: output_dataframes: Mandatory dictionary with at least the
+        entries that contain dataframes (None entries if feasibility fails)
+    """
+    func_params = kwargs.get("func_params")
+    # generator = kwargs.get("generator", None)
+
+    d_raw_data = func_params.get("d_raw_data", None)
+    d_op = func_params.get("d_op", None)
+    gridCal_grid = func_params.get("gridCal_grid", None)
+    d_grid = func_params.get("d_grid", None)
+    # voltage_profile = func_params.get("voltage_profile", None)
+    # v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
+    # v_set = func_params.get("v_set", None)
+
+    # Remove the id and make sure case is fully numeric
+    case = case.drop("case_id")
+    case = case.astype(float)
+
+    # Initialize essential output dataframes to None
+    # computing_times = pd.DataFrame(
+    #     {name: np.nan for name in COMPUTING_TIME_NAMES}, index=[0])
+    output_dataframes = {}
+    for df_name in OUTPUT_DF_NAMES:
+        output_dataframes[df_name] = pd.DataFrame({NAN_COLUMN_NAME: [np.nan]})
+    """
+    if voltage_profile is not None and v_min_v_max_delta_v is None:
+        raise ValueError('Voltage profile option selected but v_min, v_max, '
+                         'and delta_v are missing')
+    if voltage_profile is not None and v_set is not None:
+        raise ValueError('Both Voltage profile and v_set option is selected. '
+                         'Choose only one of them')
+    if voltage_profile is None and v_set is None:
+        raise ValueError('Neither Voltage profile or v_set option is selected.'
+                         ' Choose one of them')
+    """
+    d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
+                                                            d_op)
+    d_raw_data, slack_bus_num = choose_slack_bus(d_raw_data)
+    # i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
+
+    # slack_bus_num=80
+    assign_SlackBus_to_grid.assign_slack_bus(gridCal_grid, slack_bus_num)
+    """
+    if voltage_profile != None:
+        vmin = v_min_v_max_delta_v[0]
+        vmax = v_min_v_max_delta_v[1]
+        delta_v = v_min_v_max_delta_v[2]
+
+        voltage_profile_list, indx_id = gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
+                                                                     gridCal_grid, generator=generator)
+
+        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
+                                               voltage_profile_list=voltage_profile_list, indx_id=indx_id)
+
+    elif v_set != None:
+        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
+    """
+    assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
+
+    # %% Run 1st POWER-FLOW
+
+    # Receive system status from OPAL
+    # d_grid, gridCal_grid, data_old = process_opal.update_OP_from_RT(d_grid, gridCal_grid, data_old)
+
+    # Get Power-Flow results with GridCal
+    pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
+
+    print('Converged:', pf_results.convergence_reports[0].converged_[0])
+    print('Converged:', pf_results.convergence_reports[0].converged_[0])
+    return pf_results
+
 
 def small_signal_stability(case, **kwargs):
     d_raw_data = kwargs.get("d_raw_data", None)
