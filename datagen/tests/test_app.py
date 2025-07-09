@@ -424,9 +424,6 @@ class Test(unittest.TestCase):
                             cases_df[col].equals(dims_df[col]),
                             f"Column {col} in cases_df does not match"
                             f" the same column in dims_df")
-                else:
-                    print(f"Warning: column {col} found in cases_df.csv "
-                          f"but not in dims_df.csv")
 
         # Now handle the columns that need to be summed
         for prefix, related_columns in columns_to_sum.items():
