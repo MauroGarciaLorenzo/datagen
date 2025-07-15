@@ -12,8 +12,8 @@ def open_csv(path_results):
 def perc_stability(df,dir_name):
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print(dir_name)
-    print('Feasible cases: '+str(len(df.query('Stable>=0'))/len(df)*100)+'%')
-    print('Stable cases: '+str(len(df.query('Stable == 1'))/len(df)*100)+'% of total cases')
-    print('Stable cases: '+str(len(df.query('Stable == 1'))/len(df.query('Stable>=0'))*100)+'% of feasible cases')
+    print('Feasible cases: '+str(len(df.query('Stability>=0'))/len(df)*100)+'%')
+    print('Stable cases: '+str(len(df.query('Stability == 1'))/len(df)*100)+'% of total cases')
+    print('Stable cases: '+str(len(df.query('Stability == 1'))/len(df.query('Stability>=0'))*100)+'% of feasible cases')
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
 
