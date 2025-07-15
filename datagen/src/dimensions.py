@@ -142,7 +142,7 @@ class Dimension:
                                    self.variable_borders[:, 1])
 
             case_sum = case.sum()
-            if self.borders[0] < case_sum < self.borders[1]:
+            if self.borders[0] <= case_sum <= self.borders[1]:
                 cases.append(case)
             else:
                 logger.warning(

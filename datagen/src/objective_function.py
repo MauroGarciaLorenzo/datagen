@@ -345,7 +345,6 @@ def power_flow(case, **kwargs):
     pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
 
     print('Converged:', pf_results.convergence_reports[0].converged_[0])
-    print('Converged:', pf_results.convergence_reports[0].converged_[0])
     return pf_results
 
 

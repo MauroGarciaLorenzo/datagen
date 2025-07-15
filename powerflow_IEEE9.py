@@ -97,3 +97,4 @@ case = pd.read_csv("cases_IEEE9_example.csv", index_col=0).iloc[0]
 pf_results = power_flow(case, **kwargs)
 print("Bus naming:", pf_results.results.bus_names)
 print("Resulting voltages:", pf_results.results.voltage)
+
