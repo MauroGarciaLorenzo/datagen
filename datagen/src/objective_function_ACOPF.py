@@ -214,10 +214,18 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     #########################################################################
 
+    # d_opf=d_pf_original
 
     d_grid, d_opf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
                                                            gridCal_grid, d_opf,
                                                            d_raw_data, d_op)
+    
+    # with pd.ExcelWriter('d_grid_2excel.xlsx', engine='xlsxwriter') as writer:
+    #     for sheet_name, df in d_grid.items():
+    #         # Optional: Truncate sheet name if it's longer than Excel's 31 character limit
+    #         safe_sheet_name = sheet_name[:31]
+    #         if safe_sheet_name !='gen_names':
+    #             df.to_excel(writer, sheet_name=safe_sheet_name, index=False)
 
     p_sg = np.sum(d_grid['T_gen'].query('element == "SG"')['P']) * 100
     p_cig = np.sum(d_grid['T_gen'].query('element != "SG"')['P']) * 100

@@ -282,5 +282,4 @@ def main(working_dir='', path_data='', setup_path=''):
 
             
 if __name__ == "__main__":
-#    main(setup_path="./setup/test_default_vset.yaml")
     main(setup_path="./setup/test_setup.yaml")
