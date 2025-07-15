@@ -1,8 +1,10 @@
 import pandas as pd
 import os
 
-def open_csv(path_results):
-    csv_files = [file for file in os.listdir(path_results) if file.endswith('.csv')]
+def open_csv(path_results, csv_files=None):
+    if csv_files == None:
+        csv_files = [file for file in os.listdir(path_results) if file.endswith('.csv')]
+
     results_dataframes=dict()
     for file in csv_files:
         results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop(['Unnamed: 0'],axis=1)
