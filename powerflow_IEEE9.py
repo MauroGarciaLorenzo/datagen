@@ -91,7 +91,7 @@ kwargs = {
     }
 }
 
-case = pd.read_csv("cases_IEEE9_example.csv", index_col=0).iloc[0]
+case = pd.read_csv("examples/cases_IEEE9_example.csv", index_col=0).iloc[0]
 
 # Run power flow
 pf_results = power_flow(case, **kwargs)
