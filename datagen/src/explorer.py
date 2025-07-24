@@ -81,17 +81,26 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     stabilities = []
     output_dataframes_list = []
     feasible_cases = 0
+    stabilities_chunk = []
+    output_dataframes_chunk = []
+
+    index = 0
     for _, case in cases_df.iterrows():
         stability, output_dataframes = eval_stability(case=case, f=func,
                                                       func_params=func_params,
                                                       dimensions=dimensions,
                                                       generator=generator
                                                       )
-        stabilities.append(stability)
-        output_dataframes_list.append(output_dataframes)
-
-    stabilities = compss_wait_on(stabilities)
-    output_dataframes_list = compss_wait_on(output_dataframes_list)
+        stabilities_chunk.append(stability)
+        output_dataframes_chunk.append(output_dataframes)
+        index += 1
+        if index % 1000 == 0 or index == len(cases_df):
+            stabilities_chunk = compss_wait_on(stabilities_chunk)
+            output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
+            stabilities.extend(stabilities_chunk)
+            output_dataframes_list.extend(output_dataframes_chunk)
+            stabilities_chunk = []
+            output_dataframes_chunk = []
 
     for stability in stabilities:
         if stability >= 0:
