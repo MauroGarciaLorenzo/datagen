@@ -29,10 +29,9 @@ def main(working_dir='', path_data='', setup_path=''):
     working_dir, path_data, setup_path = parse_args(
         [None, working_dir, path_data, setup_path])
     (generators_power_factor, grid_name, loads_power_factor, n_cases, n_pf,
-     n_samples, seed, v_min_v_max_delta_v, voltage_profile, rel_tolerance,
+     n_samples, seed, v_min_v_max_delta_v, voltage_profile, v_set, rel_tolerance,
      max_depth, setup_dict) = \
         parse_setup_file(setup_path)
-
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     # Get computing units assigned to the objective function
@@ -83,7 +82,7 @@ def main(working_dir='', path_data='', setup_path=''):
         # excel_headers = "IEEE_118_01"  # SG
         excel_headers = "IEEE_118_FULL_headers"
         excel_data = "IEEE_118_FULL"
-        excel_op = "OperationData_IEEE_118_NREL"
+        excel_op = "OperationData_IEEE_118_NREL"#_wrongQmin
         excel_lines_ratings = "IEEE_118_Lines"
     else:
         raise ValueError(f"Grid {grid_name} not implemented")
@@ -227,3 +226,4 @@ def main(working_dir='', path_data='', setup_path=''):
 
 if __name__ == "__main__":
     main(setup_path="./setup/default_setup.yaml")
+    #main(setup_path="./setup/test_default_vset.yaml")
