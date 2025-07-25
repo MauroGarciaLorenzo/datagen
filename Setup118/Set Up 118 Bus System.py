@@ -17,7 +17,7 @@ from GridCalEngine.Simulations.PowerFlow.power_flow_worker import PowerFlowOptio
 from GridCalEngine.Simulations.PowerFlow.power_flow_options import ReactivePowerControlMode, SolverType
 from GridCalEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowDriver
 
-path='G:/Il mio Drive/Francesca 118 v2/additional-files-mti-118/additional-files-mti-118/'
+path='G:/My Drive/Francesca 118 v2/additional-files-mti-118/additional-files-mti-118/'
 
 
 # ## The System
@@ -37,17 +37,17 @@ path='G:/Il mio Drive/Francesca 118 v2/additional-files-mti-118/additional-files
 # In[2]:
 
 
-Buses=pd.read_csv(path+'Buses.csv')
+# Buses=pd.read_csv(path+'Buses.csv')
 
-for i in range(len(Buses)):
-    Buses.loc[i,'Num']=int(Buses.loc[i,'Bus Name'][3:])
+# for i in range(len(Buses)):
+#     Buses.loc[i,'Num']=int(Buses.loc[i,'Bus Name'][3:])
 
-Buses=Buses.sort_values(by='Bus Name').reset_index(drop=True)
-# Buses.loc[31,'Region']='R2'
-# Buses.loc[111,'Region']='R2'
+# Buses=Buses.sort_values(by='Bus Name').reset_index(drop=True)
+# # Buses.loc[31,'Region']='R2'
+# # Buses.loc[111,'Region']='R2'
 
-pd.DataFrame.to_excel(Buses,'G:/Il mio Drive/Francesca 118 v2/Operation/tool_ree/tool_ree/Buses.xlsx')
-
+#pd.DataFrame.to_excel(Buses,'G:/My Drive/Francesca 118 v2/Operation/tool_ree/tool_ree/Buses.xlsx')
+Buses = pd.read_excel('G:/My Drive/Francesca 118 v2/Operation/tool_ree/tool_ree/Buses.xlsx')
 Buses
 
 
