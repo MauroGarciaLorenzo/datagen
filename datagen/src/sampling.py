@@ -355,7 +355,7 @@ def process_p_load_dimension(samples_df, dim):
     total_dim = []
     for _, sample in samples_df.iterrows():
         # TODO: poner el factor de escala de la carga en el setup file
-        new_sample = (sample["p_sg"] + sample["p_cig"])*0.9
+        new_sample = (sample["p_sg"] + sample["p_cig"])*0.95
         cases = [[new_sample * value for value in dim.values]
                  for _ in range(dim.n_cases)]
         for case in cases:
@@ -795,3 +795,21 @@ def calculate_voltage(adjacent_node, current_node, delta_v, distances, generator
     else:
         voltages[adjacent_node]=voltages[current_node]
 
+# def gen_voltage_profile_RandUnifDiff(V_diff_min_max):
+
+#     voltages = [0]*np.shape(V_diff_min_max)[1]
+#     indx_id=np.zeros([np.shape(V_diff_min_max)[1],2])
+
+#     ibus=1
+#     V= np.random.uniform(low=V_diff_min_max.loc['min','V'+str(ibus)], high=V_diff_min_max.loc['max','V'+str(ibus)], size=1)
+    
+#     voltages[ibus]=V
+#     indx_id[ibus,1]=ibus
+    
+#     for ibus in range(2,np.shape(V_diff_min_max)[1]+1):
+#         V_diff= np.random.uniform(low=V_diff_min_max.loc['min','V'+str(ibus)], high=V_diff_min_max.loc['max','V'+str(ibus)], size=1)
+#         voltages[ibus]=voltages[ibus-1]+V_diff
+#         indx_id[ibus,0]=ibus-1
+#         indx_id[ibus,1]=ibus
+
+#     return voltages, indx_id

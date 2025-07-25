@@ -14,7 +14,8 @@ from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.neural_network import MLPRegressor
 from sklearn.dummy import DummyRegressor
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.externals.joblib import Parallel, delayed
+#from sklearn.externals.joblib import Parallel, delayed
+from joblib import Parallel, delayed
 import os
 import json
 
