@@ -88,7 +88,7 @@ def main(working_dir='', path_data='', setup_path=''):
         excel_op = "OperationData_IEEE_9_hypersim"
     elif grid_name == 'IEEE118':
         # IEEE 118
-        raw = "IEEE118busNREL"
+        raw = "IEEE118busNREL500"
         # excel_headers = "IEEE_118bus_TH"  # THÉVENIN
         # excel_headers = "IEEE_118_01"  # SG
         excel_headers = "IEEE_118_FULL_headers"
@@ -133,14 +133,18 @@ def main(working_dir='', path_data='', setup_path=''):
 
     # %% Create GridCal Model
     gridCal_grid = GridCal_powerflow.create_model(raw_file)
-
+    for gen in gridCal_grid.generators:
+        gen.Sbase=gridCal_grid.Sbase
+    
     if grid_name == 'IEEE118':
         for line in gridCal_grid.lines:
             bf = int(line.bus_from.code)
             bt = int(line.bus_to.code)
+            line.rate = 1
             line.rate = lines_ratings.loc[
                 lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                     0], 'Max Flow (MW)']
+            #print(line.rate)
     
         for trafo in gridCal_grid.transformers2w:
             bf = int(trafo.bus_from.code)
@@ -148,6 +152,7 @@ def main(working_dir='', path_data='', setup_path=''):
             trafo.rate = lines_ratings.loc[
                 lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                     0], 'Max Flow (MW)']
+            #print(trafo.rate)
     if grid_name == 'IEEE9':
         gridCal_grid.fBase=60
         for idx_gen,gen in enumerate(gridCal_grid.get_generators()):
@@ -244,8 +249,8 @@ def main(working_dir='', path_data='', setup_path=''):
     stability_array = []
     output_dataframes_array = []
     for _, case in cases_df.iterrows():
-        if _ in [13]:#[106, 268, 270, 271]:
-            print('stop')
+        # if _ in [0]:#[106, 268, 270, 271]:
+            #     print('stop')
             stability, output_dataframes = eval_stability(
                 case=case,
                 f=feasible_power_flow_ACOPF,
