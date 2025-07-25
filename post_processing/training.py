@@ -36,10 +36,98 @@ for dir_name in dir_names:
     results_dataframes, csv_files = open_csv(
         path_results, ['cases_df.csv', 'case_df_op.csv'])
 
-    perc_stability(results_dataframes['case_df_op'], dir_name)
+    perc_stability(results_dataframes['cases_df'], dir_name)
+    
+for key, item in results_dataframes.items():
+    print(key+': '+str(len(item)))
+    #results_dataframes[key+'_drop_duplicates']= item.drop(['case_id'],axis=1).drop_duplicates(keep='first')
+    print(key+'_drop_duplicates'+': '+str(len(item.drop_duplicates(keep='first'))))
+
+
+# %% ---- FILL NAN VALUES WITH NULL ---
+
+results_dataframes['case_df_op'] = results_dataframes['case_df_op'].fillna(0)
+
+# %% ---- SELECT ONLY FEASIBLE CASES ----
+
+results_dataframes['case_df_op_feasible'] = results_dataframes['case_df_op'].query(
+    'Stability >= 0')
+
+case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
+
+# case_id=case_id_feasible[0]
+# results_dataframes['case_df_op_feasible'].query('case_id == @case_id')['P_SG12'] <--- quantities calculated by power flow
+# results_dataframes['cases_df'].query('case_id == @case_id')['p_sg_Var10'] <-- quantities sampled
+
+results_dataframes['cases_df_feasible'] = results_dataframes['cases_df'].query(
+    'case_id == @case_id_feasible')  # <-- quantities sampled
+
+n_feas_cases = len(case_id_feasible)
+
+results_dataframes['case_df_op_feasible_X'] = results_dataframes['case_df_op_feasible'].drop(['case_id', 'Stability'], axis=1)                        
+
+       
+# %% ---- SELECT ONLY UNFEASIBLE CASES ----
+
+results_dataframes['case_df_op_unfeasible'] = results_dataframes['case_df_op'].query('Stability < 0')
+results_dataframes['case_df_op_unfeasible_1'] = results_dataframes['case_df_op'].query('Stability == -1')
+results_dataframes['case_df_op_unfeasible_2'] = results_dataframes['case_df_op'].query('Stability == -2')
+
+case_id_Unfeasible = list(results_dataframes['case_df_op_unfeasible']['case_id'])
+case_id_Unfeasible1 = list(results_dataframes['case_df_op_unfeasible_1']['case_id'])
+case_id_Unfeasible2 = list(results_dataframes['case_df_op_unfeasible_2']['case_id'])
+
+results_dataframes['cases_df_unfeasible'] = results_dataframes['cases_df'].query(
+    'case_id == @case_id_Unfeasible')  # <-- quantities sampled
+results_dataframes['cases_df_unfeasible_1'] = results_dataframes['cases_df'].query(
+    'case_id == @case_id_Unfeasible1')  # <-- quantities sampled
+results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].query(
+    'case_id == @case_id_Unfeasible2')  # <-- quantities sampled
 
 #%%
-df = pd.read_csv(path+'DataSet_training_uncorr_var.csv')
+cases_id_depth = pd.read_excel('cases_id_depth.xlsx')[['Depth','case_id','CellName']]
+
+cases_id_depth_feas = cases_id_depth.query('case_id == @case_id_feasible')
 
 #%%
+df = pd.read_csv('DataSet_training_uncorr_var_HierCl.csv').drop('Unnamed: 0', axis=1).drop_duplicates(keep='first')
+             
+#%%
 
+from sklearn import svm
+from sklearn.model_selection import cross_val_score
+from sklearn.neural_network import MLPClassifier
+
+n_fold = 5 
+# n_cases_training=0
+df_training = pd.DataFrame(columns= df.columns)
+cases_id_training = []
+
+scores_df=pd.DataFrame(columns=['Depth','score_mean','score_std','n_training_cases','perc_stable'])
+
+for depth in range(0,7):
+    #n_cases_training = n_cases_training + len(cases_id_depth_feas.query('Depth == @depth'))
+    #print(n_cases_training)
+    
+    cases_id_training.extend(list(cases_id_depth_feas.query('Depth == @depth')['case_id']))
+    df_training = df.query('case_id == @cases_id_training')
+    scores_df.loc[depth,'n_training_cases']=len(df_training)
+    scores_df.loc[depth,'perc_stable']=len(df_training.query('Stability == 1'))/len(df_training)
+
+    if len(cases_id_training)>= n_fold:
+        #clf = svm.SVC(kernel='linear', C=1, random_state=42)
+        clf = MLPClassifier(random_state=1, max_iter=5000, activation='relu')
+        X = df_training.drop(['case_id','Stability'],axis=1).reset_index(drop=True)
+        y = df_training[['Stability']].reset_index(drop=True).values.astype(int).ravel()
+        scores = cross_val_score(clf, X, y, cv=n_fold)
+        
+        scores_df.loc[depth,'Depth']=depth
+        scores_df.loc[depth,'score_mean']=scores.mean()
+        scores_df.loc[depth,'score_std']=scores.std()
+
+#%%
+pd.DataFrame.to_excel(scores_df,'scores_df_uncorr_var_HierCl.xlsx')
+
+#%%
+fig, ax = plt.subplots()
+ax.errorbar(scores_df['Depth'], scores_df['score_mean'], yerr=scores_df['score_std'], fmt='-o', capsize=5, color='blue', ecolor='black', elinewidth=1.5)

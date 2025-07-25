@@ -87,7 +87,6 @@ case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
 print(len(case_id_feasible))
 
 print(len(set(case_id_feasible)))
-print(len(results_dataframes['cases_df_feasible']['case_id']))
 
 results_dataframes['case_df_op_feasible'].groupby('case_id')['case_id'].count()
 
@@ -97,6 +96,8 @@ results_dataframes['case_df_op_feasible'].groupby('case_id')['case_id'].count()
 
 results_dataframes['cases_df_feasible'] = results_dataframes['cases_df'].query(
     'case_id == @case_id_feasible')  # <-- quantities sampled
+
+print(len(results_dataframes['cases_df_feasible']['case_id']))
 
 n_feas_cases = len(case_id_feasible)
 
@@ -173,9 +174,9 @@ results_dataframes['case_df_op_feasible_uncorr'] = results_dataframes['case_df_o
 results_dataframes['case_df_op_feasible_uncorr']['case_id'] = results_dataframes['case_df_op_feasible']['case_id'].reset_index(drop=True)
 results_dataframes['case_df_op_feasible_uncorr']['Stability'] = results_dataframes['case_df_op_feasible']['Stability'].reset_index(drop=True)
 
-results_dataframes['case_df_op_feasible_uncorr'].to_csv(path+'DataSet_training_uncorr_var.csv')
+results_dataframes['case_df_op_feasible_uncorr'].to_csv('DataSet_training_uncorr_var.csv')
 
-# %% ---- Check correlated variables Option #1 ----
+# %% ---- Check correlated variables Option #2 ----
 
 results = pd.concat([results_dataframes['case_df_op_feasible_X'].reset_index(drop=True), df_taus.reset_index(drop=True)], axis=1).apply(
 #results = results_dataframes['case_df_op_feasible_X'].reset_index(drop=True).apply(
@@ -233,7 +234,7 @@ for i, selected_features in selected_features_names_dict.items():
 results_dataframes['case_df_op_feasible_uncorr_HierCl_X'] = X[keep_var]
 results_dataframes['case_df_op_feasible_uncorr_HierCl'] = pd.concat([X[keep_var], results_dataframes['case_df_op_feasible'][['case_id', 'Stability']].reset_index(drop=True)],axis=1)
 
-results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv(path+'DataSet_training_uncorr_var_HierCl.csv')
+results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv('DataSet_training_uncorr_var_HierCl.csv')
 
 # %%
 columns_in_df = dict()
