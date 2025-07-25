@@ -9,14 +9,14 @@ addpath(genpath(pwd))
 %% SET INPUT DATA
 
 % Case name as in Excel files
-    caseName = './01_data/cases/NREL_seed16/IEEE118_FULL'; 
+    caseName = './01_data/cases/NREL_seed16_standalone/IEEE118_FULL_case0'; 
     % caseName_2 = './01_data/cases/seed17_GFOL_RL_percgfor091_PyStable/IEEE118_FULL'; 
 
 % Relative path to the Folder for storing results
     path_results = '02_results\'; 
 
 % Set power-flow source (0: Excel, 1: Fanals, 2: MATACDC) 
-    fanals = 0; 
+    fanals = 2; 
 
 % Flag to indicate if T_case should be used (REE)
     shared_power = 0;
@@ -29,15 +29,16 @@ addpath(genpath(pwd))
 % Read excel file and generate tables of grid elements
     run read_data.m
 
-    T_SG.Vn=T_SG.Vn/1e3;
-    T_VSC.Vn=T_VSC.Vn/1e3;
+    % T_SG.Vn=T_SG.Vn/1e3;
+    % T_VSC.Vn=T_VSC.Vn/1e3;
 
     % excel_2    = [caseName_2 '.xlsx']; 
     % T_SG_2     = readtable(excel_2,'Sheet','SG');            %SG table
     % T_SG.exc(:)=T_SG_2.exc(1)
 % Clean input data
     run preprocess_data.m
-
+    T_global=T_global(1,:); %%<---- check this!!!
+    
 %% POWER-FLOW
  
 % Update state of switches (open/close lines)
