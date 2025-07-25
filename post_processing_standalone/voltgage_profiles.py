@@ -29,16 +29,17 @@ def read_txt_files_from_folder(folder_path):
 
 #%%
 
-path2txt= 'C:/Users/Francesca/miniconda3/envs/gridcal_original2/datagen/results/'
+path2txt= '../results/'
 
 all_voltages=read_txt_files_from_folder(path2txt)
 
 #%%
-path2res= path2txt+'ACOPF_standalone_NREL_LF09_seed16_nc3_ns100_20250530_165211_8618/'
+#path2res= path2txt+'ACOPF_standalone_NREL_LF09_seed16_nc3_ns100_20250530_165211_8618/'
+path2res= path2txt+'MareNostrum/datagen_ACOPF_slurm22543545_cu16_nodes32_LF09_seed16_nc30_ns50_d6_20250613_220923_5611/'
 
-df_op=pd.read_csv(path2res+'case_df_op.csv').query('Stability !=-1')
+df_op=pd.read_csv(path2res+'case_df_op.csv').query('Stability >=0')#.query('Stability !=-1')
 voltage_conv=df_op[[c for c in df_op.columns if c.startswith('V')]]
-cases_conv=df_op=pd.read_csv(path2res+'case_df_op.csv').query('Stability !=-1')[['case_id']]
+cases_conv=df_op[['case_id']]
 
 df_v_sampled=pd.DataFrame(columns=voltage_conv.columns)
 for idx_case,case in cases_conv.iterrows():
