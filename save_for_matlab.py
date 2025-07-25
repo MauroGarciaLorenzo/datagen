@@ -1,12 +1,16 @@
 #%%
+import os
 # Define the path to the folder
-folder_path = './Fecamp Test Case - SSTool/01_data/cases/NREL_seed'+str(seed)
+seed = 16
+folder_path = './Fecamp Test Case - SSTool/01_data/cases/NREL_seed'+str(seed)+'_standalone'
 
 # Create the folder if it doesn't exist
 os.makedirs(folder_path, exist_ok=True)
 
 T_PF=d_opf['pf_bus'][['bus','Vm','theta']]
-with pd.ExcelWriter(folder_path+'/IEEE118_FULL.xlsx', engine='openpyxl') as writer:
+#T_PF=d_pf_original['pf_bus'][['bus','Vm','theta']]
+
+with pd.ExcelWriter(folder_path+'/IEEE118_FULL_case0.xlsx', engine='openpyxl') as writer:
     for key in d_grid:
         if key!='gen_names':
             if key=='T_NET':
