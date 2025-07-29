@@ -7,7 +7,7 @@ def open_csv(path_results, csv_files=None):
 
     results_dataframes=dict()
     for file in csv_files:
-        results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop(['Unnamed: 0'],axis=1)
+        results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop(['Unnamed: 0'],axis=1).drop_duplicates(keep='first').reset_index(drop=True)
     
     return results_dataframes, csv_files 
 
