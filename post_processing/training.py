@@ -91,12 +91,35 @@ cases_id_depth_feas = cases_id_depth.query('case_id == @case_id_feasible')
 
 #%%
 df = pd.read_csv('DataSet_training_uncorr_var_HierCl.csv').drop('Unnamed: 0', axis=1).drop_duplicates(keep='first')
+             #_var_HierCl
              
+p_cig_cols = [col for col in results_dataframes['cases_df_feasible'].columns if col.startswith('p_cig')]
+p_sg_cols = [col for col in results_dataframes['cases_df_feasible'].columns if col.startswith('p_sg')]
+results_dataframes['cases_df_feasible']['p_cig'] = results_dataframes['cases_df_feasible'][p_cig_cols].sum(axis=1)
+results_dataframes['cases_df_feasible']['p_sg'] = results_dataframes['cases_df_feasible'][p_sg_cols].sum(axis=1)
+
+exclude_cases = list(results_dataframes['cases_df_feasible'].query('p_cig > 2738.010789')['case_id'])
+df = df.query('case_id != @exclude_cases')
+
+#%%
+mesh_df = pd.read_excel('mesh.xlsx')
+
+ax = plot_mesh(mesh_df)
+for depth in range(0,7):
+        add_case_id = list(cases_id_depth.query('Depth == @depth')['case_id'])
+        ax.scatter(results_dataframes['cases_df_feasible'].query('case_id == @add_case_id')['p_cig'],
+                   results_dataframes['cases_df_feasible'].query('case_id == @add_case_id')['p_sg'], label = 'Depth '+str(depth))
+plt.legend()
+
+
 #%%
 
 from sklearn import svm
 from sklearn.model_selection import cross_val_score
 from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 n_fold = 5 
 # n_cases_training=0
@@ -104,30 +127,41 @@ df_training = pd.DataFrame(columns= df.columns)
 cases_id_training = []
 
 scores_df=pd.DataFrame(columns=['Depth','score_mean','score_std','n_training_cases','perc_stable'])
+ax = plot_mesh(mesh_df)
 
 for depth in range(0,7):
     #n_cases_training = n_cases_training + len(cases_id_depth_feas.query('Depth == @depth'))
     #print(n_cases_training)
-    
-    cases_id_training.extend(list(cases_id_depth_feas.query('Depth == @depth')['case_id']))
+    add_case_id = list(cases_id_depth_feas.query('Depth == @depth')['case_id'])
+    cases_id_training.extend(add_case_id)
     df_training = df.query('case_id == @cases_id_training')
     scores_df.loc[depth,'n_training_cases']=len(df_training)
     scores_df.loc[depth,'perc_stable']=len(df_training.query('Stability == 1'))/len(df_training)
 
-    if len(cases_id_training)>= n_fold:
+    if len(df_training)>= n_fold:
         #clf = svm.SVC(kernel='linear', C=1, random_state=42)
-        clf = MLPClassifier(random_state=1, max_iter=5000, activation='relu')
+        #clf = MLPClassifier(random_state=1, max_iter=5000, activation='relu')
+        clf = Pipeline([('scaler', StandardScaler()), ('xgb', XGBClassifier())])
         X = df_training.drop(['case_id','Stability'],axis=1).reset_index(drop=True)
         y = df_training[['Stability']].reset_index(drop=True).values.astype(int).ravel()
-        scores = cross_val_score(clf, X, y, cv=n_fold)
+        scores = cross_val_score(clf, X, y, cv=n_fold, scoring='accuracy')
         
         scores_df.loc[depth,'Depth']=depth
         scores_df.loc[depth,'score_mean']=scores.mean()
         scores_df.loc[depth,'score_std']=scores.std()
-
+        
+        ax.scatter(results_dataframes['cases_df_feasible'].query('case_id == @add_case_id')['p_cig'],
+                   results_dataframes['cases_df_feasible'].query('case_id == @add_case_id')['p_sg'], label = 'Depth '+str(depth))
+plt.legend()
 #%%
-pd.DataFrame.to_excel(scores_df,'scores_df_uncorr_var_HierCl.xlsx')
+pd.DataFrame.to_excel(scores_df,'scores_df_uncorr_var_HierCl_xgb.xlsx')#_var_HierCl_
 
 #%%
 fig, ax = plt.subplots()
 ax.errorbar(scores_df['Depth'], scores_df['score_mean'], yerr=scores_df['score_std'], fmt='-o', capsize=5, color='blue', ecolor='black', elinewidth=1.5)
+ax.set_xlabel('Depth')
+ax.set_ylabel('Mean accuracy $\pm$ std')
+ax.grid()
+fig.tight_layout()
+plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb.pdf')#, format='pdf')
+plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb.png')#, format='png')
