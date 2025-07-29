@@ -14,9 +14,13 @@ def open_csv(path_results, csv_files=None):
 def perc_stability(df,dir_name):
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print(dir_name)
+    print('$|\mathcal{D}|$: '+str(len(df)))
     print('Feasible cases: '+str(len(df.query('Stability>=0'))/len(df)*100)+'%')
     print('Stable cases: '+str(len(df.query('Stability == 1'))/len(df)*100)+'% of total cases')
     print('Stable cases: '+str(len(df.query('Stability == 1'))/len(df.query('Stability>=0'))*100)+'% of feasible cases')
+    print('Unfeasible cases: '+str(len(df.query('Stability==-1'))/len(df)*100)+'%')
+    print('Out of cell cases: '+str(len(df.query('Stability==-2'))/len(df)*100)+'%')
+
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
 
 def find_closest_row(df, columns, values):
