@@ -27,11 +27,12 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 # ncig_list=['10','11','12']
 path = '../results/MareNostrum'
 
-# dir_names=[dir_name for dir_name in os.listdir(path) if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+#dir_names=[dir_name for dir_name in os.listdir(path)][2:3]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 
 dir_names = [
     'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664-20250630T085420Z-1-005']
 
+#%%
 for dir_name in dir_names:
     path_results = os.path.join(path, dir_name)
 
@@ -85,6 +86,7 @@ results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].que
 p_sg_var=[var for var in results_dataframes['cases_df_feasible'].columns if var.startswith('p_sg_')]
 p_cig_var=[var for var in results_dataframes['cases_df_feasible'].columns if var.startswith('p_cig_')]
 
+#%%
 dimensions_caseid_stability = pd.DataFrame(columns = ['p_sg','p_cig','case_id','Stability'])
 dimensions_caseid_stability['p_sg'] =  results_dataframes['cases_df_feasible'][p_sg_var].sum(axis=1)
 dimensions_caseid_stability['p_cig'] =  results_dataframes['cases_df_feasible'][p_cig_var].sum(axis=1)
@@ -121,11 +123,11 @@ dimensions_caseid_unfeasible2['case_id'] =  results_dataframes['cases_df_unfeasi
 
 #%%
 
-# fig, ax = plt.subplots()
-# ax.scatter(dimensions_caseid_unfeasible['p_cig'], dimensions_caseid_unfeasible['p_sg'],color='silver', label='Unfeasable OP')
-# ax.scatter(dimensions_caseid_stability.query('Stability ==0')['p_cig'], dimensions_caseid_stability.query('Stability ==0')['p_sg'], color='r',label='Unstable OP')
-# ax.scatter(dimensions_caseid_stability.query('Stability ==1')['p_cig'], dimensions_caseid_stability.query('Stability ==1')['p_sg'], color='g', label='Stable OP')
-# plt.legend()
+fig, ax = plt.subplots()
+ax.scatter(dimensions_caseid_unfeasible['p_cig'], dimensions_caseid_unfeasible['p_sg'],color='silver', label='Unfeasable OP')
+ax.scatter(dimensions_caseid_stability.query('Stability ==0')['p_cig'], dimensions_caseid_stability.query('Stability ==0')['p_sg'], color='r',label='Unstable OP')
+ax.scatter(dimensions_caseid_stability.query('Stability ==1')['p_cig'], dimensions_caseid_stability.query('Stability ==1')['p_sg'], color='g', label='Stable OP')
+plt.legend()
 
 #%%
 
@@ -277,7 +279,7 @@ for idx, row in df.iterrows():
     if row['Parent'] is not None:
         parent_to_children[row['Parent']].append(row['CellName'])
 
-#ax = plot_mesh(mesh_df)
+ax = plot_mesh(mesh_df)
 
 for internal_leaf in internal_leaves:
     childs=parent_to_children[internal_leaf]
@@ -287,14 +289,13 @@ for internal_leaf in internal_leaves:
     except:
         cell_case_id[internal_leaf] = []
         for child in childs:
+            cell_case_id[child] = list(np.random.permutation(cell_case_id[child]))
             cell_case_id[internal_leaf].extend(list(cell_case_id[child])[0:len(cell_case_id[child])-1500])
             cell_case_id[child] = list(cell_case_id[child])[-1500:]  
         
-        cell_case_id[internal_leaf] = np.random.permutation(cell_case_id[internal_leaf])  
+        cell_case_id[internal_leaf] = list(np.random.permutation(cell_case_id[internal_leaf]))
         
-        # case_id_list= cell_case_id[internal_leaf]
-        # ax.scatter(results_dataframes['cases_df'].query('case_id == @case_id_list')['p_cig'],results_dataframes['cases_df'].query('case_id == @case_id_list')['p_sg'])
-
+        
         # plt.pause()
 
         # for child in childs:
@@ -302,6 +303,12 @@ for internal_leaf in internal_leaves:
         #     ax.scatter(results_dataframes['cases_df'].query('case_id == @case_id_list')['p_cig'],results_dataframes['cases_df'].query('case_id == @case_id_list')['p_sg'])
 
         #     plt.pause(3)
+        
+        # case_id_list= cell_case_id[internal_leaf]
+        # ax.scatter(results_dataframes['cases_df'].query('case_id == @case_id_list')['p_cig'],results_dataframes['cases_df'].query('case_id == @case_id_list')['p_sg'])
+
+        # plt.pause(3)
+
 
         
     
@@ -335,6 +342,8 @@ print(grouped_by_length)
 df_depth = pd.DataFrame(columns=['Depth','case_id','CellName'])
 
 for depth, items in grouped_by_length.items():
+    print(depth)
+    print(items)
     for item in items:
         df_cell = pd.DataFrame(columns=['Depth','case_id','CellName'])
         df_cell['case_id'] = cell_case_id[item]
@@ -359,10 +368,10 @@ pd.DataFrame.to_excel(df_depth, 'cases_id_depth.xlsx')
 ax = plot_mesh(mesh_df)
 for depth in df_depth['Depth'].unique():
     #print(key)
-    case_id_list= list(set(df_depth.query('Depth == @depth')['case_id'])-set(case_id_Unfeasible))
-    ax.scatter(results_dataframes['cases_df'].query('case_id == @case_id_list')['p_cig'],results_dataframes['cases_df'].query('case_id == @case_id_list')['p_sg'], alpha =0.1)
+    case_id_list= list(set(df_depth.query('Depth == @depth')['case_id']) & set(case_id_feasible))
+    ax.scatter(results_dataframes['cases_df'].query('case_id == @case_id_list')['p_cig'],results_dataframes['cases_df'].query('case_id == @case_id_list')['p_sg'])
 
-    plt.pause(1)             
+    plt.pause(10)             
 
 
 #%%
