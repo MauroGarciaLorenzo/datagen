@@ -157,7 +157,6 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
 
     print_results(execution_logs, cases_df)
     save_results(cases_df, dims_df, execution_logs, output_dataframes, dst_dir, time.time()-t0)
-    join_cases_csvs(dst_dir)
 
     return cases_df, dims_df, execution_logs, output_dataframes
 
