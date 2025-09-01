@@ -30,7 +30,7 @@ import time
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
-from .file_io import save_results, init_dst_dir
+from .file_io import save_results, init_dst_dir, join_cases_csvs
 
 try:
     from pycompss.api.task import task
@@ -157,6 +157,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
 
     print_results(execution_logs, cases_df)
     save_results(cases_df, dims_df, execution_logs, output_dataframes, dst_dir, time.time()-t0)
+    join_cases_csvs(dst_dir)
 
     return cases_df, dims_df, execution_logs, output_dataframes
 

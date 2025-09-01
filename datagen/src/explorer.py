@@ -1,7 +1,7 @@
 import pandas as pd
 import logging
 
-from datagen.src.file_io import log_cell_info
+from datagen.src.file_io import log_cell_info, save_cases_df
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +107,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
             feasible_cases += 1
             
     cases_df["Stability"] = stabilities
+    save_cases_df(cases_df, dst_dir, cell_name)
+
     # Collect each cases dictionary of dataframes into total_dataframes
     for output_dfs in output_dataframes_list:
         if total_dataframes:
