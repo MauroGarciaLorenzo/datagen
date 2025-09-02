@@ -47,7 +47,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     # Remove the id and make sure case is fully numeric
     case_id = case["case_id"]
-    case = case.drop("case_id")
+    cell_name = case["cell_name"]
+    case = case.drop(["case_id","cell_name"])
     case = case.astype(float)
 
     # Initialize essential output dataframes to None
@@ -97,15 +98,15 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # d_grid, gridCal_grid, data_old = process_opal.update_OP_from_RT(d_grid, gridCal_grid, data_old)
 
     # Get Power-Flow results with GridCal
-    pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
+    # pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
 
-    print('Converged:', pf_results.convergence_reports[0].converged_[0])
+    # print('Converged:', pf_results.convergence_reports[0].converged_[0])
 
 
-    # Update PF results and operation point of generator elements
-    d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
-    d_pf_original['info']=pd.DataFrame()
-    d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
+    # # Update PF results and operation point of generator elements
+    # d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
+    # d_pf_original['info']=pd.DataFrame()
+    # d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
 
     nc = compile_numerical_circuit_at(gridCal_grid)
     nc.generator_data.cost_0[:] = 0
@@ -142,7 +143,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
         # Exit function
         stability = -1
         output_dataframes = postprocess_obj_func(
-            output_dataframes, case_id, stability,
+            output_dataframes, case_id, cell_name, stability,
             df_computing_times=computing_times)
         return stability, output_dataframes
 
@@ -176,7 +177,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
             # Exit function
             stability = -2
             output_dataframes = postprocess_obj_func(
-                output_dataframes,case_id, stability,
+                output_dataframes,case_id, cell_name, stability,
                 df_computing_times=computing_times)
             return stability, output_dataframes
 
@@ -287,12 +288,12 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # output_dataframes['d_pf_original'] = d_pf_original
     
     # Exit function
-    output_dataframes = postprocess_obj_func(output_dataframes, case_id,
+    output_dataframes = postprocess_obj_func(output_dataframes, case_id, cell_name,
                                              stability)
     return stability, output_dataframes
 
 
-def postprocess_obj_func(output_dataframes, case_id, stability,
+def postprocess_obj_func(output_dataframes, case_id, cell_name, stability,
                          **update_output_dataframes):
     """
     Do tasks that always need to be performed before exiting the objective
@@ -302,7 +303,7 @@ def postprocess_obj_func(output_dataframes, case_id, stability,
     update output_dataframes with new dataframes, for instance:
 
     >> output_dataframes = \
-    >>     postprocess_obj_func(output_dataframes, case_id, stability,
+    >>     postprocess_obj_func(output_dataframes, case_id, cell_name, stability,
     >>         df_op=df_op, df_computing_times=computing_times,
     >>         df_real=df_real, df_imag=df_imag)
 
@@ -315,6 +316,8 @@ def postprocess_obj_func(output_dataframes, case_id, stability,
     for df_name, df in output_dataframes.items():
         # Append unique_id
         df['case_id'] = case_id
+        # Append cell name
+        df['cell_name'] = cell_name
         # Append stability result
         df['Stability'] = stability
 
