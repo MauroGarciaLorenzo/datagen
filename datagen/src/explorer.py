@@ -78,6 +78,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
+    cases_df['cell_name'] = cell_name
+    
     stabilities = []
     output_dataframes_list = []
     feasible_cases = 0
@@ -131,7 +133,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
     dims_df = pd.concat([dims_df, dims_heritage_df], ignore_index=True)
 
-    parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy)
+    parent_entropy, delta_entropy = eval_entropy(cases_df, cases_heritage_df)#(stabilities, parent_entropy)
 
     total_cases = n_samples * dimensions[0].n_cases
     message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
