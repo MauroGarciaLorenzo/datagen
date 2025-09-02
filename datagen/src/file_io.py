@@ -5,6 +5,7 @@ from .utils import clean_dir
 import pandas as pd
 import logging
 import csv
+import glob
 logger = logging.getLogger(__name__)
 
 from datagen.src.data_ops import sort_df_rows_by_another, sort_df_last_columns
@@ -43,6 +44,36 @@ def save_dataframes(output_dataframes_array, path_results, seed):
                 pd.DataFrame.to_csv(
                     value, os.path.join(path_results, f"{filename}.csv"))
         index += 1
+
+
+def save_cases_df(cases_df, dst_dir, cell_name):
+    """Append cases_df to dst_dir."""
+    print("DST DIR: ", dst_dir)
+    os.makedirs(dst_dir, exist_ok=True)
+    csv_path = os.path.join(dst_dir, f"cases_df_{cell_name}.csv")
+    cases_df.to_csv(csv_path, mode="w", index=False)
+
+
+def join_cases_csvs(results_dir, output_file="cases_df_join.csv"):
+    """
+    Join all cases_df_*.csv files into a single CSV.
+    Keeps header only once.
+    """
+    # Find all matching files
+    csv_files = sorted(glob.glob(os.path.join(results_dir, "cases_df_*.csv")))
+
+    if not csv_files:
+        raise FileNotFoundError("No cases_df_*.csv files found in directory")
+
+    # Load and concatenate
+    dfs = [pd.read_csv(f) for f in csv_files]
+    final_df = pd.concat(dfs, ignore_index=True)
+
+    # Save the result
+    output_path = os.path.join(results_dir, output_file)
+    final_df.to_csv(output_path, index=False)
+
+    return final_df
 
 
 def save_results(cases_df, dims_df, execution_logs, output_dataframes,

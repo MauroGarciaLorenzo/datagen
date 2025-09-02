@@ -30,7 +30,7 @@ import time
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
-from .file_io import save_results, init_dst_dir
+from .file_io import save_results, init_dst_dir, join_cases_csvs
 
 try:
     from pycompss.api.task import task
