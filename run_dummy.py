@@ -68,7 +68,7 @@ def main(setup_path="setup/default_setup.yaml"):
     logging_level = logging.INFO
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    fig, ax = plt.subplots()
+    #fig, ax = plt.subplots()
     dimensions = [
         Dimension(variable_borders=variables_d0, n_cases=n_cases, divs=2,
                   borders=(0, 5), label="Dim_0"),
@@ -81,7 +81,7 @@ def main(setup_path="setup/default_setup.yaml"):
     path_results = os.path.join("results", dir_name)
     cases_df, dims_df, execution_logs, output_dataframes = \
         start(dimensions, n_samples, rel_tolerance, func=dummy, 
-              max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax, 
+              max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None,
               divs_per_cell=2, plot_boxplot=False, seed=seed,
               dst_dir=path_results, logging_level=logging_level)
     return path_results

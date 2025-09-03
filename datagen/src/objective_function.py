@@ -24,6 +24,7 @@ from .. import gen_voltage_profile, COMPUTING_TIME_NAMES, OUTPUT_DF_NAMES, \
 
 
 def complex_2d_shape_obj_func(case, **kwargs):
+    case = case.drop(["case_id","cell_name"])
     x = case['tau_Dim_0']
     y = case['tau_Dim_1']
     z = complex_2d_shape(x, y)
@@ -35,6 +36,7 @@ def complex_2d_shape_obj_func(case, **kwargs):
 
 
 def test_sensitivity_obj_func(case, **kwargs):
+    case = case.drop(["case_id","cell_name"])
     x = case['tau_Dim_0']
     return np.where(x > 0.5, 1, 0), {}
 
@@ -47,12 +49,12 @@ def complex_2d_shape(x, y):
 
 # file where objective function is declared (dummy test)
 def dummy(case, **kwargs):
-    case = case.drop("case_id")
+    case = case.drop(["case_id","cell_name"])
     time.sleep(0.0001)
     return round(math.sin(sum(case)) * 0.5 + 0.5), {}
 
 def matmul(case, **kwargs):
-    case = case.drop("case_id")
+    case = case.drop(["case_id","cell_name"])
     t0 = time.time()
     while(time.time() - t0 < 0.0000):
         m0 = np.random.randint(0, 101, size=(1000, 1000))
@@ -61,7 +63,7 @@ def matmul(case, **kwargs):
     return round(math.sin(sum(case)) * 0.5 + 0.5), {}
 
 def dummy_linear(case, **kwargs):
-    case = case.drop("case_id")
+    case = case.drop(["case_id","cell_name"])
     total_sum = sum(case)
     return total_sum/19 > 0.5, {}  # 19 => maximum value among all upper borders
 

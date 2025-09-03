@@ -1,7 +1,7 @@
 import pandas as pd
 import logging
 
-from datagen.src.file_io import log_cell_info, save_cases_df
+from datagen.src.file_io import log_cell_info, save_df
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +109,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
             feasible_cases += 1
             
     cases_df["Stability"] = stabilities
-    save_cases_df(cases_df, dst_dir, cell_name)
 
     # Collect each cases dictionary of dataframes into total_dataframes
     for output_dfs in output_dataframes_list:
@@ -118,6 +117,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                                               output_dfs)
         else:
             total_dataframes = output_dfs
+
     # Remove elements of the dict of dataframes that are not a dataframe
     labels_to_remove = []
     if total_dataframes:
@@ -127,6 +127,12 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                 labels_to_remove.append(label)
         for label in labels_to_remove:
             total_dataframes.pop(label)
+
+    # Store dataframes in disk
+    save_df(cases_df, dst_dir, cell_name, "cases_df")
+    save_df(dims_df, dst_dir, cell_name, "dims_df")
+    for df_name, df in total_dataframes.items():
+        save_df(df, dst_dir, cell_name, df_name)
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:

@@ -245,6 +245,10 @@ if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
         setup_path = "./setup/default_setup.yaml"
-    else:
+        main(setup_path=setup_path)
+    elif len(args) == 2:
         setup_path = args[1]
-    main(setup_path=setup_path)
+        main(setup_path=setup_path)
+    else:
+        main(args[1], args[2], args[3])
+
