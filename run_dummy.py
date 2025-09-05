@@ -4,13 +4,10 @@ import logging
 import sys
 from datetime import datetime
 
-from matplotlib import pyplot as plt
-
 from datagen.src.objective_function import dummy
 from datagen.src.dimensions import Dimension
 from datagen.src.parsing import parse_setup_file
 from datagen.src.start_app import start
-import yaml
 
 try:
     from pycompss.api.task import task
@@ -79,7 +76,7 @@ def main(setup_path="setup/default_setup.yaml"):
     dir_name = f"dummy_seed{seed}_nc{n_cases}" \
                f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
     path_results = os.path.join("results", dir_name)
-    cases_df, dims_df, execution_logs, output_dataframes = \
+    execution_logs = \
         start(dimensions, n_samples, rel_tolerance, func=dummy, 
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None,
               divs_per_cell=2, plot_boxplot=False, seed=seed,

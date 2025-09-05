@@ -111,7 +111,7 @@ def main(setup_path="setup/default_setup.yaml"):
     use_sensitivity = True
     logging_level = logging.DEBUG
 
-    cases_df, dims_df, execution_logs, output_dataframes = \
+    execution_logs = \
         start(dimensions, n_samples, rel_tolerance, func=dummy,
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
               divs_per_cell=2, plot_boxplot=False, seed=seed,

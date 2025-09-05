@@ -136,32 +136,29 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         seed = random.randint(1,100)
 
     generator = np.random.default_rng(seed)
-    result = (
+    execution_logs = (
         explore_cell(func=func, n_samples=n_samples, parent_entropy=None,
                      depth=0, ax=ax, dimensions=dimensions,
-                     cases_heritage_df=None, dims_heritage_df=pd.DataFrame(),
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
                      divs_per_cell=divs_per_cell, generator=generator,
                      feasible_rate=feasible_rate, func_params=func_params,
                      dst_dir=dst_dir))
 
-    result = compss_wait_on(result)
+    execution_logs = compss_wait_on(execution_logs)
 
-    execution_logs = result.children_info
-    cases_df = result.cases_df
-    dims_df = result.dims_df
-    output_dataframes = result.output_dataframes
     if not isinstance(execution_logs, list):
         execution_logs = [execution_logs]
 
-    if plot_boxplot:
-        boxplot(cases_df, dst_dir)
-
-    print_results(execution_logs, cases_df)
-    save_results(cases_df, dims_df, execution_logs, output_dataframes, dst_dir, time.time()-t0)
+    print_results(execution_logs)
+    save_results(execution_logs, dst_dir, time.time()-t0)
     join_and_cleanup_csvs(dst_dir)
 
-    return cases_df, dims_df, execution_logs, output_dataframes
+    if plot_boxplot:
+        cases_df = pd.read_csv(f"{dst_dir}/cases_df_join.csv")
+        boxplot(cases_df, dst_dir)
+
+
+    return execution_logs
 
 
 def setup_logger(logging_level, dst_dir):

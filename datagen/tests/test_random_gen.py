@@ -5,6 +5,8 @@ sys.path.insert(0, os.path.abspath(
 from random import random
 
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 from unittest import TestCase
 

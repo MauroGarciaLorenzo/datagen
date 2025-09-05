@@ -53,8 +53,7 @@ def save_df(dataframe, dst_dir, cell_name, var_name):
     dataframe.to_csv(csv_path, mode="w", index=False)
 
 
-def save_results(cases_df, dims_df, execution_logs, output_dataframes,
-                 dst_dir, execution_time):
+def save_results(execution_logs, dst_dir, execution_time):
     """
     Save set of results including the main cases/dims dataframes plus
     execution logs and all elements inside the output_dataframes dictionary,
@@ -64,27 +63,10 @@ def save_results(cases_df, dims_df, execution_logs, output_dataframes,
     if dst_dir is None:
         dst_dir = "results"
 
-    cases_df.to_csv(os.path.join(dst_dir, "cases_df.csv"))
-    dims_df.to_csv(os.path.join(dst_dir, "dims_df.csv"))
     execution_time_df = pd.DataFrame(
         {"execution_time": [execution_time]})
 
     execution_time_df.to_csv((os.path.join(dst_dir, "execution_time.csv")), index=False)
-
-    for key, value in output_dataframes.items():
-        if isinstance(value, pd.DataFrame):
-            # All dataframes should have the same sorting
-            sorted_df = sort_df_rows_by_another(cases_df, value, "case_id")
-            # Sort columns at the end
-            sorted_df = sort_df_last_columns(sorted_df)
-            # Save dataframe
-            sorted_df.to_csv(os.path.join(dst_dir, f"case_{key}.csv"))
-        else:
-            for k, v in value.items():
-                if isinstance(v, pd.DataFrame):
-                    value.to_csv(os.path.join(dst_dir, f"case_{k}.csv"))
-                else:
-                    logger.warning(f"Invalid nested format for output '{k}'")
 
     if execution_logs!=None:
         with open(os.path.join(dst_dir, "execution_logs.txt"), "w") as log_file:

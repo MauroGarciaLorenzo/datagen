@@ -229,7 +229,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 
     stability_array = []
     output_dataframes_array = []
-    cases_df, dims_df, execution_logs, output_dataframes = start(
+    execution_logs = start(
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,

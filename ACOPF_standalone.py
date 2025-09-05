@@ -36,7 +36,8 @@ from datagen import print_dict_as_yaml
 
 warnings.filterwarnings('ignore')
 
-from datagen.src.data_ops import concat_df_dict
+from datagen.src.data_ops import concat_df_dict, sort_df_rows_by_another, \
+    sort_df_last_columns
 from datagen.src.parsing import parse_setup_file, parse_args
 from datagen.src.file_io import save_results
 from datagen.src.dimensions import Dimension
@@ -294,7 +295,24 @@ def main(working_dir='', path_data='', setup_path=''):
             total_dataframes.pop(label)
     
     total_dataframes['df_op']['Stable']=stability_array
-    save_results(cases_df, dims_df, None, total_dataframes, path_results)
+    cases_df.to_csv(os.path.join(path_results, "cases_df.csv"))
+    dims_df.to_csv(os.path.join(path_results, "dims_df.csv"))
+
+    for key, value in output_dataframes.items():
+        if isinstance(value, pd.DataFrame):
+            # All dataframes should have the same sorting
+            sorted_df = sort_df_rows_by_another(cases_df, value, "case_id")
+            # Sort columns at the end
+            sorted_df = sort_df_last_columns(sorted_df)
+            # Save dataframe
+            sorted_df.to_csv(os.path.join(path_results, f"case_{key}.csv"))
+        else:
+            for k, v in value.items():
+                if isinstance(v, pd.DataFrame):
+                    value.to_csv(os.path.join(path_results, f"case_{k}.csv"))
+                else:
+                    logger.warning(f"Invalid nested format for output '{k}'")
+
 
             
 if __name__ == "__main__":

@@ -127,13 +127,12 @@ class Test(unittest.TestCase):
         ]
 
         expected_files = {
-            "case_df_computing_times.csv",
-            "case_df_damp.csv",
-            "case_df_freq.csv",
-            "case_df_imag.csv",
-            "case_df_op.csv",
-            "case_df_real.csv",
-            "case_setup.yaml",
+            "df_computing_times.csv",
+            "df_damp.csv",
+            "df_freq.csv",
+            "df_imag.csv",
+            "df_op.csv",
+            "df_real.csv",
             "cases_df.csv",
             "dims_df.csv",
             "execution_logs.txt",

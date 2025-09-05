@@ -22,6 +22,8 @@ function to plot sample data.
 import os
 import time
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
 from matplotlib import pyplot as plt, patches
 import logging
 logger = logging.getLogger(__name__)
@@ -104,14 +106,12 @@ def boxplot(cases_df, dst_dir):
         plt.savefig(fname=path, dpi=300)
 
 
-def print_results(execution_logs, cases_df):
+def print_results(execution_logs):
     """Shows the dataframe obtained by the application and the logs for each
     cell: dimensions, entropy, delta entropy and depth
 
     :param execution_logs: dimensions, entropy, delta entropy and depth of each
                         cell.
-    :param cases_df: dataframe containing every case evaluated by the program
-                and each evaluation (stability)
     """
     pd.set_option('display.max_rows', 50)
     pd.set_option('display.max_columns', 20)
@@ -120,8 +120,6 @@ def print_results(execution_logs, cases_df):
     logger.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
     logger.debug("")
     logger.debug("")
-    logger.debug("samples-stability:")
-    logger.debug(f"\n{cases_df.to_string()}", )
     logger.debug(f"number of cells: {len(execution_logs)}" )
     logger.debug("")
 

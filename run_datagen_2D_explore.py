@@ -3,6 +3,8 @@ import random
 from datetime import datetime
 
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 
 from datagen.src.objective_function import complex_2d_shape_obj_func, \

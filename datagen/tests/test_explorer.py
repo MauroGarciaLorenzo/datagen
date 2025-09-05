@@ -10,6 +10,7 @@ from datagen.src.grid import gen_grid
 from datagen.src.objective_function import dummy
 from datagen.tests.test_sampling import create_generator
 from datagen.src.explorer import explore_grid
+from scripts.postprocess.join_and_cleanup_csvs import join_and_cleanup_csvs
 
 
 class TestExplorer(TestCase):
@@ -60,10 +61,10 @@ class TestExplorer(TestCase):
         print("RUNNING TEST EXPLORE GRID")
         result = explore_grid(
             ax=self.ax,
-            cases_df=self.cases_df,
+            cases_df=pd.DataFrame(),
             grid=self.grid,
             depth=self.depth,
-            dims_df=self.dims_df,
+            dims_df=pd.DataFrame(),
             func=self.func,
             n_samples=self.n_samples,
             use_sensitivity=self.use_sensitivity,
@@ -77,14 +78,21 @@ class TestExplorer(TestCase):
             parent_name=self.parent_name,
             dst_dir=self.dst_dir
         )
+        join_and_cleanup_csvs(self.dst_dir)
+
+        cases_df = pd.read_csv(os.path.join(self.dst_dir, "cases_df.csv"),
+                               index_col=0)
+        dims_df = pd.read_csv(os.path.join(self.dst_dir, "dims_df.csv"),
+                              index_col=0)
+
         # Assert that the number of cases equals the initial cases plus the
         # cases that will be generated in the remaining levels:
         # (n_cases * n_samples * n_divs)
-        self.assertEqual(len(result.cases_df), 2 + (self.max_depth-self.depth)
+        self.assertEqual(len(cases_df), (self.max_depth-self.depth)
                          * self.n_samples * self.dimension.n_cases * self.dimension.divs)
 
         # Assert at least one case per subinterval in [0, 1] split in 4
-        values = result.dims_df["x"].values
+        values = dims_df["x"].values
         intervals = [(0.0, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 1.0)]
         for low, high in intervals:
             self.assertTrue(

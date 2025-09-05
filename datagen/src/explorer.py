@@ -1,6 +1,9 @@
+import os
+
 import pandas as pd
 import logging
 
+from datagen.src.dimensions import Cell
 from datagen.src.file_io import log_cell_info, save_df
 
 logger = logging.getLogger(__name__)
@@ -21,23 +24,13 @@ from datagen.src.grid import gen_grid
 from datagen.src.sensitivity_analysis import sensitivity
 from datagen.src.case_generation import gen_samples, gen_cases
 from datagen.src.evaluator import eval_entropy, eval_stability
-from dataclasses import dataclass
-
-@dataclass
-class ExplorationResult:
-    children_info: list
-    cases_df: pd.DataFrame
-    dims_df: pd.DataFrame
-    output_dataframes: dict
 
 
 @constraint(is_local=True)
 @task(returns=1, on_failure='FAIL', priority=True)
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
-                 cases_heritage_df, dims_heritage_df, use_sensitivity,
-                 max_depth, divs_per_cell, generator, feasible_rate,
-                 func_params, total_dataframes=None, cell_name="",
-                 dst_dir=None):
+                 use_sensitivity,max_depth, divs_per_cell, generator,
+                 feasible_rate, func_params, cell_name="", dst_dir=None):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -53,8 +46,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     :param depth: Recursivity depth
     :param ax: Plottable object
     :param dimensions: Cell dimensions
-    :param cases_heritage_df: Inherited cases dataframe
-    :param dims_heritage_df: Inherited independent_dims dataframe
     :param use_sensitivity: Boolean indicating whether sensitivity analysis is
     used or not
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
@@ -65,10 +56,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     :param cell_name: Name of the current cell for logging purposes
     :return children_total: List of children dimensions, entropy,
     delta_entropy and depth
-    :return cases_df: Concatenation of inherited cases and those produced by
-    the cell
-    :return dims_df: Concatenation of inherited independent_dims and those produced by
-    the cell
     """
     if not cell_name:
         cell_name = "0"
@@ -111,6 +98,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     cases_df["Stability"] = stabilities
 
     # Collect each cases dictionary of dataframes into total_dataframes
+    total_dataframes = None
     for output_dfs in output_dataframes_list:
         if total_dataframes:
             total_dataframes = concat_df_dict(total_dataframes,
@@ -138,10 +126,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     if ax is not None and len(dimensions) == 2:
         plot_stabilities(ax, cases_df, dims_df, dst_dir)
 
-    cases_df = pd.concat([cases_df, cases_heritage_df], ignore_index=True)
-    dims_df = pd.concat([dims_df, dims_heritage_df], ignore_index=True)
-
-    parent_entropy, delta_entropy = eval_entropy(cases_df, cases_heritage_df)#(stabilities, parent_entropy)
+    parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy)
 
     total_cases = n_samples * dimensions[0].n_cases
     message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
@@ -167,15 +152,16 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                       feasible_cases / total_cases,
                       0, dst_dir)
 
-        # Return as ExplorationResult
-        return ExplorationResult(
-            children_info=[(dimensions, parent_entropy, delta_entropy, depth)],
-            cases_df=cases_df,
-            dims_df=dims_df,
-            output_dataframes=total_dataframes
-        )
+        children_info = [(dimensions, parent_entropy, delta_entropy, depth)]
+        return children_info
     else:
         if use_sensitivity:
+            cell = Cell(dimensions)
+            cases_heritage_df, dims_heritage_df = get_parent_samples(dst_dir, cell_name)
+
+            cases_heritage_df, dims_heritage_df = get_children_samples(cases_heritage_df, cell, dims_heritage_df)
+            cases_df = pd.concat([cases_df, cases_heritage_df],
+                                 ignore_index=True)
             dimensions = sensitivity(cases_df, dimensions, divs_per_cell,
                                      generator)
         children_grid = gen_grid(dimensions)
@@ -183,8 +169,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         if ax is not None and len(dimensions) == 2:
             plot_divs(ax, children_grid, dst_dir)
 
-        # Recursive case returns an ExplorationResult
-        result = explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
+        # Recursive case returns children info
+        children_info = explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
                               depth=depth, dims_df=dims_df, func=func,
                               n_samples=n_samples,
                               use_sensitivity=use_sensitivity,
@@ -196,7 +182,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                               parent_name=cell_name,
                               dst_dir=dst_dir)
 
-        return result
+        return children_info
 
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
@@ -224,159 +210,130 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
     :param generator: Numpy generator for random values
     :param parent_entropy: Entropy of the parent cell
     :param parent_name: Name of the parent cell
-    :return: Children independent_dims, cases and parameters
+    :return: Children parameters
     """
-    total_cases_df, total_dims_df, total_dataframes = (
-        get_children_parameters(grid, dims_df, cases_df, dataframes))
-
-    results = []
+    children_info_all = []
     i = 0
 
-    for (children_cell, cases_heritage_df, dims_heritage_df,
-         heritage_dataframes) in zip(grid, total_cases_df, total_dims_df,
-                                     total_dataframes):
+    for children_cell in grid:
         i += 1
         cell_name = f"{parent_name}.{i}"
 
-        # Get ExplorationResult from child cell
-        child_result = explore_cell(
+        cases_children_df, dims_children_df = get_children_samples(
+            cases_df, children_cell, dims_df)
+
+        if not cases_children_df.empty and "Stability" not in cases_children_df.columns:
+            parent_entropy, _ = eval_entropy(cases_children_df["Stability"], None)
+        else:
+            parent_entropy = None
+
+        # Get children_info from child cell
+        children_info = explore_cell(
             func=func, n_samples=n_samples,
             parent_entropy=parent_entropy, depth=depth + 1,
             ax=ax, dimensions=children_cell.dimensions,
-            cases_heritage_df=cases_heritage_df,
-            dims_heritage_df=dims_heritage_df,
             use_sensitivity=use_sensitivity, max_depth=max_depth,
             divs_per_cell=divs_per_cell, generator=generator,
             feasible_rate=feasible_rate, func_params=func_params,
-            total_dataframes=heritage_dataframes,
             cell_name=cell_name, dst_dir=dst_dir
         )
 
-        results.append(child_result)
+        children_info_all.extend(children_info)
 
     # Wait for all results
-    for i in range(len(results)):
-        result = results[i]
-        results[i] = compss_wait_on(result)
-        
+    for i in range(len(children_info_all)):
+        result = children_info_all[i]
+        children_info_all[i] = compss_wait_on(result)
 
-    # Combine all results
-    combined_cases = pd.concat([r.cases_df for r in results],
-                               ignore_index=True)
-    combined_dims = pd.concat([r.dims_df for r in results], ignore_index=True)
-    combined_dataframes = concat_df_dict(
-        [r.output_dataframes for r in results])
-
-    # Flatten children info
-    children_info = []
-    for r in results:
-        children_info.extend(r.children_info)
-
-    return ExplorationResult(
-        children_info=children_info,
-        cases_df=combined_cases,
-        dims_df=combined_dims,
-        output_dataframes=combined_dataframes
-    )
+    return children_info_all
 
 
-def get_children_parameters(children_grid, dims_heritage_df, cases_heritage_df,
-                            heritage_dataframes):
-    """Obtains dimensions, cases_df, entropy and delta_entropy of each child
+def get_children_samples(cases_heritage_df, cell, dims_heritage_df):
+    dims = []
+    cases = []
+    for idx, row in dims_heritage_df.iterrows():
+        case_id = row["case_id"]
+        # Cell dimensions don't include g_for and g_fol, but dims_df do
+        if 'p_g_for' in row.index and 'p_g_fol' in row.index:
+            if not isinstance(row, pd.Series):
+                message = "Row is not a pd.Series object"
+                logger.error(message)
+                raise TypeError(message)
+            columns_to_drop = ['p_g_for', 'p_g_fol', 'p_load']
+            q_columns = row.filter(regex=r'^q_')
+            columns_to_drop.extend(q_columns.index)
+            row = row.drop(labels=columns_to_drop)
 
-    :param children_grid: Grid to obtain parameters
-    :param dims_heritage_df: Samples dataframe(one for each case)
-    :param cases_heritage_df: Inherited cases dataframe
-    :return: List of children (with these attributes set)
+        # Check if every dimension in row is within cell borders
+        cell_independent_dims = [dim for dim in cell.dimensions
+                                 if dim.independent_dimension]
+        cell_borders = {
+            cell_independent_dims[t].label: cell_independent_dims[t].borders
+            for t in range(len(cell_independent_dims))
+        }
+        belongs = all(cell_borders[label][0] <= value <= cell_borders[label][1]
+                      for label, value in row.items()
+                      if label in cell_borders)
+        if all(
+                value == cell_borders[label][0]
+                for label, value in row.items()
+                if label in cell_borders
+        ) and idx != 0:
+            belongs = False
+        if all(
+                value == cell_borders[label][1]
+                for label, value in row.items()
+                if label in cell_borders
+        ) and idx != len(dims_heritage_df) - 1:
+            belongs = False
+        if belongs:
+            matching_case = cases_heritage_df[
+                cases_heritage_df["case_id"] == case_id]
+            matching_dim = dims_heritage_df[
+                dims_heritage_df["case_id"] == case_id]
+            cases.append(matching_case)
+            dims.append(matching_dim)
+
+    if cases and dims:
+        cases_df = pd.concat(cases, axis=0, ignore_index=True)
+        dims_df = pd.concat(dims, axis=0, ignore_index=True)
+    else:
+        cases_df = pd.DataFrame()
+        dims_df = pd.DataFrame()
+    return cases_df, dims_df
+
+
+def get_parent_samples(dst_dir, cell_name):
     """
-    total_cases = []
-    total_dims = []
-    total_dataframes = []
-    for cell in children_grid:
-        dims = []
-        cases = []
-        dataframes = {}
-        for idx, row in dims_heritage_df.iterrows():
-            case_id = row["case_id"]
-            # Cell dimensions don't include g_for and g_fol, but dims_df do
-            if 'p_g_for' in row.index and 'p_g_fol' in row.index:
-                if not isinstance(row, pd.Series):
-                    message = "Row is not a pd.Series object"
-                    logger.error(message)
-                    raise TypeError(message)
-                columns_to_drop = ['p_g_for', 'p_g_fol', 'p_load']
-                q_columns = row.filter(regex=r'^q_')
-                columns_to_drop.extend(q_columns.index)
-                row = row.drop(labels=columns_to_drop)
+    Retrieve parent cases_df and dims_df CSVs for a given cell_name,
+    and return them as concatenated pandas DataFrames.
 
-            # Check if every dimension in row is within cell borders
-            cell_independent_dims = [dim for dim in cell.dimensions
-                               if dim.independent_dimension]
-            cell_borders = {
-                cell_independent_dims[t].label: cell_independent_dims[t].borders
-                            for t in range(len(cell_independent_dims))
-            }
-            belongs = all(cell_borders[label][0] <= value <= cell_borders[label][1]
-                          for label, value in row.items()
-                          if label in cell_borders)
-            if all(
-                    value == cell_borders[label][0]
-                    for label, value in row.items()
-                    if label in cell_borders
-            ) and idx != 0:
-                belongs = False
-            if all(
-                    value == cell_borders[label][1]
-                    for label, value in row.items()
-                    if label in cell_borders
-            ) and idx != len(dims_heritage_df) - 1:
-                belongs = False
-            if belongs:
-                matching_case = cases_heritage_df[
-                    cases_heritage_df["case_id"] == case_id]
-                matching_dim = dims_heritage_df[
-                    dims_heritage_df["case_id"] == case_id]
-                cases.append(matching_case)
-                dims.append(matching_dim)
+    Example: if cell_name = "0.1.4.2",
+      -> combines [cases_df_0.1.4.csv, cases_df_0.1.csv, cases_df_0.csv]
+         into one DataFrame
+      -> combines [dims_df_0.1.4.csv, dims_df_0.1.csv, dims_df_0.csv]
+         into another DataFrame
+    """
+    parts = cell_name.split(".")
+    parent_names = [".".join(parts[:i]) for i in range(len(parts)-1, 0, -1)]
 
-            if heritage_dataframes:
-                assert dims_heritage_df["case_id"].is_unique
-                assert cases_heritage_df["case_id"].is_unique
-                assert set(cases_heritage_df["case_id"]) == set(
-                    dims_heritage_df["case_id"])
+    cases_dfs, dims_dfs = [], []
 
-                for label in heritage_dataframes.keys():
-                    df = heritage_dataframes[label]
+    for parent in parent_names:
+        cases_path = os.path.join(dst_dir, f"cases_df_{parent}.csv")
+        dims_path  = os.path.join(dst_dir, f"dims_df_{parent}.csv")
 
-                    # Get the row where case_id matches
-                    row_df = df[df["case_id"] == case_id]
-
-                    if not row_df.empty:
-                        if label in dataframes:
-                            dataframes[label] = pd.concat(
-                                [dataframes[label], row_df], axis=0)
-                        else:
-                            dataframes[label] = row_df
-                    else:
-                        message = (f"Line with case_id {case_id} not found "
-                                   f"in dataframe {label}")
-                        logger.error(message)
-                        raise Exception(message)
-
-        if cases and dims:
-            cases_df = pd.concat(cases, axis=0, ignore_index=True)
-            dims_df = pd.concat(dims, axis=0, ignore_index=True)
+        if os.path.exists(cases_path):
+            cases_dfs.append(pd.read_csv(cases_path))
         else:
-            cases_df = pd.DataFrame()
-            dims_df = pd.DataFrame()
-        total_cases.append(cases_df)
-        total_dims.append(dims_df)
-        total_dataframes.append(dataframes)
+            print(f"⚠️ Missing: {cases_path}")
 
-    if cases_heritage_df is None:
-        cases_heritage_df = pd.DataFrame()
-    if sum([len(cases) for cases in total_cases]) != len(cases_heritage_df):
-        message = "Not every case was assigned to a child"
-        logger.error(message)
-        raise Exception(message)
-    return total_cases, total_dims, total_dataframes
+        if os.path.exists(dims_path):
+            dims_dfs.append(pd.read_csv(dims_path))
+        else:
+            print(f"⚠️ Missing: {dims_path}")
+
+    cases_df = pd.concat(cases_dfs, ignore_index=True) if cases_dfs else pd.DataFrame()
+    dims_df  = pd.concat(dims_dfs, ignore_index=True) if dims_dfs else pd.DataFrame()
+
+    return cases_df, dims_df

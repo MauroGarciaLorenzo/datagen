@@ -7,9 +7,10 @@ import pandas as pd
 
 def join_and_cleanup_csvs(dst_dir):
     """
-    Joins all {var_name}_{cell_name}.csv files in dst_dir into one {var_name}_join.csv.
+    Joins all {var_name}_{cell_name}.csv files in dst_dir into one {var_name}.csv.
     Detects var_name correctly even if it contains underscores.
     Deletes the partial CSV files after joining.
+    Adds a continuous line index to the final CSV.
     """
     all_csvs = glob.glob(os.path.join(dst_dir, "*.csv"))
 
@@ -32,14 +33,15 @@ def join_and_cleanup_csvs(dst_dir):
         dfs = [pd.read_csv(f) for f in sorted(files)]
         joined_df = pd.concat(dfs, ignore_index=True)
 
-        out_path = os.path.join(dst_dir, f"{var_name}_join.csv")
-        joined_df.to_csv(out_path, index=False)
+        out_path = os.path.join(dst_dir, f"{var_name}.csv")
+        joined_df.to_csv(out_path, index=True)
         print(f"Saved: {out_path}")
 
         # Delete partial CSVs
         for f in files:
             os.remove(f)
             print(f"Deleted: {f}")
+
 
 if __name__ == "__main__":
     args = sys.argv

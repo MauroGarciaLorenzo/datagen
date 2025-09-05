@@ -6,6 +6,8 @@ from datagen import print_dict_as_yaml
 
 logger = logging.getLogger(__name__)
 
+import matplotlib
+matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 from datagen.src.parsing import parse_setup_file
 from datagen.src.dimensions import Dimension

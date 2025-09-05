@@ -6,7 +6,6 @@ sys.path.insert(0, os.path.abspath(
 from datagen import *
 from datagen.src.data_ops import concat_df_dict
 from datagen.src.evaluator import calculate_entropy, eval_entropy
-from datagen.src.explorer import get_children_parameters
 from datagen.src.grid import gen_grid
 from datagen.tests.utils import gen_df_for_dims, linear_function, \
     dim0_func, parab_func
