@@ -11,8 +11,8 @@ module load COMPSs/3.3.3
 
 # Variables initialization
 computing_units=8
-num_nodes=32
-yaml_file="setup_seed3_nc3_ns500_d7.yaml"
+num_nodes=16
+yaml_file="setup_seed3_nc1_ns6_d7.yaml"
 
 # Parse username splitting the string by delimiter "/"
 IFS='/' read -ra parts <<< "$HOME"
@@ -46,7 +46,6 @@ enqueue_compss \
 --master_working_dir=${working_dir} \
 --lang=python \
 --exec_time=2880 \
---tracing \
 --project_name=bsc19 \
 --qos=gp_bsccs \
 --log_dir=${working_dir} \
