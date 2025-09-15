@@ -29,7 +29,7 @@ from datagen.src.evaluator import eval_entropy, eval_stability
 @constraint(is_local=True)
 @task(returns=1, on_failure='FAIL', priority=True)
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
-                 use_sensitivity,max_depth, divs_per_cell, generator,
+                 use_sensitivity, max_depth, divs_per_cell, generator,
                  feasible_rate, func_params, cell_name="", dst_dir=None):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
@@ -156,12 +156,15 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         return children_info
     else:
         if use_sensitivity:
-            cell = Cell(dimensions)
-            cases_heritage_df, dims_heritage_df = get_parent_samples(dst_dir, cell_name)
+            if total_cases < 100:
+                cell = Cell(dimensions)
+                cases_heritage_df, dims_heritage_df = get_parent_samples(
+                    dst_dir, cell_name)
 
-            cases_heritage_df, dims_heritage_df = get_children_samples(cases_heritage_df, cell, dims_heritage_df)
-            cases_df = pd.concat([cases_df, cases_heritage_df],
-                                 ignore_index=True)
+                cases_heritage_df, dims_heritage_df = get_children_samples(
+                    cases_heritage_df, cell, dims_heritage_df)
+                cases_df = pd.concat([cases_df, cases_heritage_df],
+                                     ignore_index=True)
             dimensions = sensitivity(cases_df, dimensions, divs_per_cell,
                                      generator)
         children_grid = gen_grid(dimensions)
@@ -177,7 +180,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                               max_depth=max_depth, divs_per_cell=divs_per_cell,
                               generator=generator, feasible_rate=feasible_rate,
                               func_params=func_params,
-                              dataframes=total_dataframes,
                               parent_entropy=parent_entropy,
                               parent_name=cell_name,
                               dst_dir=dst_dir)
@@ -187,7 +189,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
-                 feasible_rate, func_params, dataframes, parent_entropy,
+                 feasible_rate, func_params, parent_entropy,
                  parent_name, dst_dir):
     """
     For a given grid (children grid) and cases taken, this function is in
@@ -238,6 +240,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
             cell_name=cell_name, dst_dir=dst_dir
         )
 
+        children_info = compss_wait_on(children_info)
         children_info_all.extend(children_info)
 
     # Wait for all results

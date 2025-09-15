@@ -73,7 +73,6 @@ class TestExplorer(TestCase):
             generator=self.generator,
             feasible_rate=self.feasible_rate,
             func_params=self.func_params,
-            dataframes=self.dataframes,
             parent_entropy=self.parent_entropy,
             parent_name=self.parent_name,
             dst_dir=self.dst_dir
