@@ -2,7 +2,7 @@ import os
 import re
 import glob
 import sys
-
+import logging
 import pandas as pd
 
 def join_and_cleanup_csvs(dst_dir):
@@ -38,9 +38,15 @@ def join_and_cleanup_csvs(dst_dir):
         print(f"Saved: {out_path}")
 
         # Delete partial CSVs
-        for f in files:
-            os.remove(f)
-            print(f"Deleted: {f}")
+        logger = logging.getLogger(__name__)
+        level = logger.getEffectiveLevel()
+        level_name = logging.getLevelName(level)
+        if level_name != "DEBUG":
+            for f in files:
+                os.remove(f)
+                print(f"Deleted: {f}")
+        else:
+            print("Logging level is DEBUG; keeping partial files")
 
 
 if __name__ == "__main__":
