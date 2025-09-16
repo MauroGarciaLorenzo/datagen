@@ -86,50 +86,77 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
         assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
                                                voltage_profile_list=voltage_profile_list, indx_id=indx_id)
-
+        for idx_bus, bus in enumerate(gridCal_grid.get_buses()):
+            bus.Vm0=voltage_profile_list[idx_bus]
+            bus.Va0 = 0
     elif v_set != None:
         assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
 
     assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
+    gridCal_grid.fBase=60
     # %% Run 1st POWER-FLOW
 
     # Receive system status from OPAL
     # d_grid, gridCal_grid, data_old = process_opal.update_OP_from_RT(d_grid, gridCal_grid, data_old)
 
-    # Get Power-Flow results with GridCal
+    # # Get Power-Flow results with GridCal
     # pf_results = GridCal_powerflow.run_powerflow(gridCal_grid,Qconrol_mode=ReactivePowerControlMode.Direct)
 
-    # print('Converged:', pf_results.convergence_reports[0].converged_[0])
+    # # print('Converged:', pf_results.convergence_reports[0].converged_[0])
 
 
-    # # Update PF results and operation point of generator elements
+    # # # Update PF results and operation point of generator elements
     # d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
     # d_pf_original['info']=pd.DataFrame()
     # d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
-
+#%%
     nc = compile_numerical_circuit_at(gridCal_grid)
     nc.generator_data.cost_0[:] = 0
     nc.generator_data.cost_1[:] = 0
     nc.generator_data.cost_2[:] = 0
+    voltage_profile_list_complex = np.array([complex(v,0) for v in voltage_profile_list])
+    nc.bus_data.Vbus = voltage_profile_list_complex
+    
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.Direct)#, max_iter=100)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-4, ips_iterations=50)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-5, ips_iterations=50)
 
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
 
     start = time.perf_counter()
 
-    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+    # pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
+    # # Update PF results and operation point of generator elements
+    # d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
+    # d_pf_original['info']=pd.DataFrame()
+    # d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
+    
+    # print('Converged:', pf_results.converged)
+
+    # if any(np.abs(pf_results.loading)>=1):
+    #     print('line overload')
+    # else:
+    #     print('No overload')
+    # if any(np.abs(pf_results.voltage)>1.1) or any(np.abs(pf_results.voltage)<0.9):
+    #     print(' over/under Voltage')
+    # else:
+    #     print('No over/under voltage')
+    # if any(d_pf_original['pf_gen']['cosphi']<0.95):
+    #     print('Power factor not fullfill')
+    # else:
+    #     print('Power factor ok')
+     
     d_opf_results = ac_optimal_power_flow(nc= nc,
                                           pf_options= pf_options,
                                           opf_options= opf_options,
                                           # debug: bool = False,
                                           #use_autodiff = True,
-                                          pf_init= True,
-                                          Sbus_pf= pf_results.Sbus,
-                                          voltage_pf= pf_results.voltage,
-                                          plot_error= False)
+                                          pf_init= False,
+                                          #Sbus_pf= pf_results.Sbus,
+                                          #voltage_pf= pf_results.voltage,
+                                          plot_error= False,
+                                          min_Pg_dev = True)
 
 
     end = time.perf_counter()
@@ -138,7 +165,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     d_opf = process_optimal_power_flow.update_OP(gridCal_grid, d_opf_results, d_raw_data)
     d_opf['info']=pd.DataFrame()
     d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
-
+#%%
     if not d_opf_results.converged:
         # Exit function
         stability = -1
