@@ -136,4 +136,3 @@ def eval_entropy(stabilities, entropy_parent):
 #     delta_entropy = entropy_cases - entropy_parent
     
 #     return entropy_cases, delta_entropy
->>>>>>> Stashed changes
