@@ -47,7 +47,6 @@ def calculate_entropy(freqs):
 #     correspond to the cell)
 #     :return: Entropy and delta entropy
 #     """
-#     stabilities = [x for x in stabilities if x >= 0]
 #     freqs = []
 #     counter = 0
 #     for stability in stabilities:
@@ -71,16 +70,70 @@ def eval_entropy(stabilities, entropy_parent):
     correspond to the cell)
     :return: Entropy and delta entropy
     """
-    freqs = []
-    counter = 0
-    for stability in stabilities:
-        if stability == 1:
-            counter += 1
-    freqs.append(counter / len(stabilities))
-    freqs.append((len(stabilities) - counter) / len(stabilities))
-    entropy = calculate_entropy(freqs)
+
+    stabilities = [x for x in stabilities if x >= 0]
+    
+    if len(stabilities)==0:
+            entropy = 0
+    else:
+        freqs = []
+        counter = 0
+        for stability in stabilities:
+            if stability == 1:
+                counter += 1
+        freqs.append(counter / len(stabilities))
+        freqs.append((len(stabilities) - counter) / len(stabilities))
+        entropy = calculate_entropy(freqs)
     if entropy_parent is None:
         delta_entropy = 1
     else:
         delta_entropy = entropy - entropy_parent
     return entropy, delta_entropy
+
+# def eval_entropy(cases_df, cases_heritage_df):
+#     """Calculate entropy of the cell using its list of stabilities.
+
+#     :param stabilities: List of stabilities (result of the evaluation of every
+#     case)
+#     :param entropy_parent: Parent entropy based on concrete cases (those which
+#     correspond to the cell)
+#     :return: Entropy and delta entropy
+#     """
+    
+#     cases_stabilities = list(cases_df['Stability'])
+#     cases_stabilities = [x for x in cases_stabilities if x >= 0]
+    
+#     if len(cases_stabilities)==0:
+#         entropy_cases = 0
+#     else:
+#         freqs_cases = []
+#         counter = 0
+#         for stability in cases_stabilities:
+#             if stability == 1:
+#                 counter += 1
+#         freqs_cases.append(counter / len(cases_stabilities))
+#         freqs_cases.append((len(cases_stabilities) - counter) / len(cases_stabilities))
+#         entropy_cases = calculate_entropy(freqs_cases)
+    
+#     if cases_heritage_df is None:
+#         entropy_parent = 0
+#     else:
+#         cases_heritage_stabilities = list(cases_heritage_df['Stability'])
+#         cases_heritage_stabilities = [x for x in cases_heritage_stabilities if x >= 0]
+
+#         if len(cases_heritage_stabilities)==0:
+#             entropy_parent = 0
+#         else:
+#             freqs_parent = []
+#             counter = 0
+#             for stability in cases_heritage_stabilities:
+#                 if stability == 1:
+#                     counter += 1
+#             freqs_parent.append(counter / len(cases_heritage_stabilities))
+#             freqs_parent.append((len(cases_heritage_stabilities) - counter) / len(cases_heritage_stabilities))
+#             entropy_parent = calculate_entropy(freqs_parent)        
+    
+#     delta_entropy = entropy_cases - entropy_parent
+    
+#     return entropy_cases, delta_entropy
+>>>>>>> Stashed changes
