@@ -126,7 +126,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     if ax is not None and len(dimensions) == 2:
         plot_stabilities(ax, cases_df, dims_df, dst_dir)
 
-    parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy)
+    parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy) #(cases_df, cases_heritage_df)#
 
     total_cases = n_samples * dimensions[0].n_cases
     message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
