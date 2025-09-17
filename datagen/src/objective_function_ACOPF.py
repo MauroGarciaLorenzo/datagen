@@ -94,7 +94,6 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
-    gridCal_grid.fBase=60
     # %% Run 1st POWER-FLOW
 
     # Receive system status from OPAL
