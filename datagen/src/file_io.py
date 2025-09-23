@@ -50,7 +50,12 @@ def save_df(dataframe, dst_dir, cell_name, var_name):
     """Append cases_df to dst_dir."""
     os.makedirs(dst_dir, exist_ok=True)
     csv_path = os.path.join(dst_dir, f"{var_name}_{cell_name}.csv")
-    dataframe.to_csv(csv_path, mode="w", index=False)
+    dataframe.to_csv(
+        csv_path,
+        mode="a",  # append if file exists
+        header=not os.path.exists(csv_path),  # write header only if new file
+        index=False
+    )
 
 
 def save_results(execution_logs, dst_dir, execution_time):
