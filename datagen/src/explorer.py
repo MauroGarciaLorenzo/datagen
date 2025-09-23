@@ -66,61 +66,71 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
     cases_df['cell_name'] = cell_name
-    
+
     stabilities = []
-    output_dataframes_list = []
     feasible_cases = 0
     stabilities_chunk = []
     output_dataframes_chunk = []
-
+    initial_index = 0
     index = 0
+
     for _, case in cases_df.iterrows():
-        stability, output_dataframes = eval_stability(case=case, f=func,
-                                                      func_params=func_params,
-                                                      dimensions=dimensions,
-                                                      generator=generator
-                                                      )
+        stability, output_dfs = eval_stability(
+            case=case,
+            f=func,
+            func_params=func_params,
+            dimensions=dimensions,
+            generator=generator
+        )
+
         stabilities_chunk.append(stability)
-        output_dataframes_chunk.append(output_dataframes)
+        output_dataframes_chunk.append(output_dfs)
         index += 1
-        if index % 1000 == 0 or index == len(cases_df):
+
+        if index % 5000 == 0 or index == len(cases_df):
             stabilities_chunk = compss_wait_on(stabilities_chunk)
             output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
-            stabilities.extend(stabilities_chunk)
-            output_dataframes_list.extend(output_dataframes_chunk)
+
+            # update feasible cases
+            for stability in stabilities_chunk:
+                if stability >= 0:
+                    feasible_cases += 1
+
+            # assign chunk results back to cases_df
+            cases_df.loc[initial_index:index - 1,
+            "Stability"] = stabilities_chunk
+
+            # save cases_df incrementally
+            save_df(cases_df.iloc[initial_index:index], dst_dir, cell_name,
+                    "cases_df")
+
+            # build and save total_dataframes incrementally
+            total_dataframes = None
+            for output_dfs in output_dataframes_chunk:
+                if total_dataframes:
+                    total_dataframes = concat_df_dict(total_dataframes,
+                                                      output_dfs)
+                else:
+                    total_dataframes = output_dfs
+
+            if total_dataframes:
+                labels_to_remove = []
+                for label, df in total_dataframes.items():
+                    if df is not None and type(df) is not pd.DataFrame:
+                        labels_to_remove.append(label)
+                for label in labels_to_remove:
+                    total_dataframes.pop(label)
+
+                for df_name, df in total_dataframes.items():
+                    save_df(df, dst_dir, cell_name, df_name)
+
+            # reset chunk buffers
+            initial_index = index
             stabilities_chunk = []
             output_dataframes_chunk = []
 
-    for stability in stabilities:
-        if stability >= 0:
-            feasible_cases += 1
-            
-    cases_df["Stability"] = stabilities
-
-    # Collect each cases dictionary of dataframes into total_dataframes
-    total_dataframes = None
-    for output_dfs in output_dataframes_list:
-        if total_dataframes:
-            total_dataframes = concat_df_dict(total_dataframes,
-                                              output_dfs)
-        else:
-            total_dataframes = output_dfs
-
-    # Remove elements of the dict of dataframes that are not a dataframe
-    labels_to_remove = []
-    if total_dataframes:
-        for label, df in total_dataframes.items():
-            if df is not None and type(df) is not pd.DataFrame:
-                # Keep None values that work as a placeholder
-                labels_to_remove.append(label)
-        for label in labels_to_remove:
-            total_dataframes.pop(label)
-
-    # Store dataframes in disk
-    save_df(cases_df, dst_dir, cell_name, "cases_df")
+    # dims_df is static, save once
     save_df(dims_df, dst_dir, cell_name, "dims_df")
-    for df_name, df in total_dataframes.items():
-        save_df(df, dst_dir, cell_name, df_name)
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:
