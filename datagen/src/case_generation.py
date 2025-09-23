@@ -22,7 +22,7 @@ def gen_cases(samples_df, dimensions, generator):
     total_dims = []
 
     for dim in dimensions:
-        partial_cases, partial_dims = process_dimension(samples_df, dim, generator)
+        partial_cases, partial_dims = process_dimension(samples_df, dim, [dimension for dimension in dimensions if dimension.label=='perc_g_for'][0], generator)
 
         # Add a new column for each p_ column in partial_cases
         for col in partial_cases.columns:
