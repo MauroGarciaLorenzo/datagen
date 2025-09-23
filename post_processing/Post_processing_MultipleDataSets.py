@@ -51,20 +51,21 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 
 path = '../results/'
 
-dir_names=[dir_name for dir_name in os.listdir(path) if '_3518' in dir_name or '_1076' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+dir_names=[dir_name for dir_name in os.listdir(path) if '_4909' in dir_name]# or '_3518' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 results_dataframes_datasets=dict()
 dataset_ID_list=[]
 
+df_op = 'case_df_op' #df_op
 for dir_name in dir_names:
     path_results = os.path.join(path, dir_name)
 
     dataset_ID = dir_name[-5:]
     dataset_ID_list.append(dataset_ID)
     results_dataframes_datasets[dataset_ID], csv_files = open_csv(
-        path_results, ['cases_df.csv', 'case_df_op.csv'])
+        path_results, ['cases_df.csv', df_op+'.csv'])
 
-    perc_stability(results_dataframes_datasets[dataset_ID]['case_df_op'], dir_name)
-    
+    perc_stability(results_dataframes_datasets[dataset_ID][df_op], dir_name)
+      
 
 
 # **Data Set 7664**:
@@ -127,7 +128,7 @@ for key, item in columns_in_df_DS[dataset_ID_list[0]].items():
 # 
 #     - Stability: N. elements: 1 =1: stable, =0 unstable, = -1: unfeasible, =-2 feasible but to a point out of the sampling cell
 #  
-# - case_df_op: after power flow quantities
+# - df_op: after power flow quantities
 # 
 #     - V, theta:  N. elements: 118
 #     - P_SG, Q_SG, Sn_SG: N. elements: 47, P and Q injected by SG in p.u. and installed capacity in MVA (of the SGs effectively present in the grid)
@@ -147,31 +148,31 @@ for key, item in columns_in_df_DS[dataset_ID_list[0]].items():
 
 for dataset_ID in dataset_ID_list:
 
-    results_dataframes_datasets[dataset_ID]['case_df_op'] = results_dataframes_datasets[dataset_ID]['case_df_op'].fillna(0)
+    results_dataframes_datasets[dataset_ID][df_op] = results_dataframes_datasets[dataset_ID][df_op].fillna(0)
     
     # ---- FIX VALUES ----
     
-    Sn_cols = [col for col in results_dataframes_datasets[dataset_ID]['case_df_op']
+    Sn_cols = [col for col in results_dataframes_datasets[dataset_ID][df_op]
                if col.startswith('Sn')]
-    results_dataframes_datasets[dataset_ID]['case_df_op'][Sn_cols] = results_dataframes_datasets[dataset_ID]['case_df_op'][Sn_cols]/100 #p.u. system base 100 MVA
+    results_dataframes_datasets[dataset_ID][df_op][Sn_cols] = results_dataframes_datasets[dataset_ID][df_op][Sn_cols]/100 #p.u. system base 100 MVA
     
-    theta_cols = [col for col in results_dataframes_datasets[dataset_ID]['case_df_op']
+    theta_cols = [col for col in results_dataframes_datasets[dataset_ID][df_op]
                   if col.startswith('theta')]
     # Adjust angles greater than 180°
-    results_dataframes_datasets[dataset_ID]['case_df_op'][theta_cols] = results_dataframes_datasets[dataset_ID]['case_df_op'][theta_cols] - \
-        (results_dataframes_datasets[dataset_ID]['case_df_op'][theta_cols] > 180) * 360
+    results_dataframes_datasets[dataset_ID][df_op][theta_cols] = results_dataframes_datasets[dataset_ID][df_op][theta_cols] - \
+        (results_dataframes_datasets[dataset_ID][df_op][theta_cols] > 180) * 360
     
-    results_dataframes_datasets[dataset_ID]['case_df_op'][theta_cols] = results_dataframes_datasets[dataset_ID]['case_df_op'][theta_cols] * np.pi/180
+    results_dataframes_datasets[dataset_ID][df_op][theta_cols] = results_dataframes_datasets[dataset_ID][df_op][theta_cols] * np.pi/180
     
     # add total demand variables
     PL_cols = [
-        col for col in results_dataframes_datasets[dataset_ID]['case_df_op'].columns if col.startswith('PL')]
-    results_dataframes_datasets[dataset_ID]['case_df_op']['PD'] = results_dataframes_datasets[dataset_ID]['case_df_op'][PL_cols].sum(
+        col for col in results_dataframes_datasets[dataset_ID][df_op].columns if col.startswith('PL')]
+    results_dataframes_datasets[dataset_ID][df_op]['PD'] = results_dataframes_datasets[dataset_ID][df_op][PL_cols].sum(
         axis=1)
     
     QL_cols = [
-        col for col in results_dataframes_datasets[dataset_ID]['case_df_op'].columns if col.startswith('QL')]
-    results_dataframes_datasets[dataset_ID]['case_df_op']['QD'] = results_dataframes_datasets[dataset_ID]['case_df_op'][QL_cols].sum(
+        col for col in results_dataframes_datasets[dataset_ID][df_op].columns if col.startswith('QL')]
+    results_dataframes_datasets[dataset_ID][df_op]['QD'] = results_dataframes_datasets[dataset_ID][df_op][QL_cols].sum(
         axis=1)
 
 
@@ -182,7 +183,7 @@ for dataset_ID in dataset_ID_list:
 
 for dataset_ID in dataset_ID_list:
 
-    perc_stability(results_dataframes_datasets[dataset_ID]['case_df_op'], dir_name)
+    perc_stability(results_dataframes_datasets[dataset_ID][df_op], dir_name)
 
 
 # In[12]:
@@ -196,14 +197,14 @@ case_id_Unfeasible2_DS = dict()
 
 for dataset_ID in dataset_ID_list:
 
-    # from data frame with power flow results: case_df_op
-    results_dataframes_datasets[dataset_ID]['case_df_op_feasible'] = results_dataframes_datasets[dataset_ID]['case_df_op'].query(
+    # from data frame with power flow results: df_op
+    results_dataframes_datasets[dataset_ID]['df_op_feasible'] = results_dataframes_datasets[dataset_ID][df_op].query(
         'Stability >= 0')
     
     # from data frame with sampled quantities: cases_df
     results_dataframes_datasets[dataset_ID]['cases_df_feasible'] = results_dataframes_datasets[dataset_ID]['cases_df'].query(
         'Stability >= 0')
-    case_id_feasible_DS[dataset_ID] = list(results_dataframes_datasets[dataset_ID]['case_df_op_feasible']['case_id'])
+    case_id_feasible_DS[dataset_ID] = list(results_dataframes_datasets[dataset_ID]['df_op_feasible']['case_id'])
     
     # ---- SELECT ONLY UNFEASIBLE CASES (from data frame with sampled quantities: cases_df)----
     
@@ -219,10 +220,10 @@ for dataset_ID in dataset_ID_list:
 # In[13]:
 
 
-def create_dimensions_caseid_df(df_dict, df_name, vars_dim1, vars_dim2, name_dim1, name_dim2):
-    dimensions_caseid = pd.DataFrame(columns = [name_dim1,name_dim2,'case_id','Stability'])
-    dimensions_caseid[name_dim1] =  df_dict[df_name][vars_dim1].sum(axis=1)
-    dimensions_caseid[name_dim2] =  df_dict[df_name][vars_dim2].sum(axis=1)
+def create_dimensions_caseid_df(df_dict, df_name, list_of_var, list_of_var_names, Sbase=1):
+    dimensions_caseid = pd.DataFrame(columns = list_of_var_names + ['case_id','Stability'])
+    for name_dim in  list_of_var_names:
+        dimensions_caseid[name_dim] =  df_dict[df_name][list_of_var[name_dim]].sum(axis=1)*Sbase
     dimensions_caseid['case_id'] =  df_dict[df_name]['case_id']
     dimensions_caseid['Stability'] = list(df_dict[df_name]['Stability'])
 
@@ -240,22 +241,35 @@ dimensions_caseid_unfeasible2_DS=dict()
 
 for dataset_ID in dataset_ID_list:
     
-    p_sg_var=[var for var in results_dataframes_datasets[dataset_ID]['case_df_op_feasible'].columns if var.startswith('P_SG')]
-    p_cig_var=[var for var in results_dataframes_datasets[dataset_ID]['case_df_op_feasible'].columns if var.startswith('P_GFOR') or var.startswith('P_GFOL')]
+    p_sg_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_SG')]
+    p_cig_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOR') or var.startswith('P_GFOL')]
+    p_gfor_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOR')]
+    p_gfol_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOL')]
+
+    list_of_var = dict()
+    list_of_var['p_sg'] =  p_sg_var
+    list_of_var['p_cig'] =  p_cig_var
+    list_of_var['p_gfor'] =  p_gfor_var
+    list_of_var['p_gfol'] =  p_gfol_var
     
-    dimensions_caseid_feasible_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'case_df_op_feasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
-    dimensions_caseid_feasible_DS[dataset_ID]['p_sg'] = dimensions_caseid_feasible_DS[dataset_ID]['p_sg']*100
-    dimensions_caseid_feasible_DS[dataset_ID]['p_cig'] = dimensions_caseid_feasible_DS[dataset_ID]['p_cig']*100
+    dimensions_caseid_feasible_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'df_op_feasible', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'], Sbase=100)
     
     p_sg_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_sg')]
     p_cig_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_cig')]
+    p_gfor_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('P_GFOR')]
+    p_gfol_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('P_GFOL')]
     
-    dimensions_caseid_feasible_sampled_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_feasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
-    dimensions_caseid_unfeasible_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
-    dimensions_caseid_unfeasible1_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_1', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
-    dimensions_caseid_unfeasible2_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_2', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
+    list_of_var = dict()
+    list_of_var['p_sg'] =  p_sg_var
+    list_of_var['p_cig'] =  p_cig_var
+    list_of_var['p_gfor'] =  p_gfor_var
+    list_of_var['p_gfol'] =  p_gfol_var
+    
+    dimensions_caseid_feasible_sampled_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
+    dimensions_caseid_feasible_sampled_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_1', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
+    dimensions_caseid_feasible_sampled_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_2', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
 
-
+    
 # In[15]:
 
 
@@ -288,7 +302,31 @@ for dataset_ID in dataset_ID_list:
     ax.set_title('Data Set'+dataset_ID)
     fig.tight_layout()
 
+#%%
 
+from mpl_toolkits.mplot3d import Axes3D
+
+for dataset_ID in dataset_ID_list:
+    # Create 3D scatter plot
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_sg'], 
+               dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_gfor'],
+               dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_gfol'], color='r',label='Unstable OP', marker='o')
+    
+    ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_sg'], 
+               dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_gfor'],
+               dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_gfol'], color='g',label='Stable OP', marker='o')
+    
+    # Labels
+    ax.set_xlabel('$P_{SG}$ [MW]', labelpad =10)
+    ax.set_ylabel('$P_{GFOR}$ [MW]', labelpad =10)
+    ax.set_zlabel('$P_{GFOL}$ [MW]', labelpad =10)
+    
+    ax.view_init(elev=10,azim=50)
+    ax.legend(loc="center left", bbox_to_anchor=(1.05, 0.5))
+    fig.subplots_adjust(left=0.0, right=0.8, top=1, bottom=0.1)
+    
 # Mesh obtained from parsing the logs file of the data generator process: the mesh shows the cell splitting process. It is obtained from the parsing_dimensions.py code.
 # 
 # Plot the mesh on top of the OPs scatter plot.
