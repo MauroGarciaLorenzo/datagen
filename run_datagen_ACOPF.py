@@ -90,7 +90,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         raw = "ieee9_hypersim"
         excel_headers = "IEEE_9_headers"
         excel_data = "IEEE_9"
-        excel_op = "OperationData_IEEE_9"
+        excel_op = "OperationData_IEEE_9_hypersim_2VSC"
     elif grid_name == 'IEEE118':
         # IEEE 118
         raw = "IEEE118busNREL"
@@ -153,7 +153,12 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
             trafo.rate = lines_ratings.loc[
                 lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                     0], 'Max Flow (MW)']
-
+    elif grid_name == 'IEEE9':
+        gridCal_grid.fBase = 60
+        for trafo in gridCal_grid.transformers2w:
+            #bf = int(trafo.bus_from.code)
+            #bt = int(trafo.bus_to.code)
+            trafo.rate = 500
     # %% READ EXCEL FILE
     # Read data of grid elements from Excel file
     d_grid, d_grid_0 = read_data.read_sys_data(excel_sys)
@@ -188,8 +193,8 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
                            d_op['Generators']['Pmax_CIG'].sum()),
                   independent_dimension=True,
                   cosphi=generators_power_factor),
-        Dimension(label="perc_g_for", variable_borders=[(0, 1)],
-                  n_cases=n_cases, divs=1, borders=(0, 1),
+        Dimension(label="perc_g_for", variable_borders=[(0,1)],
+                  n_cases=n_cases, divs=1, borders=(0, 1), values=[1,-1,0],
                   independent_dimension=True, cosphi=None),
         Dimension(label="p_load", values=p_loads,
                   n_cases=n_cases, divs=1,
@@ -199,24 +204,25 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 
     # Set up independent dimensions (controllers)
     for d in list(d_op['Generators']['BusNum']):
+    #for d in list(d_op['Generators'].query('Snom_CIG!=0')['BusNum']):
         dimensions.append(
             Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.05, 0.05),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.07, 0.07),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.05, 0.05),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_u_gfol_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.07, 0.07),
                       independent_dimension=True,
                       cosphi=None))
 
@@ -229,11 +235,12 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 
     stability_array = []
     output_dataframes_array = []
+    #cases_df, dims_df, execution_logs, output_dataframes = start(
     execution_logs = start(
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        dst_dir=path_results, warmup=warmup
+        dst_dir=path_results, warmup=warmup, feasible_rate=0.0
     )
 
     stability_array = compss_wait_on(stability_array)
@@ -244,11 +251,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
-        setup_path = "./setup/default_setup.yaml"
-        main(setup_path=setup_path)
-    elif len(args) == 2:
-        setup_path = args[1]
-        main(setup_path=setup_path)
+        setup_path = "./setup/setup_seed3_nc3_ns20_d3.yaml"
     else:
-        main(args[1], args[2], args[3])
-
+        setup_path = args[1]
+    main(setup_path=setup_path)
