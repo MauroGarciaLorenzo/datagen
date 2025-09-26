@@ -1,14 +1,13 @@
 import os
 import random
+import re
+import sys
 from datetime import datetime
-from .utils import clean_dir
 import pandas as pd
 import logging
 import csv
 import glob
 logger = logging.getLogger(__name__)
-
-from datagen.src.data_ops import sort_df_rows_by_another, sort_df_last_columns
 
 
 def write_dataframes_to_excel(df_dict, path, filename):
@@ -86,6 +85,7 @@ def save_results(execution_logs, dst_dir, execution_time):
 
 def init_dst_dir(calling_module, seed, n_cases, n_samples, max_depth,
                  working_dir, ax, dimensions):
+    from .utils import clean_dir
     # Get slurm job id
     slurm_job_id = os.getenv("SLURM_JOB_ID", default=None)
     slurm_str = ""
@@ -131,3 +131,82 @@ def log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_rati
         if not file_exists:
             writer.writerow(["Cell Name", "Depth", "Entropy", "Delta Entropy", "Feasible Ratio", "Status"])
         writer.writerow([cell_name, depth, parent_entropy, delta_entropy, feasible_ratio, status])
+
+
+def join_and_cleanup_csvs(dst_dir):
+    """
+    Joins all {var_name}_{cell_name}.csv files in dst_dir into one {var_name}.csv.
+    Detects var_name correctly even if it contains underscores.
+    Deletes the partial CSV files after joining.
+    Adds a continuous line index to the final CSV.
+    """
+    all_csvs = glob.glob(os.path.join(dst_dir, "*.csv"))
+
+    var_files = {}
+    for f in all_csvs:
+        fname = os.path.basename(f)
+        if not fname.endswith(".csv"):
+            continue
+
+        # Match pattern: {var_name}_{cell_name}.csv, where cell_name = numbers + dots
+        m = re.match(r"(.+)_([0-9.]+)\.csv$", fname)
+        if m:
+            var_name = m.group(1)
+            var_files.setdefault(var_name, []).append(f)
+
+    # Process each var_name group
+    for var_name, files in var_files.items():
+        print(f"Joining {len(files)} CSVs for {var_name}...")
+
+        out_path = os.path.join(dst_dir, f"{var_name}.csv")
+        with open(out_path, "w", encoding="utf-8") as out:
+            first_file = True
+            for f in sorted(files):
+                with open(f, "r", encoding="utf-8") as infile:
+                    for i, line in enumerate(infile):
+                        # Write header only for the first file
+                        if i == 0 and not first_file:
+                            continue
+                        out.write(line)
+                first_file = False
+
+        print(f"Saved: {out_path}")
+
+        # Delete partial CSVs
+        logger = logging.getLogger(__name__)
+        level = logger.getEffectiveLevel()
+        level_name = logging.getLevelName(level)
+        if level_name != "DEBUG":
+            for f in files:
+                os.remove(f)
+                print(f"Deleted: {f}")
+        else:
+            print("Logging level is DEBUG; keeping partial files")
+
+
+if __name__ == "__main__":
+    args = sys.argv
+
+    if len(args) >= 2 and args[1] == "--merge-results":
+        if len(args) == 3:
+            # User provided results_dir
+            dst_dir = args[2]
+        else:
+            # No results_dir given, use last directory in ../../results
+            results_root = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "..", "..", "results")
+            )
+            subdirs = [
+                os.path.join(results_root, d)
+                for d in os.listdir(results_root)
+                if os.path.isdir(os.path.join(results_root, d))
+            ]
+            if not subdirs:
+                print("No results directories found.")
+                sys.exit(1)
+            dst_dir = max(subdirs, key=os.path.getmtime)  # most recent dir
+        print("Using destination_dir: ", dst_dir)
+        join_and_cleanup_csvs(dst_dir=dst_dir)
+
+    else:
+        print("Usage: python file_io.py --merge-results [results_dir]")

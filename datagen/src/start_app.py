@@ -22,7 +22,6 @@ import logging
 import sys
 import traceback
 
-from scripts.postprocess.join_and_cleanup_csvs import join_and_cleanup_csvs
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ import time
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
-from .file_io import save_results, init_dst_dir
+from .file_io import save_results, init_dst_dir, join_and_cleanup_csvs
 
 try:
     from pycompss.api.task import task
