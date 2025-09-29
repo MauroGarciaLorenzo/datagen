@@ -58,6 +58,8 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
 
 
+from utils_sscopf import *
+
 def main(working_dir='', path_data='', setup_path=''):
     # %% Parse arguments
     working_dir, path_data, setup_path = parse_args(
@@ -93,17 +95,17 @@ def main(working_dir='', path_data='', setup_path=''):
                f"_{timestamp}_{rnd_num}"
     path_results = os.path.join(
         working_dir, "results", dir_name)
-    # if not os.path.isdir(path_results):
-    #     os.makedirs(path_results)
+    if not os.path.isdir(path_results):
+        os.makedirs(path_results)
 
 
     # %% SET FILE NAMES AND PATHS
     if grid_name == 'IEEE9':
         # IEEE 9
         raw = "ieee9_hypersim"
-        excel_headers = "Empty_template_V6"#"IEEE_9_headers"
+        excel_headers = "IEEE_9_headers"#Empty_template_V6
         excel_data = "IEEE_9"
-        excel_op = "OperationData_IEEE_9_hypersim"
+        excel_op = "OperationData_IEEE_9_hypersim_2VSC"
     elif grid_name == 'IEEE118':
         # IEEE 118
         raw = "IEEE118busNREL"
@@ -168,15 +170,17 @@ def main(working_dir='', path_data='', setup_path=''):
                     0], 'Max Flow (MW)']
     if grid_name == 'IEEE9':
         gridCal_grid.fBase=60
-        for idx_gen,gen in enumerate(gridCal_grid.get_generators()):
-            gen.Pf=0.95 
+        for trafo in gridCal_grid.transformers2w:
+            trafo.rate = 500
+        # for idx_gen,gen in enumerate(gridCal_grid.get_generators()):
+        #     gen.Pf=0.95 
 
-            gen.Pmax=d_op['Generators'].loc[idx_gen,'Pmax']
-            gen.Pmin=d_op['Generators'].loc[idx_gen,'Pmin']
-            gen.Qmax=d_op['Generators'].loc[idx_gen,'Qmax']
-            gen.Qmin=d_op['Generators'].loc[idx_gen,'Qmin']
+        #     gen.Pmax=d_op['Generators'].loc[idx_gen,'Pmax']
+        #     gen.Pmin=d_op['Generators'].loc[idx_gen,'Pmin']
+        #     gen.Qmax=d_op['Generators'].loc[idx_gen,'Qmax']
+        #     gen.Qmin=d_op['Generators'].loc[idx_gen,'Qmin']
             
-            gridCal_grid.transformers2w[idx_gen].rate=gen.Snom
+        #     gridCal_grid.transformers2w[idx_gen].rate=gen.Snom
             
     # %% READ EXCEL FILE
     # Read data of grid elements from Excel file
@@ -214,7 +218,7 @@ def main(working_dir='', path_data='', setup_path=''):
                   independent_dimension=True,
                   cosphi=generators_power_factor),
         Dimension(label="perc_g_for", variable_borders=[(0, 1)],
-                  n_cases=n_cases, divs=1, borders=(0, 1),
+                  n_cases=n_cases, divs=1, borders=(0, 1), values=[1,-1,0],
                   independent_dimension=True, cosphi=None),
         Dimension(label="p_load", values=p_loads,
                   n_cases=n_cases, divs=1,
@@ -226,22 +230,22 @@ def main(working_dir='', path_data='', setup_path=''):
     for d in list(d_op['Generators']['BusNum']):
         dimensions.append(
             Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.05, 0.05),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.07, 0.07),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.05, 0.05),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_u_gfol_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.07, 0.07),
                       independent_dimension=True,
                       cosphi=None))
 
@@ -257,7 +261,9 @@ def main(working_dir='', path_data='', setup_path=''):
                    "gridCal_grid": gridCal_grid, "d_grid": d_grid,
                    "d_sg": d_sg,
                    "d_vsc": d_vsc, "voltage_profile": voltage_profile,
-                   "v_min_v_max_delta_v": v_min_v_max_delta_v}
+                   "v_min_v_max_delta_v": v_min_v_max_delta_v,
+                   "fAndG_penalty_term": fAndG}
+#                   "opf_obj_fun":opf_obj_fun}
 
     stability_array = []
     output_dataframes_array = []
@@ -298,7 +304,7 @@ def main(working_dir='', path_data='', setup_path=''):
     cases_df.to_csv(os.path.join(path_results, "cases_df.csv"))
     dims_df.to_csv(os.path.join(path_results, "dims_df.csv"))
 
-    for key, value in output_dataframes.items():
+    for key, value in total_dataframes.items(): #output_dataframes.items():
         if isinstance(value, pd.DataFrame):
             # All dataframes should have the same sorting
             sorted_df = sort_df_rows_by_another(cases_df, value, "case_id")
