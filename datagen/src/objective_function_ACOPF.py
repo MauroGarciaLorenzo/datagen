@@ -44,11 +44,18 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     voltage_profile = func_params.get("voltage_profile", None)
     v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
     v_set = func_params.get("v_set", None)
+    fAndG = func_params.get("fAndG", None)
+    opf_obj_fun = func_params.get("opf_obj_fun", None)
 
     # Remove the id and make sure case is fully numeric
     case_id = case["case_id"]
-    cell_name = case["cell_name"]
-    case = case.drop(["case_id","cell_name"])
+    try:
+        cell_name = case["cell_name"]
+        case = case.drop(["case_id","cell_name"])
+    except:
+        case = case.drop(["case_id"])
+        cell_name = None
+ 
     case = case.astype(float)
 
     # Initialize essential output dataframes to None
@@ -58,41 +65,41 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     for df_name in OUTPUT_DF_NAMES:
         output_dataframes[df_name] = pd.DataFrame({NAN_COLUMN_NAME: [np.nan]})
 
-    if voltage_profile is not None and v_min_v_max_delta_v is None:
-        raise ValueError('Voltage profile option selected but v_min, v_max, '
-                         'and delta_v are missing')
-    if voltage_profile is not None and v_set is not None:
-        raise ValueError('Both Voltage profile and v_set option is selected. '
-                         'Choose only one of them')
-    if voltage_profile is None and v_set is None:
-        raise ValueError('Neither Voltage profile or v_set option is selected.'
-                         ' Choose one of them')
+    # if voltage_profile is not None and v_min_v_max_delta_v is None:
+    #     raise ValueError('Voltage profile option selected but v_min, v_max, '
+    #                      'and delta_v are missing')
+    # if voltage_profile is not None and v_set is not None:
+    #     raise ValueError('Both Voltage profile and v_set option is selected. '
+    #                      'Choose only one of them')
+    # if voltage_profile is None and v_set is None:
+    #     raise ValueError('Neither Voltage profile or v_set option is selected.'
+    #                      ' Choose one of them')
 
-    d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
-                                                            d_op)
-    d_raw_data, slack_bus_num = choose_slack_bus(d_raw_data)
-    i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
+    # d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
+    #                                                         d_op)
+    # d_raw_data, slack_bus_num = choose_slack_bus(d_raw_data)
+    # i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
 
-    # slack_bus_num=80
-    assign_SlackBus_to_grid.assign_slack_bus(gridCal_grid, slack_bus_num)
+    # # slack_bus_num=80
+    # assign_SlackBus_to_grid.assign_slack_bus(gridCal_grid, slack_bus_num)
 
-    if voltage_profile != None:
-        vmin = v_min_v_max_delta_v[0]
-        vmax = v_min_v_max_delta_v[1]
-        delta_v = v_min_v_max_delta_v[2]
+    # if voltage_profile != None:
+    #     vmin = v_min_v_max_delta_v[0]
+    #     vmax = v_min_v_max_delta_v[1]
+    #     delta_v = v_min_v_max_delta_v[2]
 
-        voltage_profile_list, indx_id = gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
-                                                                     gridCal_grid, generator=generator)
+    #     voltage_profile_list, indx_id = gen_voltage_profile(vmin, vmax, delta_v, d_raw_data, slack_bus_num,
+    #                                                                  gridCal_grid, generator=generator)
 
-        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
-                                               voltage_profile_list=voltage_profile_list, indx_id=indx_id)
-        for idx_bus, bus in enumerate(gridCal_grid.get_buses()):
-            bus.Vm0=voltage_profile_list[idx_bus]
-            bus.Va0 = 0
-    elif v_set != None:
-        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
+    #     assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
+    #                                            voltage_profile_list=voltage_profile_list, indx_id=indx_id)
+    #     for idx_bus, bus in enumerate(gridCal_grid.get_buses()):
+    #         bus.Vm0=voltage_profile_list[idx_bus]
+    #         bus.Va0 = 0
+    # elif v_set != None:
+    #     assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
 
-    assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
+    # assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
     # %% Run 1st POWER-FLOW
 
@@ -111,14 +118,23 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
 #%%
     nc = compile_numerical_circuit_at(gridCal_grid)
+
+    for idx, gen in enumerate(gridCal_grid.get_generators()):
+        gen.Pmax = nc.generator_data.installed_p[idx]*0.95
+        gen.Pmin = nc.generator_data.installed_p[idx]*0.2
+    
+    nc.generator_data.pmin = nc.generator_data.installed_p*0.2
+    nc.generator_data.pmax = nc.generator_data.installed_p*0.95
+    i_slack = 0
+    
     nc.generator_data.cost_0[:] = 0
-    nc.generator_data.cost_1[:] = 0
-    nc.generator_data.cost_2[:] = 0
-    voltage_profile_list_complex = np.array([complex(v,0) for v in voltage_profile_list])
-    nc.bus_data.Vbus = voltage_profile_list_complex
+    nc.generator_data.cost_1 [:] = 0 # np.array([0, 1, 0])
+    nc.generator_data.cost_2 = np.array([1, 10, 1])/nc.generator_data.installed_p**2
+   #voltage_profile_list_complex = np.array([complex(v,0) for v in voltage_profile_list])
+    #nc.bus_data.Vbus = voltage_profile_list_complex
     
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.NoControl)#, max_iter=100)
-    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-5, ips_iterations=50)
+    opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-6, ips_iterations=50)
 
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
 
@@ -151,11 +167,11 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                                           opf_options= opf_options,
                                           # debug: bool = False,
                                           #use_autodiff = True,
-                                          pf_init= True,
+                                          pf_init= False,
                                           Sbus_pf= pf_results.Sbus,
                                           voltage_pf= pf_results.voltage,
                                           plot_error= False,
-                                          min_Pg_dev = True)
+                                          min_Pg_dev = False)
 
 
     end = time.perf_counter()
