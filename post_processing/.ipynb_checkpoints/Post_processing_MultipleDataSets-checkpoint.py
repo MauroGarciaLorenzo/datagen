@@ -308,7 +308,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 for dataset_ID in dataset_ID_list:
     # Create 3D scatter plot
-    fig = plt.figure(figsize=(5,4))
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_sg'], 
                dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_gfor'],
@@ -323,12 +323,10 @@ for dataset_ID in dataset_ID_list:
     ax.set_ylabel('$P_{GFOR}$ [MW]', labelpad =10)
     ax.set_zlabel('$P_{GFOL}$ [MW]', labelpad =10)
     
-    ax.view_init(elev=10,azim=60)
-    ax.legend(loc="upper center", ncols=2, bbox_to_anchor=(.5, 1.0))
-    fig.subplots_adjust(left=0.0, right=1, top=1, bottom=0.05)
+    ax.view_init(elev=10,azim=50)
+    ax.legend(loc="center left", bbox_to_anchor=(1.05, 0.5))
+    fig.subplots_adjust(left=0.0, right=0.8, top=1, bottom=0.1)
     
-    fig.savefig('Training_3D_dataset'+dataset_id+'.pdf', format='pdf')
-
 # Mesh obtained from parsing the logs file of the data generator process: the mesh shows the cell splitting process. It is obtained from the parsing_dimensions.py code.
 # 
 # Plot the mesh on top of the OPs scatter plot.
