@@ -10,7 +10,7 @@ from datagen.src.grid import gen_grid
 from datagen.src.objective_function import dummy
 from datagen.tests.test_sampling import create_generator
 from datagen.src.explorer import explore_grid
-from scripts.postprocess.join_and_cleanup_csvs import join_and_cleanup_csvs
+from datagen.src.file_io import join_and_cleanup_csvs
 
 
 class TestExplorer(TestCase):
