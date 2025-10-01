@@ -4,7 +4,6 @@ import yaml
 import sys
 from datetime import datetime
 
-from datagen import print_dict_as_yaml
 from datagen.src.parsing import parse_setup_file, parse_args
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
@@ -43,12 +42,11 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     max_depth = setup["max_depth"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]
-
-    # Print case configuration
-    print(f"\n{''.join(['='] * 30)}\n"
-          f"Running application with the following parameters:"
-          f"\n{''.join(['='] * 30)}")
-    print_dict_as_yaml(setup)
+    feasible_rate = setup["feasible_rate"]
+    entropy_threshold = setup["entropy_threshold"]
+    delta_entropy_threshold = setup["delta_entropy_threshold"]
+    chunk_size = setup["chunk_size"]
+    computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -233,7 +231,10 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        dst_dir=path_results, warmup=warmup
+        dst_dir=path_results, warmup=warmup, feasible_rate=feasible_rate,
+        entropy_threshold=entropy_threshold, chunk_size=chunk_size,
+        delta_entropy_threshold=delta_entropy_threshold,
+        computing_units=computing_units
     )
 
     stability_array = compss_wait_on(stability_array)

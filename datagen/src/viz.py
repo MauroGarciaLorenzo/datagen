@@ -137,14 +137,3 @@ def plot_sample(ax, x, y, z):
     ax.scatter(x, y, z)
 
 
-def print_dict_as_yaml(d, indent=0):
-    """ Recursively print a dictionary in a YAML-like format. """
-    for key, value in d.items():
-        # Create indentation based on the current nesting level
-        prefix = '  ' * indent
-        if isinstance(value, dict):
-            logger.info(f"{prefix}{key}:")
-            print_dict_as_yaml(value, indent + 1)
-        else:
-            # For simple values, print key-value pair
-            logger.info(f"{prefix}{key}: {value}")

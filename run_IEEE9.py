@@ -167,9 +167,14 @@ tau_q_g_for = [(0., 2)]
 
 n_samples = 3
 n_cases = 3
-
 rel_tolerance = 0.01
 max_depth = 3
+feasible_rate = 0.5
+entropy_threshold = 0.2
+delta_entropy_threshold = 0
+chunk_size = 5000
+computing_units = 10
+
 dimensions = dict()
 dimensions = [
       Dimension(label="p_sg", variable_borders=p_sg,
@@ -232,8 +237,10 @@ cases_df, dims_df, execution_logs, output_dataframes = \
     start(dimensions=dimensions, n_samples=n_samples,
           rel_tolerance=rel_tolerance, func=small_signal_stability,
           max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax, 
-          divs_per_cell=2, seed=5, d_raw_data=d_raw_data, d_op=d_op, 
-          GridCal_grid=GridCal_grid, d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc
+          divs_per_cell=2, seed=5, feasible_rate=feasible_rate,
+          entropy_threshold=entropy_threshold, chunk_size=chunk_size,
+          delta_entropy_threshold=delta_entropy_threshold,
+          computing_units=computing_units
           )
 
 # if __name__ == "__main__":

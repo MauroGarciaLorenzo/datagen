@@ -60,6 +60,11 @@ def main(setup_path="setup/default_setup.yaml"):
     rel_tolerance = setup["rel_tolerance"]
     max_depth = setup["max_depth"]
     seed = setup["seed"]
+    feasible_rate = setup["feasible_rate"]
+    entropy_threshold = setup["entropy_threshold"]
+    delta_entropy_threshold = setup["delta_entropy_threshold"]
+    chunk_size = setup["chunk_size"]
+    computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     use_sensitivity = True
     logging_level = logging.INFO
@@ -80,7 +85,12 @@ def main(setup_path="setup/default_setup.yaml"):
         start(dimensions, n_samples, rel_tolerance, func=dummy, 
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None,
               divs_per_cell=2, plot_boxplot=False, seed=seed,
-              dst_dir=path_results, logging_level=logging_level)
+              dst_dir=path_results, logging_level=logging_level,
+              feasible_rate=feasible_rate, chunk_size=chunk_size,
+              entropy_threshold=entropy_threshold,
+              delta_entropy_threshold=delta_entropy_threshold,
+              computing_units=computing_units
+              )
     return path_results
 
 if __name__ == '__main__':

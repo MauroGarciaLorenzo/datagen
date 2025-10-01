@@ -2,8 +2,6 @@ import os
 import sys
 import logging
 
-from datagen import print_dict_as_yaml
-
 logger = logging.getLogger(__name__)
 
 import matplotlib
@@ -28,7 +26,6 @@ warnings.filterwarnings("ignore")
 def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     use_sensitivity = True
     divs_per_cell = 4
-    feasible_rate = 0.5
     logging_level = logging.DEBUG
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
     setup = parse_setup_file(setup_path)
@@ -41,12 +38,11 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     rel_tolerance = setup["rel_tolerance"]
     max_depth = setup["max_depth"]
     seed = setup["seed"]
-
-    # Print case configuration
-    print(f"\n{''.join(['='] * 30)}\n"
-          f"Running application with the following parameters:"
-          f"\n{''.join(['='] * 30)}")
-    print_dict_as_yaml(setup)
+    feasible_rate = setup["feasible_rate"]
+    entropy_threshold = setup["entropy_threshold"]
+    delta_entropy_threshold = setup["delta_entropy_threshold"]
+    chunk_size = setup["chunk_size"]
+    computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     dimensions = [
         Dimension(label="tau_Dim_0", n_cases=n_cases, divs=1, borders=(-1, 1)),
@@ -66,13 +62,18 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
 
     stability_array = []
     output_dataframes_array = []
+
+
     cases_df, dims_df, execution_logs, output_dataframes = \
         start(dimensions, n_samples, rel_tolerance,
               func=test_sensitivity_obj_func,
               max_depth=max_depth, dst_dir=path_results,
               use_sensitivity=use_sensitivity,
               divs_per_cell=divs_per_cell, plot_boxplot=False, seed=seed,
-              feasible_rate=feasible_rate, logging_level=logging_level)
+              logging_level=logging_level, feasible_rate=feasible_rate,
+              entropy_threshold=entropy_threshold, chunk_size=chunk_size,
+              delta_entropy_threshold=delta_entropy_threshold,
+              computing_units=computing_units)
 
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)

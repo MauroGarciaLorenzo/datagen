@@ -3,7 +3,6 @@ import os
 import yaml
 from datetime import datetime
 
-from datagen import print_dict_as_yaml
 from datagen.src.parsing import parse_setup_file, parse_args
 from datagen.src.dimensions import Dimension
 from datagen.src.start_app import start
@@ -40,12 +39,6 @@ def main(working_dir='', path_data='', setup_path=''):
     max_depth = setup["max_depth"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]
-
-    # Print case configuration
-    print(f"\n{''.join(['='] * 30)}\n"
-          f"Running application with the following parameters:"
-          f"\n{''.join(['='] * 30)}")
-    print_dict_as_yaml(setup)
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)

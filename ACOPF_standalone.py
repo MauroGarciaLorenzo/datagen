@@ -32,8 +32,6 @@ import random
 from datetime import datetime
 import warnings
 
-from datagen import print_dict_as_yaml
-
 warnings.filterwarnings('ignore')
 
 from datagen.src.data_ops import concat_df_dict, sort_df_rows_by_another, \
@@ -73,13 +71,9 @@ def main(working_dir='', path_data='', setup_path=''):
     n_cases = setup["n_cases"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]
+    computing_units = setup["environment"]["COMPUTING_UNITS"]
+    os.environ["COMPUTING_UNITS"] = str(computing_units)
 
-    # Print case configuration
-    print(f"\n{''.join(['='] * 30)}\n"
-                f"Running application with the following parameters:"
-                f"\n{''.join(['='] * 30)}")
-    print_dict_as_yaml(setup)
-        
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -311,7 +305,7 @@ def main(working_dir='', path_data='', setup_path=''):
                 if isinstance(v, pd.DataFrame):
                     value.to_csv(os.path.join(path_results, f"case_{k}.csv"))
                 else:
-                    logger.warning(f"Invalid nested format for output '{k}'")
+                    print(f"Invalid nested format for output '{k}'")
 
 
             
