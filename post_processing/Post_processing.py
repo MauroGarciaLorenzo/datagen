@@ -49,10 +49,10 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 # In[3]:
 
 
-path = '../results/MareNostrum'
+path = '../results'#'/MareNostrum'
 
-dir_name = 'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664-20250630T085420Z-1-005'
-
+#dir_name = 'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664-20250630T085420Z-1-005'
+dir_name = 'ACOPF_standalone_NREL_LF095_seed16_nc2_ns100_20250730_100655_7171'
 path_results = os.path.join(path, dir_name)
 
 results_dataframes, csv_files = open_csv(path_results, ['cases_df.csv', 'case_df_op.csv'])
@@ -165,20 +165,25 @@ perc_stability(results_dataframes['case_df_op'], dir_name)
 results_dataframes['case_df_op_feasible'] = results_dataframes['case_df_op'].query(
     'Stability >= 0')
 
+case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
+
 # from data frame with sampled quantities: cases_df
 results_dataframes['cases_df_feasible'] = results_dataframes['cases_df'].query(
-    'Stability >= 0')
-case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
+    'case_id == @case_id_feasible')
 
 # %% ---- SELECT ONLY UNFEASIBLE CASES (from data frame with sampled quantities: cases_df)----
 
-results_dataframes['cases_df_unfeasible'] = results_dataframes['cases_df'].query('Stability < 0')
-results_dataframes['cases_df_unfeasible_1'] = results_dataframes['cases_df'].query('Stability == -1')
-results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].query('Stability == -2')
+results_dataframes['case_df_op_unfeasible'] = results_dataframes['case_df_op'].query('Stability < 0')
+results_dataframes['case_df_op_unfeasible_1'] = results_dataframes['case_df_op'].query('Stability == -1')
+results_dataframes['case_df_op_unfeasible_2'] = results_dataframes['case_df_op'].query('Stability == -2')
 
-case_id_Unfeasible = list(results_dataframes['cases_df_unfeasible']['case_id'])
-case_id_Unfeasible1 = list(results_dataframes['cases_df_unfeasible_1']['case_id'])
-case_id_Unfeasible2 = list(results_dataframes['cases_df_unfeasible_2']['case_id'])
+case_id_Unfeasible = list(results_dataframes['case_df_op_unfeasible']['case_id'])
+case_id_Unfeasible1 = list(results_dataframes['case_df_op_unfeasible_1']['case_id'])
+case_id_Unfeasible2 = list(results_dataframes['case_df_op_unfeasible_2']['case_id'])
+
+results_dataframes['cases_df_unfeasible'] = results_dataframes['cases_df'].query('case_id == @case_id_Unfeasible')
+results_dataframes['cases_df_unfeasible_1'] = results_dataframes['cases_df'].query('case_id == @case_id_Unfeasible1')
+results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].query('case_id == @case_id_Unfeasible2')
 
 
 # In[9]:
@@ -190,8 +195,10 @@ def create_dimensions_caseid_df(df_dict, df_name, vars_dim1, vars_dim2, vars_dim
     dimensions_caseid[name_dim2] =  df_dict[df_name][vars_dim2].sum(axis=1)
     dimensions_caseid[name_dim3] =  df_dict[df_name][vars_dim3].sum(axis=1)
     dimensions_caseid['case_id'] =  df_dict[df_name]['case_id']
-    dimensions_caseid['Stability'] = list(df_dict[df_name]['Stability'])
-
+    try:
+        dimensions_caseid['Stability'] = list(df_dict[df_name]['Stability'])
+    except:
+        pass
     return dimensions_caseid
 #%%
 
@@ -313,6 +320,8 @@ plt.show()
 fig, ax = plt.subplots()
 ax.scatter(dimensions_caseid_feasible['p_l'], dimensions_caseid_feasible['p_gen'], color='r',label='PF solution', alpha=0.1)
 ax.scatter(dimensions_caseid_feasible['p_l'], dimensions_caseid_feasible_sampled['p_gen'],  color='g',label='$Sample$', alpha=0.1)
+#ax.scatter(dimensions_caseid_feasible.iloc[0]['p_l'], dimensions_caseid_feasible.iloc[0]['p_gen'], color='r',label='PF solution', alpha=0.1)
+#ax.scatter(dimensions_caseid_feasible.iloc[0]['p_l'], dimensions_caseid_feasible_sampled.iloc[0]['p_gen'],  color='g',label='$Sample$', alpha=0.1)
 plot_r2_line(dimensions_caseid_feasible_sampled['p_l'], 'y', '$P_{D}$')
 ax.set_xlabel("$P_{D}$")
 ax.set_ylabel("$P_G$")
