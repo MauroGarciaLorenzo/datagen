@@ -28,7 +28,8 @@ path = '../results/MareNostrum'
 # dir_names=[dir_name for dir_name in os.listdir(path) if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 
 dir_names = [
-    'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664-20250630T085420Z-1-005']
+    #'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664']
+    'datagen_ACOPF_slurm25105245_cu8_nodes32_LF09_seed3_nc3_ns500_d7_20250731_132256_7665']
 
 for dir_name in dir_names:
     path_results = os.path.join(path, dir_name)
@@ -38,6 +39,8 @@ for dir_name in dir_names:
 
     perc_stability(results_dataframes['cases_df'], dir_name)
     
+    dataset_ID = dir_name[-5:]
+
 for key, item in results_dataframes.items():
     print(key+': '+str(len(item)))
     #results_dataframes[key+'_drop_duplicates']= item.drop(['case_id'],axis=1).drop_duplicates(keep='first')
@@ -85,12 +88,12 @@ results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].que
     'case_id == @case_id_Unfeasible2')  # <-- quantities sampled
 
 #%%
-cases_id_depth = pd.read_excel('cases_id_depth.xlsx')[['Depth','case_id','CellName']]
+cases_id_depth = pd.read_excel('cases_id_depth'+dataset_ID+'.xlsx')[['Depth','case_id','CellName']]
 
 cases_id_depth_feas = cases_id_depth.query('case_id == @case_id_feasible')
 
 #%%
-df = pd.read_csv('DataSet_training_uncorr_var_HierCl.csv').drop('Unnamed: 0', axis=1).drop_duplicates(keep='first')
+df = pd.read_csv('DataSet_training_uncorr_var_HierCl'+dataset_ID+'.csv').drop('Unnamed: 0', axis=1).drop_duplicates(keep='first')
              #_var_HierCl
              
 p_cig_cols = [col for col in results_dataframes['cases_df_feasible'].columns if col.startswith('p_cig')]
@@ -102,7 +105,7 @@ exclude_cases = list(results_dataframes['cases_df_feasible'].query('p_cig > 2738
 df = df.query('case_id != @exclude_cases')
 
 #%%
-mesh_df = pd.read_excel('mesh.xlsx')
+mesh_df = pd.read_excel('mesh'+dataset_ID+'.xlsx')
 
 ax = plot_mesh(mesh_df)
 for depth in range(0,7):
@@ -154,7 +157,7 @@ for depth in range(0,7):
                    results_dataframes['cases_df_feasible'].query('case_id == @add_case_id')['p_sg'], label = 'Depth '+str(depth))
 plt.legend()
 #%%
-pd.DataFrame.to_excel(scores_df,'scores_df_uncorr_var_HierCl_xgb.xlsx')#_var_HierCl_
+pd.DataFrame.to_excel(scores_df,'scores_df_uncorr_var_HierCl_xgb'+dataset_ID+'.xlsx')#_var_HierCl_
 
 #%%
 fig, ax = plt.subplots()
@@ -163,5 +166,5 @@ ax.set_xlabel('Depth')
 ax.set_ylabel('Mean accuracy $\pm$ std')
 ax.grid()
 fig.tight_layout()
-plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb.pdf')#, format='pdf')
-plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb.png')#, format='png')
+plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb'+dataset_ID+'.pdf')#, format='pdf')
+plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb'+dataset_ID+'.png')#, format='png')

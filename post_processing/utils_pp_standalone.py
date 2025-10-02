@@ -81,8 +81,8 @@ def plot_mesh(mesh_df, ax = None):
     ax.set_ylabel("Total $P_{SG}$ [MW]")
     #ax.set_title("2D Mesh of p_cig vs p_sg")
     plt.grid(True)
-    ax.set_xlim(900, 4700)    # Example range for p_cig
-    ax.set_ylim(4000, 1.1*mesh_df.query('dimension == "p_sg"')['upper'].max())   # Example range for p_sg
+    ax.set_xlim(0.9*mesh_df.query('dimension == "p_cig"')['lower'].min(),1.1* mesh_df.query('dimension == "p_cig"')['upper'].max())    # Example range for p_cig
+    ax.set_ylim(0.9*mesh_df.query('dimension == "p_sg"')['lower'].min(), 1.1*mesh_df.query('dimension == "p_sg"')['upper'].max())   # Example range for p_sg
     plt.tight_layout()
 
     return ax

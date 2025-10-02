@@ -49,13 +49,15 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 # In[3]:
 
 
-path = '../results'#'/MareNostrum'
+path = '../results/'
 
-#dir_name = 'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664-20250630T085420Z-1-005'
-dir_name = 'ACOPF_standalone_NREL_LF095_seed16_nc2_ns100_20250730_100655_7171'
+dir_name=[dir_name for dir_name in os.listdir(path)][4]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+
 path_results = os.path.join(path, dir_name)
 
 results_dataframes, csv_files = open_csv(path_results, ['cases_df.csv', 'case_df_op.csv'])
+
+dataset_ID= dir_name[-5:]
 
 
 # In[4]:
@@ -165,65 +167,48 @@ perc_stability(results_dataframes['case_df_op'], dir_name)
 results_dataframes['case_df_op_feasible'] = results_dataframes['case_df_op'].query(
     'Stability >= 0')
 
-case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
-
 # from data frame with sampled quantities: cases_df
 results_dataframes['cases_df_feasible'] = results_dataframes['cases_df'].query(
-    'case_id == @case_id_feasible')
+    'Stability >= 0')
+case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
 
 # %% ---- SELECT ONLY UNFEASIBLE CASES (from data frame with sampled quantities: cases_df)----
 
-results_dataframes['case_df_op_unfeasible'] = results_dataframes['case_df_op'].query('Stability < 0')
-results_dataframes['case_df_op_unfeasible_1'] = results_dataframes['case_df_op'].query('Stability == -1')
-results_dataframes['case_df_op_unfeasible_2'] = results_dataframes['case_df_op'].query('Stability == -2')
+results_dataframes['cases_df_unfeasible'] = results_dataframes['cases_df'].query('Stability < 0')
+results_dataframes['cases_df_unfeasible_1'] = results_dataframes['cases_df'].query('Stability == -1')
+results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].query('Stability == -2')
 
-case_id_Unfeasible = list(results_dataframes['case_df_op_unfeasible']['case_id'])
-case_id_Unfeasible1 = list(results_dataframes['case_df_op_unfeasible_1']['case_id'])
-case_id_Unfeasible2 = list(results_dataframes['case_df_op_unfeasible_2']['case_id'])
-
-results_dataframes['cases_df_unfeasible'] = results_dataframes['cases_df'].query('case_id == @case_id_Unfeasible')
-results_dataframes['cases_df_unfeasible_1'] = results_dataframes['cases_df'].query('case_id == @case_id_Unfeasible1')
-results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].query('case_id == @case_id_Unfeasible2')
+case_id_Unfeasible = list(results_dataframes['cases_df_unfeasible']['case_id'])
+case_id_Unfeasible1 = list(results_dataframes['cases_df_unfeasible_1']['case_id'])
+case_id_Unfeasible2 = list(results_dataframes['cases_df_unfeasible_2']['case_id'])
 
 
 # In[9]:
 
 
-def create_dimensions_caseid_df(df_dict, df_name, vars_dim1, vars_dim2, vars_dim3, name_dim1, name_dim2, name_dim3):
-    dimensions_caseid = pd.DataFrame(columns = [name_dim1,name_dim2,name_dim3, 'case_id','Stability'])
+def create_dimensions_caseid_df(df_dict, df_name, vars_dim1, vars_dim2, name_dim1, name_dim2):
+    dimensions_caseid = pd.DataFrame(columns = [name_dim1,name_dim2,'case_id','Stability'])
     dimensions_caseid[name_dim1] =  df_dict[df_name][vars_dim1].sum(axis=1)
     dimensions_caseid[name_dim2] =  df_dict[df_name][vars_dim2].sum(axis=1)
-    dimensions_caseid[name_dim3] =  df_dict[df_name][vars_dim3].sum(axis=1)
     dimensions_caseid['case_id'] =  df_dict[df_name]['case_id']
-    try:
-        dimensions_caseid['Stability'] = list(df_dict[df_name]['Stability'])
-    except:
-        pass
+    dimensions_caseid['Stability'] = list(df_dict[df_name]['Stability'])
+
     return dimensions_caseid
-#%%
 
-p_sg_var_PF=[var for var in results_dataframes['case_df_op_feasible'].columns if var.startswith('P_SG')]
-p_cig_var_PF=[var for var in results_dataframes['case_df_op_feasible'].columns if var.startswith('P_GFOR') or var.startswith('P_GFOL')]
-p_l_var_PF=[var for var in results_dataframes['case_df_op_feasible'].columns if var.startswith('PL')]
+p_sg_var=[var for var in results_dataframes['case_df_op_feasible'].columns if var.startswith('P_SG')]
+p_cig_var=[var for var in results_dataframes['case_df_op_feasible'].columns if var.startswith('P_GFOR') or var.startswith('P_GFOL')]
 
-
-dimensions_caseid_feasible = create_dimensions_caseid_df(results_dataframes, 'case_df_op_feasible', p_sg_var_PF, p_cig_var_PF, p_l_var_PF, 'p_sg', 'p_cig', 'p_l')
+dimensions_caseid_feasible = create_dimensions_caseid_df(results_dataframes, 'case_df_op_feasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
 dimensions_caseid_feasible['p_sg'] = dimensions_caseid_feasible['p_sg']*100
 dimensions_caseid_feasible['p_cig'] = dimensions_caseid_feasible['p_cig']*100
-dimensions_caseid_feasible['p_l'] = dimensions_caseid_feasible['p_l']*100
-dimensions_caseid_feasible['p_gen'] = dimensions_caseid_feasible['p_sg']+dimensions_caseid_feasible['p_cig'] 
-  
-p_sg_var_Sample=[var for var in results_dataframes['cases_df_unfeasible'].columns if var.startswith('p_sg')]
-p_cig_var_Sample=[var for var in results_dataframes['cases_df_unfeasible'].columns if var.startswith('p_cig')]
-p_l_var_Sample=[var for var in results_dataframes['cases_df_unfeasible'].columns if var.startswith('p_load')]
 
-dimensions_caseid_feasible_sampled = create_dimensions_caseid_df(results_dataframes, 'cases_df_feasible', p_sg_var_Sample, p_cig_var_Sample, p_l_var_Sample, 'p_sg', 'p_cig', 'p_l')
-dimensions_caseid_feasible_sampled['p_gen'] = dimensions_caseid_feasible_sampled['p_sg']+dimensions_caseid_feasible_sampled['p_cig'] 
+p_sg_var=[var for var in results_dataframes['cases_df_unfeasible'].columns if var.startswith('p_sg')]
+p_cig_var=[var for var in results_dataframes['cases_df_unfeasible'].columns if var.startswith('p_cig')]
 
-
-dimensions_caseid_unfeasible = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible', p_sg_var_Sample, p_cig_var_Sample, p_l_var_Sample, 'p_sg', 'p_cig', 'p_l')
-dimensions_caseid_unfeasible1 = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible_1', p_sg_var_Sample, p_cig_var_Sample, p_l_var_Sample, 'p_sg', 'p_cig', 'p_l')
-dimensions_caseid_unfeasible2 = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible_2', p_sg_var_Sample, p_cig_var_Sample, p_l_var_Sample, 'p_sg', 'p_cig', 'p_l')
+dimensions_caseid_feasible_sampled = create_dimensions_caseid_df(results_dataframes, 'cases_df_feasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
+dimensions_caseid_unfeasible = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
+dimensions_caseid_unfeasible1 = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible_1', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
+dimensions_caseid_unfeasible2 = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible_2', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
 
 
 # In[10]:
@@ -239,13 +224,13 @@ ax.set_ylabel('$P_{SG}$ [MW]')
 plt.legend()
 
 
-# In[34]:
+# In[11]:
 
 
 fig, ax = plt.subplots()
-ax.scatter(dimensions_caseid_unfeasible['p_cig'], dimensions_caseid_unfeasible['p_sg'],color='silver', label='Unfeasable OP', s=10)
-ax.scatter(dimensions_caseid_feasible.query('Stability ==0')['p_cig'], dimensions_caseid_feasible.query('Stability ==0')['p_sg'], color='r',label='Unstable PF', s=10)
-ax.scatter(dimensions_caseid_feasible.query('Stability ==1')['p_cig'], dimensions_caseid_feasible.query('Stability ==1')['p_sg'], color='g', label='Stable PF', s=10)
+ax.scatter(dimensions_caseid_unfeasible['p_cig'], dimensions_caseid_unfeasible['p_sg'],color='silver', label='Unfeasable OP')
+ax.scatter(dimensions_caseid_feasible.query('Stability ==0')['p_cig'], dimensions_caseid_feasible.query('Stability ==0')['p_sg'], color='r',label='Unstable PF')
+ax.scatter(dimensions_caseid_feasible.query('Stability ==1')['p_cig'], dimensions_caseid_feasible.query('Stability ==1')['p_sg'], color='g', label='Stable PF')
 ax.set_xlabel('$P_{CIG}$ [MW]')
 ax.set_ylabel('$P_{SG}$ [MW]')
 plt.legend()
@@ -258,16 +243,16 @@ plt.legend()
 # In[12]:
 
 
-mesh_df = pd.read_excel('mesh.xlsx')
+mesh_df = pd.read_excel('mesh'+dataset_ID+'.xlsx')
 
 
 # In[13]:
 
 
 fig, ax = plt.subplots()
-ax.scatter(dimensions_caseid_unfeasible['p_cig'], dimensions_caseid_unfeasible['p_sg'],color='silver', label='Unfeasable OP', s=10)
-ax.scatter(dimensions_caseid_feasible.query('Stability ==0')['p_cig'], dimensions_caseid_feasible.query('Stability ==0')['p_sg'], color='r',label='Unstable PF', s=10)
-ax.scatter(dimensions_caseid_feasible.query('Stability ==1')['p_cig'], dimensions_caseid_feasible.query('Stability ==1')['p_sg'], color='g', label='Stable PF', s=10)
+ax.scatter(dimensions_caseid_unfeasible['p_cig'], dimensions_caseid_unfeasible['p_sg'],color='silver', label='Unfeasable OP')
+ax.scatter(dimensions_caseid_feasible.query('Stability ==0')['p_cig'], dimensions_caseid_feasible.query('Stability ==0')['p_sg'], color='r',label='Unstable PF')
+ax.scatter(dimensions_caseid_feasible.query('Stability ==1')['p_cig'], dimensions_caseid_feasible.query('Stability ==1')['p_sg'], color='g', label='Stable PF')
 ax.set_xlabel('$P_{CIG}$ [MW]')
 ax.set_ylabel('$P_{SG}$ [MW]')
 plot_mesh(mesh_df, ax)
@@ -286,59 +271,6 @@ ax.set_ylabel('$P_{SG}$ [MW]')
 plot_mesh(mesh_df, ax)
 plt.legend()
 
-#%% Sampled vs PF
-
-fig, ax = plt.subplots()
-ax.scatter(dimensions_caseid_feasible_sampled['p_cig'], dimensions_caseid_feasible['p_cig'], color='b',label='$P_{CIG}$')
-ax.scatter(dimensions_caseid_feasible_sampled['p_sg'], dimensions_caseid_feasible['p_sg'], color='orange',label='$P_{SG}$')
-ax.scatter(dimensions_caseid_feasible_sampled['p_l'], dimensions_caseid_feasible['p_l'], color='r',label='$P_{D}$', alpha=0.1)
-ax.scatter(dimensions_caseid_feasible_sampled['p_gen'], dimensions_caseid_feasible['p_gen'], color='g',label='$P_{G}$', alpha=0.1)
-
-ax.scatter(dimensions_caseid_feasible_sampled.iloc[0]['p_cig'], dimensions_caseid_feasible.iloc[0]['p_cig'], color='k',label='$P_{CIG}$')
-ax.scatter(dimensions_caseid_feasible_sampled.iloc[0]['p_sg'], dimensions_caseid_feasible.iloc[0]['p_sg'], color='k',label='$P_{SG}$')
-ax.scatter(dimensions_caseid_feasible_sampled.iloc[0]['p_l'], dimensions_caseid_feasible.iloc[0]['p_l'], color='k',label='$P_{D}$')
-ax.scatter(dimensions_caseid_feasible_sampled.iloc[0]['p_gen'], dimensions_caseid_feasible.iloc[0]['p_gen'], color='k',label='$P_{G}$')
-
-# Function to plot the R²=1 line for each variable
-def plot_r2_line(x, color, label):
-    min_val =x.min()
-    max_val =x.max()
-    ax.plot([min_val, max_val], [min_val, max_val], color=color, linestyle='--', label=f'{label} $R^2 = 1$')
-
-# Add lines for each variable
-plot_r2_line(dimensions_caseid_feasible_sampled['p_cig'], 'c', '$P_{CIG}$')
-plot_r2_line(dimensions_caseid_feasible_sampled['p_sg'], 'y', '$P_{SG}$')
-#plot_r2_line(dimensions_caseid_feasible_sampled['p_l'], '', '$P_{D}$')
-plot_r2_line(dimensions_caseid_feasible_sampled['p_gen'], 'g', '$P_{G}$')
-
-ax.set_xlabel("Sampled values")
-ax.set_ylabel("Feasible values")
-ax.legend()
-plt.show()
-
-#%%
-fig, ax = plt.subplots()
-ax.scatter(dimensions_caseid_feasible['p_l'], dimensions_caseid_feasible['p_gen'], color='r',label='PF solution', alpha=0.1)
-ax.scatter(dimensions_caseid_feasible['p_l'], dimensions_caseid_feasible_sampled['p_gen'],  color='g',label='$Sample$', alpha=0.1)
-#ax.scatter(dimensions_caseid_feasible.iloc[0]['p_l'], dimensions_caseid_feasible.iloc[0]['p_gen'], color='r',label='PF solution', alpha=0.1)
-#ax.scatter(dimensions_caseid_feasible.iloc[0]['p_l'], dimensions_caseid_feasible_sampled.iloc[0]['p_gen'],  color='g',label='$Sample$', alpha=0.1)
-plot_r2_line(dimensions_caseid_feasible_sampled['p_l'], 'y', '$P_{D}$')
-ax.set_xlabel("$P_{D}$")
-ax.set_ylabel("$P_G$")
-ax.legend()
-ax.grid()
-fig.tight_layout()
-
-#%%
-from sklearn.metrics import mean_absolute_percentage_error
-MAPE_gen=mean_absolute_percentage_error(dimensions_caseid_feasible_sampled['p_gen'], dimensions_caseid_feasible['p_gen'])
-
-MAPE_gen=mean_absolute_percentage_error(dimensions_caseid_feasible_sampled['p_l'], dimensions_caseid_feasible_sampled['p_gen'])
-MAPE_gen=mean_absolute_percentage_error(dimensions_caseid_feasible['p_l'], dimensions_caseid_feasible['p_gen'])
-
-MPE_gen = (dimensions_caseid_feasible_sampled['p_gen']- dimensions_caseid_feasible['p_gen'])/dimensions_caseid_feasible_sampled['p_gen']
-
-#%%
 
 # Dataframes with the cases_id, the exploration depth at which they have been evaluated and the corresponding cell name (as in the cell_info.csv file).
 # It is obtained from the parsing_dimensions.py code.
@@ -346,7 +278,7 @@ MPE_gen = (dimensions_caseid_feasible_sampled['p_gen']- dimensions_caseid_feasib
 # In[15]:
 
 
-df_depth = pd.read_excel('cases_id_depth.xlsx')
+df_depth = pd.read_excel('cases_id_depth'+dataset_ID+'.xlsx')
 df_depth
 
 
@@ -355,7 +287,7 @@ df_depth
 
 df_feasibility_balancing = pd.DataFrame(columns=['depth','feasibility','cumulative_feasibility','feasiblity_no_2','balance','cumulative_balancing'])
 cum_case_id_depth=[]
-for idx, depth in enumerate(df_depth['Depth'].unique()):
+for idx, depth in enumerate(np.sort(df_depth['Depth'].unique())):
     df_feasibility_balancing.loc[idx, 'depth']=depth
     case_id_depth = df_depth.query('Depth == @depth')['case_id']
     cum_case_id_depth.extend(case_id_depth)
@@ -368,9 +300,17 @@ for idx, depth in enumerate(df_depth['Depth'].unique()):
     feas_stab_depth = len(results_dataframes['cases_df_feasible'].query('case_id == @feas_case_id_depth and Stability ==1'))
     cum_feas_stab_case_id_depth = len(results_dataframes['cases_df_feasible'].query('case_id == @cum_feas_case_id_depth and Stability ==1'))
     
-    df_feasibility_balancing.loc[idx, 'balance']= feas_stab_depth/len(feas_case_id_depth) 
-    df_feasibility_balancing.loc[idx, 'cumulative_balancing']= cum_feas_stab_case_id_depth/len(cum_feas_case_id_depth) 
-    
+    #df_feasibility_balancing.loc[idx, 'balance']= feas_stab_depth/len(feas_case_id_depth) 
+    #df_feasibility_balancing.loc[idx, 'cumulative_balancing']= cum_feas_stab_case_id_depth/len(cum_feas_case_id_depth) 
+    if len(feas_case_id_depth) !=0:
+        df_feasibility_balancing.loc[idx, 'balance']= feas_stab_depth/len(feas_case_id_depth) 
+    else:
+         df_feasibility_balancing.loc[idx, 'balance'] = 0
+        
+    if len(cum_feas_case_id_depth) !=0:
+        df_feasibility_balancing.loc[idx, 'cumulative_balancing']= cum_feas_stab_case_id_depth/len(cum_feas_case_id_depth) 
+    else:
+        df_feasibility_balancing.loc[idx, 'cumulative_balancing']= 0
 
 
 # In[17]:
@@ -494,7 +434,7 @@ results_dataframes['case_df_op_feasible_uncorr'] = results_dataframes['case_df_o
 results_dataframes['case_df_op_feasible_uncorr']['case_id'] = results_dataframes['case_df_op_feasible']['case_id'].reset_index(drop=True)
 results_dataframes['case_df_op_feasible_uncorr']['Stability'] = results_dataframes['case_df_op_feasible']['Stability'].reset_index(drop=True)
 
-results_dataframes['case_df_op_feasible_uncorr'].to_csv('DataSet_training_uncorr_var.csv')
+results_dataframes['case_df_op_feasible_uncorr'].to_csv('DataSet_training_uncorr_var'+dataset_ID+'.csv')
 
 
 # In[24]:
@@ -561,7 +501,7 @@ for i, selected_features in selected_features_names_dict.items():
 results_dataframes['case_df_op_feasible_uncorr_HierCl_X'] = X[keep_var]
 results_dataframes['case_df_op_feasible_uncorr_HierCl'] = pd.concat([X[keep_var], results_dataframes['case_df_op_feasible'][['case_id', 'Stability']].reset_index(drop=True)],axis=1)
 
-results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv('DataSet_training_uncorr_var_HierCl.csv')
+results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv('DataSet_training_uncorr_var_HierCl'+dataset_ID+'.csv')
 
 
 # In[26]:
@@ -576,18 +516,19 @@ print_columns_groups('case_df_op_feasible_uncorr_HierCl', results_dataframes['ca
 from xgboost import XGBClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, KFold
 
-def kfold_cv_depth(df_dict, type_corr_analysis, dimensions_caseid_feasible, cases_id_depth_feas, plot_depth_exploration=True, n_fold=5):
+def kfold_cv_depth(df_dict, type_corr_analysis, dimensions_caseid_feasible, cases_id_depth_feas, plot_depth_exploration=True, n_fold=5, params=None):
     df = df_dict['case_df_op_feasible_'+type_corr_analysis]
     df_training = pd.DataFrame(columns= df.columns)
     cases_id_training = []
     scores_df=pd.DataFrame(columns=['Depth','score_mean','score_std','n_training_cases','perc_stable'])
+    cv = KFold(n_splits=n_fold, shuffle=True, random_state=23)
 
     if plot_depth_exploration:
         ax = plot_mesh(mesh_df)
     
-    for depth in range(0,7):
+    for depth in range(0,int(max(cases_id_depth_feas['Depth']))+1):
         add_case_id = list(cases_id_depth_feas.query('Depth == @depth')['case_id'])
         cases_id_training.extend(add_case_id)
         df_training = df.query('case_id == @cases_id_training')
@@ -597,10 +538,13 @@ def kfold_cv_depth(df_dict, type_corr_analysis, dimensions_caseid_feasible, case
         if len(df_training)>= n_fold:
             #clf = svm.SVC(kernel='linear', C=1, random_state=42)
             #clf = MLPClassifier(random_state=1, max_iter=5000, activation='relu')
-            clf = Pipeline([('scaler', StandardScaler()), ('xgb', XGBClassifier())])
+            if params == None:
+                clf = Pipeline([('scaler', StandardScaler()), ('xgb', XGBClassifier())])
+            else:
+                clf = Pipeline([('scaler', StandardScaler()), ('xgb', XGBClassifier(**params))])
             X = df_training.drop(['case_id','Stability'],axis=1).reset_index(drop=True)
             y = df_training[['Stability']].reset_index(drop=True).values.astype(int).ravel()
-            scores = cross_val_score(clf, X, y, cv=n_fold, scoring='accuracy')
+            scores = cross_val_score(clf, X, y, cv=cv, scoring='accuracy')
             
             scores_df.loc[depth,'Depth']=depth
             scores_df.loc[depth,'score_mean']=scores.mean()
@@ -609,8 +553,7 @@ def kfold_cv_depth(df_dict, type_corr_analysis, dimensions_caseid_feasible, case
             if plot_depth_exploration:
                 ax.scatter(dimensions_caseid_feasible.query('case_id == @add_case_id')['p_cig'],
                        dimensions_caseid_feasible.query('case_id == @add_case_id')['p_sg'], label = 'Depth '+str(depth))
-    if plot_depth_exploration:
-        plt.legend()
+    plt.legend()
     return scores_df
     
 
@@ -618,15 +561,15 @@ def kfold_cv_depth(df_dict, type_corr_analysis, dimensions_caseid_feasible, case
 # In[28]:
 
 
-cases_id_depth = pd.read_excel('cases_id_depth.xlsx')[['Depth','case_id','CellName']]
+cases_id_depth = pd.read_excel('cases_id_depth'+dataset_ID+'.xlsx')[['Depth','case_id','CellName']]
 cases_id_depth_feas = cases_id_depth.query('case_id == @case_id_feasible')
 
 
 scores_df_uncorr = kfold_cv_depth(results_dataframes, 'uncorr', dimensions_caseid_feasible, cases_id_depth_feas, plot_depth_exploration=True, n_fold=5)
 scores_df_uncorr_HierCl = kfold_cv_depth(results_dataframes, 'uncorr_HierCl', dimensions_caseid_feasible, cases_id_depth_feas, plot_depth_exploration=True, n_fold=5)
 
-pd.DataFrame.to_excel(scores_df_uncorr,'scores_df_uncorr_xgb.xlsx')
-pd.DataFrame.to_excel(scores_df_uncorr_HierCl,'scores_df_uncorr_HierCl_xgb.xlsx')
+pd.DataFrame.to_excel(scores_df_uncorr,'scores_df_uncorr_xgb'+dataset_ID+'.xlsx')
+pd.DataFrame.to_excel(scores_df_uncorr_HierCl,'scores_df_uncorr_HierCl_xgb'+dataset_ID+'.xlsx')
     
 #%%
 fig, ax = plt.subplots()
@@ -644,13 +587,19 @@ fig.tight_layout()
 # In[29]:
 
 
+scores_df_uncorr_HierCl
+
+
+# In[30]:
+
+
 #check if the taus variables add noise or not:
 
 results_dataframes['case_df_op_feasible_uncorr_HierCl_notaus'] = results_dataframes['case_df_op_feasible_uncorr_HierCl'].drop(df_taus.columns, axis=1)
 scores_df_uncorr_HC_notau = kfold_cv_depth(results_dataframes, 'uncorr_HierCl_notaus', dimensions_caseid_feasible, cases_id_depth_feas, plot_depth_exploration=True, n_fold=5)
 
 
-# In[30]:
+# In[31]:
 
 
 fig, ax = plt.subplots()
@@ -666,193 +615,223 @@ fig.tight_layout()
 #plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb.png')#, format='png')
 
 
-# ## Principal Component Analysis and Manifolds
-
-# In[66]:
-
-
-def PCA_Mani(df_scaled, model = PCA()):
-    X_PCA = model.fit_transform(df_scaled)
-    cumulative_variance = None
-    if isinstance(model, PCA):
-        explained_variance = model.explained_variance_ratio_
-        cumulative_variance = np.cumsum(explained_variance)
-    
-        fig = plt.figure()
-        ax = fig.add_subplot()
-        # ax.bar(range(1, len(explained_variance)+1), explained_variance,
-        ax.scatter(range(1, len(explained_variance)+1), explained_variance)#,
-               #alpha=0.5, align='center', label='Individual explained variance')
-        plt.ylabel('Explained variance ratio')
-        plt.xlabel('Principal component index')
-        plt.tick_params(axis='x')
-        plt.tick_params(axis='y')
-        # ax.set_xlim(0,20)
-        # ax.set_xticks([1,2,3])
-        # ax.set_xticklabels(['$X_A$','$X_B$','$X_C$'])
-        plt.tight_layout()
-        
-        plt.figure()
-        plt.plot(range(1, len(cumulative_variance) + 1),
-                 cumulative_variance, marker='o', linestyle='--')
-        plt.title('Cumulative Explained Variance by Number of Dimensions')
-        plt.xlabel('Number of Dimensions')
-        plt.ylabel('Cumulative Explained Variance')
-        plt.xlim(1, len(cumulative_variance))
-        plt.ylim(0, 1)
-        plt.grid()
-        plt.axhline(y=0.95, color='r', linestyle='--',
-                    label='95% Variance Threshold')  # Optional threshold line
-        plt.legend()
-        plt.show()
-    return X_PCA, cumulative_variance
-
-
-def plot_3d(pca_result, stab, elev=20, azim=45):
-    # Create 3D figure
-    fig = plt.figure(figsize=(8, 6))
-    ax = fig.add_subplot(111, projection='3d')
-    
-    # Scatter plot for each stab group
-    ax.scatter(pca_result[stab == 0, 0], pca_result[stab == 0, 1], pca_result[stab == 0, 2],
-               c='red', label='stab=0', alpha=0.7, s=50)
-    
-    ax.scatter(pca_result[stab == 1, 0], pca_result[stab == 1, 1], pca_result[stab == 1, 2],
-               c='green', label='stab=1', alpha=0.7, s=50)
-    
-    # Labels
-    ax.set_xlabel('PC1')
-    ax.set_ylabel('PC2')
-    ax.set_zlabel('PC3')
-    
-    # Legend
-    ax.legend()
-    ax.view_init(elev=elev, azim=azim)    
-    plt.title('3D PCA Scatter Plot with stab colors')
-    plt.show()
-
-def pca_plot(n_components, pca_result, stab): 
-    colors = np.where(stab == 1, 'green', 'red')
-
-    fig, axes = plt.subplots(n_components, n_components, figsize=(3*n_components, 3*n_components))
-    
-    for i in range(n_components):
-        for j in range(n_components):
-            ax = axes[i, j]
-            if i == j:
-                # Histogram on the diagonal (split by stab)
-                ax.hist(pca_result[stab == 0, i], bins=20, color='red', alpha=0.5, label='stab=0')
-                ax.hist(pca_result[stab == 1, i], bins=20, color='green', alpha=0.5, label='stab=1')
-                if j == 0:  # Add legend only once
-                    ax.legend()
-            else:
-                # Scatter plot with color based on stab
-                ax.scatter(pca_result[stab == 0, j], pca_result[stab == 0, i], color='red', alpha=0.6, s=10)
-                ax.scatter(pca_result[stab == 1, j], pca_result[stab == 1, i], color='green', alpha=0.6, s=10)
-            
-            # Clean ticks
-            if i < n_components - 1:
-                ax.set_xticks([])
-            if j > 0:
-                ax.set_yticks([])
-    
-            # Axis labels
-            if j == 0:
-                ax.set_ylabel(f'PC{i+1}')
-            if i == n_components - 1:
-                ax.set_xlabel(f'PC{j+1}')
-    
-    plt.tight_layout()
-    plt.show()
-
+# ### Hyperparameters Tuning
 
 # In[32]:
 
 
-# %% ---- SCALE DATA ----
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GroupKFold, KFold
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-scaler1 = StandardScaler() 
-df_scaled_StdSc = scaler1.fit_transform(results_dataframes['case_df_op_feasible'].drop(['case_id','Stability'],axis=1).reset_index(drop=True))
+def GSkFCV(param_grid, X_train, Y_train, estimator, scorer):
+    '''
+    REQUIRES: param_grid, X_train, Y_train, PFI_features, estimator, scorer
+    '''
+    
+    n_folds = 5
+    seed = 23
+    
+    kfold = KFold(n_splits=n_folds, shuffle=True, random_state=seed)
+    
+    grid_search = GridSearchCV(estimator=estimator, param_grid=param_grid, cv=kfold, scoring=scorer, verbose=1)
+    grid_search.fit(X_train, Y_train)
+    
+    best_model = grid_search.best_estimator_
+    best_params = grid_search.best_params_
+    means = grid_search.cv_results_['mean_test_score']
+    stds = grid_search.cv_results_['std_test_score']
+    params = grid_search.cv_results_['params']
+    for mean, stdev, param in sorted(zip(means, stds, params), key=lambda x: x[0], reverse=True)[:5]:
+        print("%f (%f) with: %r" % (mean, stdev, param))
 
-scaler2 = MinMaxScaler() 
-df_scaled_MinMax = scaler2.fit_transform(results_dataframes['case_df_op_feasible'].drop(['case_id','Stability'],axis=1).reset_index(drop=True))
-
-
-# In[39]:
-
-
-X_PCA_StdSc, cumulative_variance = PCA_Mani(df_scaled_StdSc, PCA())
-X_PCA_MinMax, cumulative_variance= PCA_Mani(df_scaled_MinMax, PCA())
+    return best_model, best_params, means, stds, params
 
 
 # In[40]:
 
 
-index = np.argmax(cumulative_variance > 0.95) if np.any(cumulative_variance > 0.95) else -1
-results_dataframes['case_df_op_feasible_PCA'] = pd.concat([pd.DataFrame(X_PCA_StdSc[:,0:index]),results_dataframes['case_df_op_feasible'][['case_id','Stability']]],axis=1)
-scores_df_PCA = kfold_cv_depth(results_dataframes, 'PCA', dimensions_caseid_feasible, cases_id_depth_feas, plot_depth_exploration=False, n_fold=5)
+#%% XGB CLASSIFIER
 
-fig, ax = plt.subplots()
-ax.errorbar(scores_df_uncorr['Depth'], scores_df_uncorr['score_mean'], yerr=scores_df_uncorr['score_std'], fmt='-o', capsize=5, color='blue', ecolor='black', elinewidth=1.5, label = 'uncorr vars')
-ax.errorbar(scores_df_uncorr_HierCl['Depth'], scores_df_uncorr_HierCl['score_mean'], yerr=scores_df_uncorr_HierCl['score_std'], fmt='-o', capsize=5, color='orange', ecolor='black', elinewidth=1.5, label = 'uncorr vars HC')
-ax.errorbar(scores_df_uncorr_HC_notau['Depth'], scores_df_uncorr_HC_notau['score_mean'], yerr=scores_df_uncorr_HC_notau['score_std'], fmt='-o', capsize=5, color='red', ecolor='black', elinewidth=1.5, label = 'uncorr vars HC no tau')
-ax.errorbar(scores_df_PCA['Depth'], scores_df_PCA['score_mean'], yerr=scores_df_PCA['score_std'], fmt='-o', capsize=5, color='green', ecolor='black', elinewidth=1.5, label = 'PCA')
-ax.set_xlabel('Depth')
-ax.set_ylabel('Mean accuracy $\pm$ std')
-ax.grid()
-ax.legend(bbox_to_anchor=(1.1, 1), loc='upper left')
-#plt.legend()
-fig.tight_layout()
-#plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb.pdf')#, format='pdf')
-#plt.savefig('scores_vs_depth__df_uncorr_var_HierCl_xgb.png')#, format='png')
+estimator = Pipeline([('scaler', StandardScaler()), ('xgb', XGBClassifier())])
+
+param_grid = {'xgb__eta':[0.25, 0.3, 0.35], #np.arange(0.1,0.7,0.2),
+              'xgb__max_depth':[7,8,9],#[5,6,7],
+              'xgb__subsample':[0.8, 1] #[0.5,1]
+    }
+
+
+df = results_dataframes['case_df_op_feasible_uncorr_HierCl']
+
+X_train = df.drop(['case_id','Stability'],axis=1).reset_index(drop=True)
+Y_train = df[['Stability']].reset_index(drop=True).values.astype(int).ravel()
+
+best_model, best_params, means, stds, params = GSkFCV(param_grid, X_train, Y_train, estimator, 'accuracy')
+
+        
+
+
+# In[41]:
+
+
+model = best_model
+
+best_params_grid={'learning_rate': best_params['xgb__eta'],
+              'max_depth': best_params['xgb__max_depth'],
+              'subsample': best_params['xgb__subsample']}
+
+# save best model parameters
+f=open(path+'XGB_best_params_DataSet'+dataset_ID+'.sav','w')
+f.write(str(best_params))
+f.close()    
 
 
 # In[42]:
 
 
-stability = np.array(results_dataframes['case_df_op_feasible'][['Stability']]).ravel()
-pca_plot(3, X_PCA_StdSc, stability)
+best_params_grid
 
 
-# In[49]:
+# In[43]:
 
 
-pca_plot(3, X_PCA_MinMax, stability)
+scores_df_uncorr_HierCl_HPT = kfold_cv_depth(results_dataframes, 'uncorr_HierCl', dimensions_caseid_feasible, cases_id_depth_feas, plot_depth_exploration=False, n_fold=5, params=best_params_grid)
 
 
-# In[62]:
+# In[44]:
 
 
-plot_3d(X_PCA_StdSc, stability, 10, 90)
+scores_df_uncorr_HierCl_HPT
 
 
-# In[79]:
+# In[45]:
 
 
-from sklearn.decomposition import KernelPCA
-
-kernel_pca = KernelPCA(n_components=3, kernel="rbf", gamma=0.0001, fit_inverse_transform=True, alpha=0.1)
-# proj = kernel_pca.fit_transform(array_2d_red)
-# proj.shape
-X_kPCA_StdSc, _ = PCA_Mani(df_scaled_StdSc, kernel_pca)
-pca_plot(3, X_kPCA_StdSc, stability)
-
-
-# ## Convex Hull
-
-# In[78]:
+fig, ax = plt.subplots()
+ax.errorbar(scores_df_uncorr_HierCl['Depth'], scores_df_uncorr_HierCl['score_mean'], yerr=scores_df_uncorr_HierCl['score_std'], fmt='-o', capsize=5, color='orange', ecolor='black', elinewidth=1.5, label = 'uncorr vars HC')
+ax.errorbar(scores_df_uncorr_HierCl_HPT['Depth'], scores_df_uncorr_HierCl_HPT['score_mean'], yerr=scores_df_uncorr_HierCl_HPT['score_std'], fmt='-o', capsize=5, color='blue', ecolor='black', elinewidth=1.5, label = 'uncorr vars HC-HT')
+ax.set_xlabel('Depth')
+ax.set_ylabel('Mean accuracy $\pm$ std')
+ax.grid()
+plt.legend()
+fig.tight_layout()
 
 
-from scipy.spatial import ConvexHull, convex_hull_plot_2d
-hull = ConvexHull(X_PCA_StdSc[:,[0,2]])
+# #### Balancing Data Set
+
+# In[66]:
 
 
-# In[47]:
+import random
+import pandas as pd
+
+df = results_dataframes['case_df_op_feasible_uncorr_HierCl']
+
+# Separate stable and unstable samples
+df_stable = df.query('Stability == 1')
+df_unstable = df.query('Stability == 0')
+
+# Ensure the stable class is large enough to sample without replacement
+if len(df_unstable) > len(df_stable):
+    raise ValueError("Cannot sample more stable cases than available (without replacement).")
+
+# Sample stable indices without replacement
+random_indices = random.sample(range(len(df_stable)), k=len(df_unstable))
+
+# Select those rows from df_stable using iloc
+df_stable_bal = df_stable.iloc[random_indices]
+
+# Concatenate and shuffle the result
+df_balanced = pd.concat([df_stable_bal, df_unstable], axis=0).sample(frac=1, random_state=42).reset_index(drop=True)
 
 
-plt.plot(X_PCA_StdSc[:,0], X_PCA_StdSc[:,2], 'o')
-for simplex in hull.simplices:
-    plt.plot(X_PCA_StdSc[simplex, 0], X_PCA_StdSc[simplex, 2], 'k-')
+# In[67]:
+
+
+print('check balance:'+str(len(df_balanced.query('Stability ==1'))/len(df_balanced)))
+
+
+# In[68]:
+
+
+estimator = Pipeline([('scaler', StandardScaler()), ('xgb', XGBClassifier())])
+
+param_grid = {'xgb__eta':[0.25, 0.3, 0.35], #np.arange(0.1,0.7,0.2),
+              'xgb__max_depth':[7,8,9],#[5,6,7],
+              'xgb__subsample':[0.8, 1] #[0.5,1]
+    }
+
+X_train = df_balanced.drop(['case_id','Stability'],axis=1).reset_index(drop=True)
+Y_train = df_balanced[['Stability']].reset_index(drop=True).values.astype(int).ravel()
+
+best_model, best_params, means, stds, params = GSkFCV(param_grid, X_train, Y_train, estimator, 'accuracy')
+
+
+# #### Check for misclassified samples
+
+# In[71]:
+
+
+from sklearn.model_selection import train_test_split
+
+estimator = Pipeline([('scaler', StandardScaler()), ('xgb', XGBClassifier(**best_params_grid))])
+
+df = results_dataframes['case_df_op_feasible_uncorr_HierCl']
+
+X = df.drop(['case_id','Stability'],axis=1).reset_index(drop=True)
+Y = df[['Stability']].reset_index(drop=True).values.astype(int).ravel()
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=0.8, shuffle = True, random_state=42)
+
+model = estimator.fit(X_train, Y_train)
+
+pred = model.predict(X_test)
+score = accuracy_score(Y_test, pred)
+print(score)
+
+
+# In[81]:
+
+
+diff_indices = np.where(pred != Y_test)[0]
+diff_case_id_idx = X_test.index[diff_indices]
+diff_case_id_idx
+
+
+# In[84]:
+
+
+diff_case_id = list(df.loc[diff_case_id_idx,'case_id'])
+diff_case_id
+
+
+# In[87]:
+
+
+fig, ax = plt.subplots()
+ax.scatter(dimensions_caseid_feasible.query('case_id != @diff_case_id')['p_cig'], dimensions_caseid_feasible.query('case_id != @diff_case_id')['p_sg'], label='Well Clasified')
+ax.scatter(dimensions_caseid_feasible.query('case_id == @diff_case_id')['p_cig'], dimensions_caseid_feasible.query('case_id == @diff_case_id')['p_sg'], label='Misclasified')
+ax.set_xlabel('$P_{CIG}$ [MW]')
+ax.set_ylabel('$P_{SG}$ [MW]')
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+
+# In[90]:
+
+
+plt.boxplot([dimensions_caseid_feasible.query('case_id != @diff_case_id')['p_cig'], dimensions_caseid_feasible.query('case_id == @diff_case_id')['p_cig']], labels=['Well Classified', 'Misclassified'])
+
+# Add labels and title
+plt.ylabel('p_cig')
+plt.title('Comparison of p_cig Values')
+plt.grid()
+
+
+# In[104]:
+
+
+len(np.where(Y_test[diff_indices]==0)[0])/len(Y_test[diff_indices])
 
 
 # In[ ]:

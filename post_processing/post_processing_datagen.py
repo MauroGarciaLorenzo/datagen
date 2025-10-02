@@ -32,20 +32,23 @@ plt.rcParams.update({"figure.figsize": [8, 4],
                      'legend.loc': 'upper right'})
 
 # %%
-path = '../results/MareNostrum'
+path = '../results/'
 
-# dir_names=[dir_name for dir_name in os.listdir(path) if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+dir_names=[dir_name for dir_name in os.listdir(path)]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 
-dir_names = [
-    'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664-20250630T085420Z-1-005']
+# dir_names = [
+#     #'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664']
+#     'datagen_ACOPF_slurm25105245_cu8_nodes32_LF09_seed3_nc3_ns500_d7_20250731_132256_7665']
 
-for dir_name in dir_names:
+for dir_name in dir_names[1:]:
     path_results = os.path.join(path, dir_name)
 
     results_dataframes, csv_files = open_csv(
         path_results, ['cases_df.csv', 'case_df_op.csv'])
 
     perc_stability(results_dataframes['case_df_op'], dir_name)
+    
+    dataset_ID = dir_name[-5:]
 
 # %% ---- FILL NAN VALUES WITH NULL ---
 
@@ -173,7 +176,7 @@ results_dataframes['case_df_op_feasible_uncorr'] = results_dataframes['case_df_o
 results_dataframes['case_df_op_feasible_uncorr']['case_id'] = results_dataframes['case_df_op_feasible']['case_id'].reset_index(drop=True)
 results_dataframes['case_df_op_feasible_uncorr']['Stability'] = results_dataframes['case_df_op_feasible']['Stability'].reset_index(drop=True)
 
-results_dataframes['case_df_op_feasible_uncorr'].to_csv('DataSet_training_uncorr_var.csv')
+results_dataframes['case_df_op_feasible_uncorr'].to_csv('DataSet_training_uncorr_var'+dataset_ID+'.csv')
 
 # %% ---- Check correlated variables Option #2 ----
 
@@ -233,7 +236,7 @@ for i, selected_features in selected_features_names_dict.items():
 results_dataframes['case_df_op_feasible_uncorr_HierCl_X'] = X[keep_var]
 results_dataframes['case_df_op_feasible_uncorr_HierCl'] = pd.concat([X[keep_var], results_dataframes['case_df_op_feasible'][['case_id', 'Stability']].reset_index(drop=True)],axis=1)
 
-results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv('DataSet_training_uncorr_var_HierCl.csv')
+results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv('DataSet_training_uncorr_var_HierCl'+dataset_ID+'.csv')
 
 # %%
 columns_in_df = dict()

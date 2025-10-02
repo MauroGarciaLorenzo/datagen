@@ -29,32 +29,38 @@ def read_txt_files_from_folder(folder_path):
 
 #%%
 
-path2txt= '../results/'
+# path2txt= '../results/'
 
-all_voltages=read_txt_files_from_folder(path2txt)
+# all_voltages=read_txt_files_from_folder(path2txt)
 
 #%%
 #path2res= path2txt+'ACOPF_standalone_NREL_LF09_seed16_nc3_ns100_20250530_165211_8618/'
-path2res= path2txt+'MareNostrum/datagen_ACOPF_slurm22543545_cu16_nodes32_LF09_seed16_nc30_ns50_d6_20250613_220923_5611/'
+# path2res= path2txt+'MareNostrum/datagen_ACOPF_slurm22543545_cu16_nodes32_LF09_seed16_nc30_ns50_d6_20250613_220923_5611/'
 
-df_op=pd.read_csv(path2res+'case_df_op.csv').query('Stability >=0')#.query('Stability !=-1')
+path = '../results/'
+
+dir_name=[dir_name for dir_name in os.listdir(path)][-3]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+print(dir_name)
+
+
+df_op=pd.read_csv(path+dir_name+'/case_df_op.csv').drop('Unnamed: 0', axis=1).drop_duplicates(keep='first').sort_values(by='cell_name')#.query('Stability >=0')#.query('Stability !=-1')
 voltage_conv=df_op[[c for c in df_op.columns if c.startswith('V')]]
 cases_conv=df_op[['case_id']]
 
-df_v_sampled=pd.DataFrame(columns=voltage_conv.columns)
-for idx_case,case in cases_conv.iterrows():
-    file_path = os.path.join(path2txt, case[0]+'.txt')
-    with open(file_path, 'r') as f:
-        lines = [float(line.strip()) for line in f.readlines()]
+# df_v_sampled=pd.DataFrame(columns=voltage_conv.columns)
+# for idx_case,case in cases_conv.iterrows():
+#     file_path = os.path.join(path2txt, case[0]+'.txt')
+#     with open(file_path, 'r') as f:
+#         lines = [float(line.strip()) for line in f.readlines()]
 
-        df_v_sampled.loc[idx_case]=lines
+#         df_v_sampled.loc[idx_case]=lines
 
 #%%        
 fig=plt.figure()
 ax=fig.add_subplot()
 for ind in voltage_conv.index:
     ax.plot(voltage_conv.loc[ind])    
-    ax.plot(df_v_sampled.loc[ind], c='k', alpha=0.5)
+    #ax.plot(df_v_sampled.loc[ind], c='k', alpha=0.5)
     
 #%%
 
