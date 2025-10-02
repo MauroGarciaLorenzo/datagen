@@ -56,6 +56,9 @@ class TestExplorer(TestCase):
         self.parent_entropy = 0
         self.parent_name = "0"
         self.dst_dir = "results"
+        self.chunk_size = 10
+        self.entropy_threshold = 0.2
+        self.delta_entropy_threshold = 0
 
     def test_explore_grid(self):
         print("RUNNING TEST EXPLORE GRID")
@@ -75,14 +78,15 @@ class TestExplorer(TestCase):
             func_params=self.func_params,
             parent_entropy=self.parent_entropy,
             parent_name=self.parent_name,
-            dst_dir=self.dst_dir
+            dst_dir=self.dst_dir,
+            chunk_size=self.chunk_size,
+            entropy_threshold=self.entropy_threshold,
+            delta_entropy_threshold=self.delta_entropy_threshold
         )
         join_and_cleanup_csvs(self.dst_dir)
 
-        cases_df = pd.read_csv(os.path.join(self.dst_dir, "cases_df.csv"),
-                               index_col=0)
-        dims_df = pd.read_csv(os.path.join(self.dst_dir, "dims_df.csv"),
-                              index_col=0)
+        cases_df = pd.read_csv(os.path.join(self.dst_dir, "cases_df.csv"))
+        dims_df = pd.read_csv(os.path.join(self.dst_dir, "dims_df.csv"))
 
         # Assert that the number of cases equals the initial cases plus the
         # cases that will be generated in the remaining levels:

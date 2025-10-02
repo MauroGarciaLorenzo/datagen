@@ -185,10 +185,8 @@ class Test(unittest.TestCase):
                 errors_failed.append(e)
                 continue
 
-            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"),
-                                   index_col=0)
-            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"),
-                                  index_col=0)
+            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"))
+            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"))
 
             # Launch tests
             self.check_output_files(path_results, expected_files)
@@ -258,10 +256,8 @@ class Test(unittest.TestCase):
                 continue
 
 
-            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"),
-                                   index_col=0)
-            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"),
-                                  index_col=0)
+            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"))
+            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"))
 
             # Run checks
             self.no_duplicate_rows(cases_df, dims_df)
@@ -330,10 +326,8 @@ class Test(unittest.TestCase):
                 errors_failed.append(e)
                 continue
 
-            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"),
-                                   index_col=0)
-            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"),
-                                  index_col=0)
+            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"))
+            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"))
 
             # Run checks
             self.no_duplicate_rows(cases_df, dims_df)

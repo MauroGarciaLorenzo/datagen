@@ -159,16 +159,28 @@ def join_and_cleanup_csvs(dst_dir):
         print(f"Joining {len(files)} CSVs for {var_name}...")
 
         out_path = os.path.join(dst_dir, f"{var_name}.csv")
-        with open(out_path, "w", encoding="utf-8") as out:
-            first_file = True
-            for f in sorted(files):
-                with open(f, "r", encoding="utf-8") as infile:
-                    for i, line in enumerate(infile):
-                        # Write header only for the first file
-                        if i == 0 and not first_file:
-                            continue
-                        out.write(line)
-                first_file = False
+
+        with open(out_path, "w", newline="", encoding="utf-8") as out:
+            writer = None
+            reference_header = None
+
+            for idx, f in enumerate(sorted(files)):
+                with open(f, "r", newline="", encoding="utf-8") as infile:
+                    reader = csv.DictReader(infile)
+
+                    # For the first file, establish the canonical column order
+                    if idx == 0:
+                        reference_header = reader.fieldnames
+                        writer = csv.DictWriter(out,
+                                                fieldnames=reference_header)
+                        writer.writeheader()
+
+                    # For subsequent files, reorder according to reference header
+                    for row in reader:
+                        # Reorder row according to reference_header
+                        aligned_row = {col: row.get(col, "") for col in
+                                       reference_header}
+                        writer.writerow(aligned_row)
 
         print(f"Saved: {out_path}")
 
