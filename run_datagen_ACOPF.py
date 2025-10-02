@@ -240,7 +240,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        dst_dir=path_results, warmup=warmup, feasible_rate=0.0
+        dst_dir=path_results, warmup=warmup, feasible_rate=0.1
     )
 
     stability_array = compss_wait_on(stability_array)
