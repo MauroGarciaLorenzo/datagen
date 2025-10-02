@@ -30,7 +30,9 @@ from datagen.src.evaluator import eval_entropy, eval_stability
 @task(returns=1, on_failure='FAIL', priority=True)
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  use_sensitivity, max_depth, divs_per_cell, generator,
-                 feasible_rate, func_params, cell_name="", dst_dir=None):
+                 feasible_rate, func_params, entropy_threshold, chunk_size,
+                 delta_entropy_threshold, dst_dir=None, cell_name="",
+                 ):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
     calculates own delta entropy.
@@ -87,8 +89,9 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         output_dataframes_chunk.append(output_dfs)
         index += 1
 
-        if index % 5000 == 0 or index == len(cases_df):
+        if index % chunk_size == 0 or index == len(cases_df):
             stabilities_chunk = compss_wait_on(stabilities_chunk)
+            stabilities.extend(stabilities_chunk)
             output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
 
             # update feasible cases
@@ -145,7 +148,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     logger.info(message)
 
     check_entropy = False
-    if delta_entropy > 0 or parent_entropy > 0.2:
+    if delta_entropy > delta_entropy_threshold or parent_entropy > entropy_threshold:
         check_entropy = True
 
     # Finish recursivity if entropy decreases or cell become too small
@@ -192,7 +195,10 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                               func_params=func_params,
                               parent_entropy=parent_entropy,
                               parent_name=cell_name,
-                              dst_dir=dst_dir)
+                              dst_dir=dst_dir, chunk_size=chunk_size,
+                              entropy_threshold=entropy_threshold,
+                              delta_entropy_threshold=delta_entropy_threshold
+                              )
 
         return children_info
 
@@ -200,7 +206,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
                  feasible_rate, func_params, parent_entropy,
-                 parent_name, dst_dir):
+                 parent_name, dst_dir, entropy_threshold, delta_entropy_threshold,
+                 chunk_size):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -247,7 +254,9 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
             use_sensitivity=use_sensitivity, max_depth=max_depth,
             divs_per_cell=divs_per_cell, generator=generator,
             feasible_rate=feasible_rate, func_params=func_params,
-            cell_name=cell_name, dst_dir=dst_dir
+            cell_name=cell_name, dst_dir=dst_dir,
+            entropy_threshold=entropy_threshold, chunk_size=chunk_size,
+            delta_entropy_threshold=delta_entropy_threshold
         )
 
         children_info = compss_wait_on(children_info)
