@@ -32,7 +32,6 @@ plt.rcParams.update({"figure.figsize": [8, 4],
                      'legend.loc': 'upper right'})
 
 # %%
-# ncig_list=['10','11','12']
 path = '../results/MareNostrum'
 
 # dir_names=[dir_name for dir_name in os.listdir(path) if dir_name.startswith('datagen') and 'zip' not in dir_name]#
