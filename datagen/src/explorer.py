@@ -91,6 +91,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
         if index % chunk_size == 0 or index == len(cases_df):
             stabilities_chunk = compss_wait_on(stabilities_chunk)
+            stabilities.extend(stabilities_chunk)
             output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
 
             # update feasible cases
