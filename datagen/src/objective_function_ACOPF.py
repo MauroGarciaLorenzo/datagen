@@ -70,10 +70,16 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     d_raw_data, d_op = datagen_OP.generated_operating_point(case, d_raw_data,
                                                             d_op)
-    d_raw_data, slack_bus_num = choose_slack_bus(d_raw_data)
-    i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
+    # Choose slack depending on max Pmax-P
+    # d_raw_data, slack_bus_num = choose_slack_bus(d_raw_data)
+    # i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
 
-    # slack_bus_num=80
+    # Set a slack bus
+    slack_bus_num=1
+    d_raw_data['data_global'].loc[0,'ref_element']='GFOR'
+    d_raw_data['data_global'].loc[0,'ref_bus'] = slack_bus
+    i_slack = 0
+
     assign_SlackBus_to_grid.assign_slack_bus(gridCal_grid, slack_bus_num)
 
     if voltage_profile != None:
@@ -117,43 +123,43 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     voltage_profile_list_complex = np.array([complex(v,0) for v in voltage_profile_list])
     nc.bus_data.Vbus = voltage_profile_list_complex
     
-    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.NoControl)#, max_iter=100)
+    pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.Direct)#, max_iter=100)
     opf_options = gce.OptimalPowerFlowOptions(solver=gce.SolverType.NR, verbose=0, ips_tolerance=1e-5, ips_iterations=50)
 
 #    d_opf_results = ac_optimal_power_flow(Pref=np.array(d_pf_original['pf_gen']['P']), slack_bus_num=i_slack, nc=nc, pf_options=pf_options, plot_error=True)
 
     start = time.perf_counter()
 
-    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+    # pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
-    # Update PF results and operation point of generator elements
-    d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
-    d_pf_original['info']=pd.DataFrame()
-    d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
+    # # Update PF results and operation point of generator elements
+    # d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
+    # d_pf_original['info']=pd.DataFrame()
+    # d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
     
-    print('Converged:', pf_results.converged)
+    # print('Converged:', pf_results.converged)
 
-    if any(np.abs(pf_results.loading)>=1):
-        print('line overload')
-    else:
-        print('No overload')
-    if any(np.abs(pf_results.voltage)>1.1) or any(np.abs(pf_results.voltage)<0.9):
-        print(' over/under Voltage')
-    else:
-        print('No over/under voltage')
-    if any(d_pf_original['pf_gen']['cosphi']<0.95):
-        print('Power factor not fullfill')
-    else:
-        print('Power factor ok')
+    # if any(np.abs(pf_results.loading)>=1):
+    #     print('line overload')
+    # else:
+    #     print('No overload')
+    # if any(np.abs(pf_results.voltage)>1.1) or any(np.abs(pf_results.voltage)<0.9):
+    #     print(' over/under Voltage')
+    # else:
+    #     print('No over/under voltage')
+    # if any(d_pf_original['pf_gen']['cosphi']<0.95):
+    #     print('Power factor not fullfill')
+    # else:
+    #     print('Power factor ok')
      
     d_opf_results = ac_optimal_power_flow(nc= nc,
                                           pf_options= pf_options,
                                           opf_options= opf_options,
                                           # debug: bool = False,
                                           #use_autodiff = True,
-                                          pf_init= True,
-                                          Sbus_pf= pf_results.Sbus,
-                                          voltage_pf= pf_results.voltage,
+                                          pf_init= False,
+                                          #Sbus_pf= pf_results.Sbus,
+                                          #voltage_pf= pf_results.voltage,
                                           plot_error= False,
                                           min_Pg_dev = True)
 
