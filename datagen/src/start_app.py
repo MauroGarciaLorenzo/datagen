@@ -22,7 +22,6 @@ import logging
 import sys
 import traceback
 
-from scripts.postprocess.join_and_cleanup_csvs import join_and_cleanup_csvs
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ import time
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
-from .file_io import save_results, init_dst_dir
+from .file_io import save_results, init_dst_dir, join_and_cleanup_csvs
 
 try:
     from pycompss.api.task import task
@@ -46,7 +45,8 @@ except ImportError:
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
           feasible_rate=0, func_params = {}, warmup=False, logging_level=logging.INFO,
-          working_dir=None):
+          working_dir=None, entropy_threshold=0.2, delta_entropy_threshold=0,
+          chunk_size=5000, computing_units=10):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -83,6 +83,23 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     default [logging.ERROR]
     """
 
+    # Set up the logging level for the execution
+    setup_logger(logging_level, dst_dir)
+
+    print(f"\n{''.join(['='] * 30)}\n"
+                f"Running application with the following parameters:"
+                f"\n{''.join(['='] * 30)}", flush=True)
+
+    # Gather arguments as a dictionary
+    args_dict = locals()
+
+    # Print arguments nicely
+    for key, value in list(args_dict.items()):
+        if key != "func_params" and key != "args_dict":
+            print(f"{key}: {value}", flush=True)
+    print(f"{''.join(['='] * 30)}\n", flush=True)
+    os.environ["COMPUTING_UNITS"] = str(computing_units)
+
     # Set working dir to datagen root directory
     if working_dir is None:
         working_dir = os.path.join(os.path.dirname(__file__), "..", "..")
@@ -100,8 +117,6 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         logger.info(
             f"Using existing results directory: {os.path.abspath(dst_dir)}")
 
-    # Set up the logging level for the execution
-    setup_logger(logging_level, dst_dir)
 
     # Load imports in every executor before execution
     logger.info(f"DESTINATION DIR: {dst_dir}")
@@ -142,7 +157,9 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
                      divs_per_cell=divs_per_cell, generator=generator,
                      feasible_rate=feasible_rate, func_params=func_params,
-                     dst_dir=dst_dir))
+                     dst_dir=dst_dir, chunk_size=chunk_size,
+                     entropy_threshold=entropy_threshold,
+                     delta_entropy_threshold=delta_entropy_threshold))
 
     execution_logs = compss_wait_on(execution_logs)
 
