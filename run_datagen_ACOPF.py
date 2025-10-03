@@ -45,7 +45,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     feasible_rate = setup["feasible_rate"]
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
-    chunk_size = setup["chunk_size"]
+    chunk_size = setup["chunk_length"]
     computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     # Slurm configuration
@@ -232,7 +232,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
         dst_dir=path_results, warmup=warmup, feasible_rate=feasible_rate,
-        entropy_threshold=entropy_threshold, chunk_size=chunk_size,
+        entropy_threshold=entropy_threshold, chunk_length=chunk_size,
         delta_entropy_threshold=delta_entropy_threshold,
         computing_units=computing_units
     )

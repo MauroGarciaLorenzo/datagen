@@ -63,7 +63,7 @@ def main(setup_path="setup/default_setup.yaml"):
     feasible_rate = setup["feasible_rate"]
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
-    chunk_size = setup["chunk_size"]
+    chunk_size = setup["chunk_length"]
     computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     use_sensitivity = True
@@ -82,11 +82,11 @@ def main(setup_path="setup/default_setup.yaml"):
                f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
     path_results = os.path.join("results", dir_name)
     execution_logs = \
-        start(dimensions, n_samples, rel_tolerance, func=dummy, 
+        start(dimensions, n_samples, rel_tolerance, func=dummy,
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None,
               divs_per_cell=2, plot_boxplot=False, seed=seed,
               dst_dir=path_results, logging_level=logging_level,
-              feasible_rate=feasible_rate, chunk_size=chunk_size,
+              feasible_rate=feasible_rate, chunk_length=chunk_size,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold,
               computing_units=computing_units

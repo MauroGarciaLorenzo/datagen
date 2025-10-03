@@ -89,7 +89,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         output_dataframes_chunk.append(output_dfs)
         index += 1
 
-        if index % chunk_size == 0 or index == len(cases_df):
+        if index % chunk_length == 0 or index == len(cases_df):
             stabilities_chunk = compss_wait_on(stabilities_chunk)
             stabilities.extend(stabilities_chunk)
             output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
@@ -187,18 +187,18 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
         # Recursive case returns children info
         children_info = explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
-                              depth=depth, dims_df=dims_df, func=func,
-                              n_samples=n_samples,
-                              use_sensitivity=use_sensitivity,
-                              max_depth=max_depth, divs_per_cell=divs_per_cell,
-                              generator=generator, feasible_rate=feasible_rate,
-                              func_params=func_params,
-                              parent_entropy=parent_entropy,
-                              parent_name=cell_name,
-                              dst_dir=dst_dir, chunk_size=chunk_size,
-                              entropy_threshold=entropy_threshold,
-                              delta_entropy_threshold=delta_entropy_threshold
-                              )
+                                     depth=depth, dims_df=dims_df, func=func,
+                                     n_samples=n_samples,
+                                     use_sensitivity=use_sensitivity,
+                                     max_depth=max_depth, divs_per_cell=divs_per_cell,
+                                     generator=generator, feasible_rate=feasible_rate,
+                                     func_params=func_params,
+                                     parent_entropy=parent_entropy,
+                                     parent_name=cell_name,
+                                     dst_dir=dst_dir, chunk_size=chunk_length,
+                                     entropy_threshold=entropy_threshold,
+                                     delta_entropy_threshold=delta_entropy_threshold
+                                     )
 
         return children_info
 
@@ -255,7 +255,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
             divs_per_cell=divs_per_cell, generator=generator,
             feasible_rate=feasible_rate, func_params=func_params,
             cell_name=cell_name, dst_dir=dst_dir,
-            entropy_threshold=entropy_threshold, chunk_size=chunk_size,
+            entropy_threshold=entropy_threshold, chunk_length=chunk_size,
             delta_entropy_threshold=delta_entropy_threshold
         )
 

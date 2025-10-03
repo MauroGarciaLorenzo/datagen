@@ -46,7 +46,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
           feasible_rate=0, func_params = {}, warmup=False, logging_level=logging.INFO,
           working_dir=None, entropy_threshold=0.2, delta_entropy_threshold=0,
-          chunk_size=5000, computing_units=10):
+          chunk_length=5000, computing_units=10):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -157,7 +157,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
                      divs_per_cell=divs_per_cell, generator=generator,
                      feasible_rate=feasible_rate, func_params=func_params,
-                     dst_dir=dst_dir, chunk_size=chunk_size,
+                     dst_dir=dst_dir, chunk_length=chunk_length,
                      entropy_threshold=entropy_threshold,
                      delta_entropy_threshold=delta_entropy_threshold))
 

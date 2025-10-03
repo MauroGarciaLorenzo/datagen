@@ -236,9 +236,9 @@ use_sensitivity = True
 cases_df, dims_df, execution_logs, output_dataframes = \
     start(dimensions=dimensions, n_samples=n_samples,
           rel_tolerance=rel_tolerance, func=small_signal_stability,
-          max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax, 
+          max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
           divs_per_cell=2, seed=5, feasible_rate=feasible_rate,
-          entropy_threshold=entropy_threshold, chunk_size=chunk_size,
+          entropy_threshold=entropy_threshold, chunk_length=chunk_size,
           delta_entropy_threshold=delta_entropy_threshold,
           computing_units=computing_units
           )
