@@ -30,7 +30,7 @@ from datagen.src.evaluator import eval_entropy, eval_stability
 @task(returns=1, on_failure='FAIL', priority=True)
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  use_sensitivity, max_depth, divs_per_cell, generator,
-                 feasible_rate, func_params, entropy_threshold, chunk_size,
+                 feasible_rate, func_params, entropy_threshold, chunk_length,
                  delta_entropy_threshold, dst_dir=None, cell_name="",
                  ):
     """Explore every cell in the algorithm while its delta entropy is positive.
