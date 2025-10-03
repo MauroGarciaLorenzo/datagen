@@ -195,7 +195,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                                      func_params=func_params,
                                      parent_entropy=parent_entropy,
                                      parent_name=cell_name,
-                                     dst_dir=dst_dir, chunk_size=chunk_length,
+                                     dst_dir=dst_dir, chunk_length=chunk_length,
                                      entropy_threshold=entropy_threshold,
                                      delta_entropy_threshold=delta_entropy_threshold
                                      )
@@ -207,7 +207,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
                  feasible_rate, func_params, parent_entropy,
                  parent_name, dst_dir, entropy_threshold, delta_entropy_threshold,
-                 chunk_size):
+                 chunk_length):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -255,7 +255,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
             divs_per_cell=divs_per_cell, generator=generator,
             feasible_rate=feasible_rate, func_params=func_params,
             cell_name=cell_name, dst_dir=dst_dir,
-            entropy_threshold=entropy_threshold, chunk_length=chunk_size,
+            entropy_threshold=entropy_threshold, chunk_length=chunk_length,
             delta_entropy_threshold=delta_entropy_threshold
         )
 

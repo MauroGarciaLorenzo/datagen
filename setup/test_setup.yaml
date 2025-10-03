@@ -1,18 +1,18 @@
+chunk_length: 5000
+delta_entropy_threshold: 0
+entropy_threshold: 0.2
 environment:
   COMPUTING_UNITS: 10
+feasible_rate: 0.5
 generators_power_factor: 0.98
 grid_name: IEEE118
 loads_power_factor: 0.98
 max_depth: 1
-n_cases: 1
+n_cases: 10
 n_pf: 1
-n_samples: 2
+n_samples: 10
 rel_tolerance: 0.01
 seed: 17
-feasible_rate: 0.5
-entropy_threshold: 0.2
-delta_entropy_threshold: 0
-chunk_size: 5000
 v_min_v_max_delta_v:
 - 0.95
 - 1.05

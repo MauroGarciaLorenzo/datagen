@@ -65,7 +65,7 @@ def main(setup_path="setup/default_setup.yaml"):
     feasible_rate = setup["feasible_rate"]
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
-    chunk_size = setup["chunk_length"]
+    chunk_length = setup["chunk_length"]
     computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     # Set up seeded generator
@@ -121,7 +121,7 @@ def main(setup_path="setup/default_setup.yaml"):
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
               divs_per_cell=2, plot_boxplot=False, seed=seed,
               dst_dir=path_results, logging_level=logging_level,
-              feasible_rate=feasible_rate, chunk_length=chunk_size,
+              feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold,
               computing_units=computing_units

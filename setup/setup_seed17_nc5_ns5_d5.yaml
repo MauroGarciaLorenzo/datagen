@@ -12,6 +12,6 @@ grid_name: IEEE118
 feasible_rate: 0.5
 entropy_threshold: 0.2
 delta_entropy_threshold: 0
-chunk_size: 5000
+chunk_length: 5000
 environment:
   COMPUTING_UNITS: 10

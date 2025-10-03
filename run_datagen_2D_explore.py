@@ -37,7 +37,7 @@ def main(working_dir):
     feasible_rate = 0.5
     entropy_threshold = 0.2
     delta_entropy_threshold = 0
-    chunk_size = 5000
+    chunk_length = 5000
 
     # Get computing units assigned to the objective function
     cu = os.environ.get("COMPUTING_UNITS", default=None)
@@ -75,7 +75,7 @@ def main(working_dir):
               max_depth=max_depth, dst_dir=path_results,
               use_sensitivity=use_sensitivity, ax=ax,
               divs_per_cell=divs_per_cell, plot_boxplot=True, seed=seed,
-              feasible_rate=feasible_rate, chunk_length=chunk_size,
+              feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold)
 

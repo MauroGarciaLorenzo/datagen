@@ -172,7 +172,7 @@ max_depth = 3
 feasible_rate = 0.5
 entropy_threshold = 0.2
 delta_entropy_threshold = 0
-chunk_size = 5000
+chunk_length = 5000
 computing_units = 10
 
 dimensions = dict()
@@ -238,7 +238,7 @@ cases_df, dims_df, execution_logs, output_dataframes = \
           rel_tolerance=rel_tolerance, func=small_signal_stability,
           max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
           divs_per_cell=2, seed=5, feasible_rate=feasible_rate,
-          entropy_threshold=entropy_threshold, chunk_length=chunk_size,
+          entropy_threshold=entropy_threshold, chunk_length=chunk_length,
           delta_entropy_threshold=delta_entropy_threshold,
           computing_units=computing_units
           )

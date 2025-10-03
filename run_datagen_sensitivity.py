@@ -41,7 +41,7 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     feasible_rate = setup["feasible_rate"]
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
-    chunk_size = setup["chunk_length"]
+    chunk_length = setup["chunk_length"]
     computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     dimensions = [
@@ -71,7 +71,7 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
               use_sensitivity=use_sensitivity,
               divs_per_cell=divs_per_cell, plot_boxplot=False, seed=seed,
               logging_level=logging_level, feasible_rate=feasible_rate,
-              entropy_threshold=entropy_threshold, chunk_length=chunk_size,
+              entropy_threshold=entropy_threshold, chunk_length=chunk_length,
               delta_entropy_threshold=delta_entropy_threshold,
               computing_units=computing_units)
 

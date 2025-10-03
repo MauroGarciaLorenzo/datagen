@@ -56,7 +56,7 @@ class TestExplorer(TestCase):
         self.parent_entropy = 0
         self.parent_name = "0"
         self.dst_dir = "results"
-        self.chunk_size = 10
+        self.chunk_length = 10
         self.entropy_threshold = 0.2
         self.delta_entropy_threshold = 0
 
@@ -79,7 +79,7 @@ class TestExplorer(TestCase):
             parent_entropy=self.parent_entropy,
             parent_name=self.parent_name,
             dst_dir=self.dst_dir,
-            chunk_size=self.chunk_size,
+            chunk_length=self.chunk_length,
             entropy_threshold=self.entropy_threshold,
             delta_entropy_threshold=self.delta_entropy_threshold
         )
