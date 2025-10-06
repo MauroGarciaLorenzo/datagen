@@ -38,6 +38,7 @@ def main(working_dir):
     entropy_threshold = 0.2
     delta_entropy_threshold = 0
     chunk_length = 5000
+    computing_units = 1
 
     # Get computing units assigned to the objective function
     cu = os.environ.get("COMPUTING_UNITS", default=None)
@@ -77,7 +78,8 @@ def main(working_dir):
               divs_per_cell=divs_per_cell, plot_boxplot=True, seed=seed,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
-              delta_entropy_threshold=delta_entropy_threshold)
+              delta_entropy_threshold=delta_entropy_threshold,
+              computing_units=computing_units)
 
     fig_path = os.path.join(
         path_results, "figures/2D_contour_plot_complex_shape.png")
