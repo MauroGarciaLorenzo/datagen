@@ -104,7 +104,15 @@ def feasible_power_flow_ACOPF(case, **kwargs):
             bus.Vm0=voltage_profile_list[idx_bus]
             bus.Va0 = 0
     elif v_set != None:
-        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op, V_set=v_set)
+        
+        voltage_profile_list = np.ones(len(gridCal_grid.get_buses()))
+        
+        assign_Generators_to_grid.assign_PVGen(GridCal_grid=gridCal_grid, d_raw_data=d_raw_data, d_op=d_op,
+                                                voltage_profile_list=voltage_profile_list, indx_id=indx_id)
+                
+        for idx_bus, bus in enumerate(gridCal_grid.get_buses()):
+            bus.Vm0=voltage_profile_list[idx_bus]
+            bus.Va0 = 0
 
     assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
