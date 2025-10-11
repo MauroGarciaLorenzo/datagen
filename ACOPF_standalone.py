@@ -68,6 +68,7 @@ def main(working_dir='', path_data='', setup_path=''):
 
     n_pf = setup["n_pf"]
     voltage_profile = setup["voltage_profile"]
+    v_set = setup["v_set"]
     v_min_v_max_delta_v = setup["v_min_v_max_delta_v"]
     loads_power_factor = setup["loads_power_factor"]
     generators_power_factor = setup["generators_power_factor"]
@@ -262,6 +263,7 @@ def main(working_dir='', path_data='', setup_path=''):
                    "d_sg": d_sg,
                    "d_vsc": d_vsc, "voltage_profile": voltage_profile,
                    "v_min_v_max_delta_v": v_min_v_max_delta_v,
+                   "v_set":v_set,
                    "fAndG_penalty_term": fAndG}
 #                   "opf_obj_fun":opf_obj_fun}
 
@@ -271,7 +273,7 @@ def main(working_dir='', path_data='', setup_path=''):
 #        if _ == 5:
         stability, output_dataframes = eval_stability(
             case=case,
-            f=feasible_power_flow_ACOPF,
+            f=optimal_power_flow_scipy,
             func_params=func_params,
             generator=generator)
         stability_array.append(stability)
