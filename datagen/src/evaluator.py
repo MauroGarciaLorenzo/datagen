@@ -12,7 +12,7 @@ except ImportError:
 
 
 @constraint(computing_units=os.environ.get('COMPUTING_UNITS', '1'))
-@task(returns=2, on_failure='FAIL')
+@task(returns=2)
 def eval_stability(case, f, func_params, **kwargs):
     """Call objective function and return its result.
 
