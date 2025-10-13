@@ -1,9 +1,9 @@
 chunk_length: 5000
 delta_entropy_threshold: 0
-entropy_threshold: 0.2
+entropy_threshold: 0.05
 environment:
   COMPUTING_UNITS: 10
-feasible_rate: 0.5
+feasible_rate: 0.1
 generators_power_factor: 0.98
 grid_name: IEEE118
 loads_power_factor: 0.98

@@ -34,8 +34,8 @@ def main(working_dir):
     use_sensitivity = False
     seed = 17
     divs_per_cell = 3
-    feasible_rate = 0.5
-    entropy_threshold = 0.2
+    feasible_rate = 0.1
+    entropy_threshold = 0.05
     delta_entropy_threshold = 0
     chunk_length = 5000
     computing_units = 1

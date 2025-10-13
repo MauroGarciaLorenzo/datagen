@@ -44,8 +44,8 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0, func_params = {}, warmup=False, logging_level=logging.INFO,
-          working_dir=None, entropy_threshold=0.2, delta_entropy_threshold=0,
+          feasible_rate=0.1, func_params = {}, warmup=False, logging_level=logging.INFO,
+          working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
           chunk_length=5000, computing_units=10):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete

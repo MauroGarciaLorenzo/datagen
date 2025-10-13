@@ -49,7 +49,7 @@ class TestExplorer(TestCase):
         self.use_sensitivity = False
         self.max_depth = 2
         self.divs_per_cell = 2
-        self.feasible_rate = 0.5
+        self.feasible_rate = 0.1
         self.func_params = {}
         self.func = dummy
         self.dataframes = {}
@@ -57,7 +57,7 @@ class TestExplorer(TestCase):
         self.parent_name = "0"
         self.dst_dir = "results"
         self.chunk_length = 10
-        self.entropy_threshold = 0.2
+        self.entropy_threshold = 0.05
         self.delta_entropy_threshold = 0
 
     def test_explore_grid(self):
