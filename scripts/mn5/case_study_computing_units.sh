@@ -10,7 +10,8 @@ export COMPSS_PYTHON_VERSION="3.12.1"
 module load hdf5
 module load sqlite3
 module load python/3.12.1
-module load COMPSs/3.3
+module use /apps/GPP/modulefiles/applications/COMPSs/.custom
+module load TrunkMauro
 
 # Check arguments
 if [ $# -eq 0 ]; then
