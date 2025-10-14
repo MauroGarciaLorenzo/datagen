@@ -42,7 +42,6 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
-    computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     dimensions = [
         Dimension(label="tau_Dim_0", n_cases=n_cases, divs=1, borders=(-1, 1)),

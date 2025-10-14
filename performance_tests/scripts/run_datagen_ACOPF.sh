@@ -26,12 +26,20 @@ echo "Username is: $username"
 echo "Using $working_dir as the working directory"
 echo "Current directory is $(pwd)"
 
+# Extract COMPUTING_UNITS from YAML
+COMPUTING_UNITS=$(grep -A 5 '^environment:' "$yaml_file" | grep 'COMPUTING_UNITS' | awk '{print $2}' | tr -d ' ')
+
+if [[ -z "$COMPUTING_UNITS" ]]; then
+  echo "COMPUTING_UNITS not found in YAML"
+  exit 1
+fi
+echo "Using ${COMPUTING_UNITS} computing units"
+export COMPUTING_UNITS
+
 # Run COMPSs execution
 num_nodes=1
-computing_units=1
 while [ ${num_nodes} -le 1 ]
 do
-  export COMPUTING_UNITS=${computing_units}
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
   --num_nodes=${num_nodes} \

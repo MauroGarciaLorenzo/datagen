@@ -38,14 +38,7 @@ def main(working_dir):
     entropy_threshold = 0.05
     delta_entropy_threshold = 0
     chunk_length = 5000
-    computing_units = 1
 
-    # Get computing units assigned to the objective function
-    cu = os.environ.get("COMPUTING_UNITS", default=None)
-    cu_str = ""
-    if cu:
-        cu_str = f"_cu{cu}"
-    print("COMPUTING_UNITS: ", cu)
     # Get slurm job id
     slurm_job_id = os.getenv("SLURM_JOB_ID", default=None)
     slurm_str = ""

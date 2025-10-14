@@ -46,7 +46,6 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
-    computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)

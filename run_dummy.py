@@ -64,7 +64,6 @@ def main(setup_path="setup/default_setup.yaml"):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
-    computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     use_sensitivity = True
     logging_level = logging.INFO
