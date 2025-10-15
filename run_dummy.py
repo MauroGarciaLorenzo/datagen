@@ -88,7 +88,6 @@ def main(setup_path="setup/default_setup.yaml"):
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold,
-              computing_units=computing_units
               )
     return path_results
 

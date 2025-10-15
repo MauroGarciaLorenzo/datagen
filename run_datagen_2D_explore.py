@@ -53,12 +53,6 @@ def main(working_dir):
     # Create unique directory name for results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     rnd_num = random.randint(1000, 9999)
-    dir_name = f"datagen_2D_explore{slurm_str}{cu_str}{slurm_nodes_str}_seed{seed}_nc{n_cases}" \
-               f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
-    path_results = os.path.join(
-        working_dir, "results", dir_name)
-    if not os.path.isdir(path_results):
-        os.makedirs(path_results)
 
     # Plot heat map
     add_color_map(ax, fig)
@@ -66,13 +60,13 @@ def main(working_dir):
     cases_df, dims_df, execution_logs, output_dataframes = \
         start(dimensions, n_samples, rel_tolerance,
               func=complex_2d_shape_obj_func,
-              max_depth=max_depth, dst_dir=path_results,
+              max_depth=max_depth,
               use_sensitivity=use_sensitivity, ax=ax,
               divs_per_cell=divs_per_cell, plot_boxplot=True, seed=seed,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
-              delta_entropy_threshold=delta_entropy_threshold,
-              computing_units=computing_units)
+              delta_entropy_threshold=delta_entropy_threshold
+              )
 
     fig_path = os.path.join(
         path_results, "figures/2D_contour_plot_complex_shape.png")

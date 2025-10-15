@@ -233,7 +233,6 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         dst_dir=path_results, warmup=warmup, feasible_rate=feasible_rate,
         entropy_threshold=entropy_threshold, chunk_length=chunk_length,
         delta_entropy_threshold=delta_entropy_threshold,
-        computing_units=computing_units
     )
 
     stability_array = compss_wait_on(stability_array)

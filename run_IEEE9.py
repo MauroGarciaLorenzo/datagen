@@ -173,7 +173,6 @@ feasible_rate = 0.1
 entropy_threshold = 0.05
 delta_entropy_threshold = 0
 chunk_length = 5000
-computing_units = 10
 
 dimensions = dict()
 dimensions = [
@@ -239,8 +238,7 @@ cases_df, dims_df, execution_logs, output_dataframes = \
           max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
           divs_per_cell=2, seed=5, feasible_rate=feasible_rate,
           entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-          delta_entropy_threshold=delta_entropy_threshold,
-          computing_units=computing_units
+          delta_entropy_threshold=delta_entropy_threshold
           )
 
 # if __name__ == "__main__":
