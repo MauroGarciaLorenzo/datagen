@@ -65,8 +65,22 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     stabilities = []
     feasible_cases = 0
 
-    if not os.path.exists(os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))\
-            and not os.path.exists(os.path.join(dst_dir, f"dims_df_{cell_name}.csv")):
+    if os.path.exists(os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))\
+            and os.path.exists(os.path.join(dst_dir, f"dims_df_{cell_name}.csv")):
+        message = f"Skypping cell {cell_name}"
+        logger.info(message)
+        print(message, flush=True)
+        cases_df = pd.read_csv(
+            os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))
+        dims_df = pd.read_csv(
+            os.path.join(dst_dir, f"dims_df_{cell_name}.csv"))
+        stabilities = cases_df["Stability"]
+        for stability in stabilities:
+            if stability >= 0:
+                feasible_cases += 1
+
+    else:
+
         # Generate samples (n_samples for each dimension)
         samples_df = gen_samples(n_samples, dimensions, generator)
         # Generate cases (n_cases (attribute of the class Dimension) for each dim)
@@ -136,17 +150,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
         # dims_df is static, save once
         save_df(dims_df, dst_dir, cell_name, "dims_df")
-    else:
-        message = f"Skypping cell {cell_name}"
-        logger.info(message)
-        print(message, flush=True)
-        cases_df = pd.read_csv(os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))
-        dims_df = pd.read_csv(
-            os.path.join(dst_dir, f"dims_df_{cell_name}.csv"))
-        stabilities = cases_df["Stability"]
-        for stability in stabilities:
-            if stability >= 0:
-                feasible_cases += 1
+
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:
