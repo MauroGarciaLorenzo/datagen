@@ -136,7 +136,9 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         # dims_df is static, save once
         save_df(dims_df, dst_dir, cell_name, "dims_df")
     else:
-        logger.info(f"Skypping cell {cell_name}")
+        message = f"Skypping cell {cell_name}"
+        logger.info(message)
+        print(message, flush=True)
         cases_df = pd.read_csv(os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))
         stabilities = cases_df["Stability"]
         for stability in stabilities:
