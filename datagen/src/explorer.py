@@ -140,6 +140,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         logger.info(message)
         print(message, flush=True)
         cases_df = pd.read_csv(os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))
+        dims_df = pd.read_csv(
+            os.path.join(dst_dir, f"dims_df_{cell_name}.csv"))
         stabilities = cases_df["Stability"]
         for stability in stabilities:
             if stability >= 0:
@@ -147,9 +149,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:
-        if not os.path.exists(os.path.join(dst_dir, f"cases_df_{cell_name}.csv")):
-            dims_df = pd.read_csv(
-                os.path.join(dst_dir, f"dims_df_{cell_name}.csv"))
         plot_stabilities(ax, cases_df, dims_df, dst_dir)
 
     parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy) #(cases_df, cases_heritage_df)#
