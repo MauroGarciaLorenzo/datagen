@@ -65,7 +65,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     stabilities = []
     feasible_cases = 0
 
-    if not os.path.exists(os.path.join(dst_dir, f"cases_df_{cell_name}.csv")):
+    if not os.path.exists(os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))\
+            and not os.path.exists(os.path.join(dst_dir, f"dims_df_{cell_name}.csv")):
         # Generate samples (n_samples for each dimension)
         samples_df = gen_samples(n_samples, dimensions, generator)
         # Generate cases (n_cases (attribute of the class Dimension) for each dim)
