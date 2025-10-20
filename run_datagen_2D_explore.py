@@ -57,7 +57,7 @@ def main(working_dir):
     # Plot heat map
     add_color_map(ax, fig)
 
-    cases_df, dims_df, execution_logs, output_dataframes = \
+    execution_logs, path_results = \
         start(dimensions, n_samples, rel_tolerance,
               func=complex_2d_shape_obj_func,
               max_depth=max_depth,

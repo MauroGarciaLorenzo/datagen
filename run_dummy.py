@@ -64,11 +64,10 @@ def main(setup_path="setup/default_setup.yaml"):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
+    dst_dir = setup.get("dst_dir") or None
 
     use_sensitivity = True
     logging_level = logging.INFO
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    rnd_num = random.randint(1000, 9999)
     #fig, ax = plt.subplots()
     dimensions = [
         Dimension(variable_borders=variables_d0, n_cases=n_cases, divs=2,
@@ -77,19 +76,18 @@ def main(setup_path="setup/default_setup.yaml"):
                   borders=(1, 6), label="Dim_1")
     ]
 
-    dir_name = f"dummy_seed{seed}_nc{n_cases}" \
-               f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
-    path_results = os.path.join("results", dir_name)
-    execution_logs = \
+
+    execution_logs, dst_dir = \
         start(dimensions, n_samples, rel_tolerance, func=dummy,
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None,
               divs_per_cell=2, plot_boxplot=False, seed=seed,
-              dst_dir=path_results, logging_level=logging_level,
+              dst_dir=dst_dir, logging_level=logging_level,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold,
+              yaml_path=setup_path
               )
-    return path_results
+    return dst_dir
 
 if __name__ == '__main__':
     args = sys.argv

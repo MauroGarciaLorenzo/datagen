@@ -42,6 +42,7 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
+    dst_dir = setup.get("dst_dir") or None
 
     dimensions = [
         Dimension(label="tau_Dim_0", n_cases=n_cases, divs=1, borders=(-1, 1)),
@@ -52,31 +53,25 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
         Dimension(label="tau_Dim_5", n_cases=n_cases, divs=1, borders=(-1, 1))
     ]
 
-    dir_name = f"datagen_sensitivity_seed{seed}_nc{n_cases}" \
-               f"_ns{n_samples}_d{max_depth}"
-    path_results = os.path.join(
-        working_dir, "results", dir_name)
-    if not os.path.isdir(path_results):
-        os.makedirs(path_results)
-
     stability_array = []
     output_dataframes_array = []
 
 
-    cases_df, dims_df, execution_logs, output_dataframes = \
+    execution_logs, dst_dir = \
         start(dimensions, n_samples, rel_tolerance,
               func=test_sensitivity_obj_func,
-              max_depth=max_depth, dst_dir=path_results,
+              max_depth=max_depth, dst_dir=dst_dir,
               use_sensitivity=use_sensitivity,
               divs_per_cell=divs_per_cell, plot_boxplot=False, seed=seed,
               logging_level=logging_level, feasible_rate=feasible_rate,
               entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-              delta_entropy_threshold=delta_entropy_threshold
+              delta_entropy_threshold=delta_entropy_threshold,
+              yaml_path=setup_path
               )
 
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
-    return os.path.abspath(path_results)
+    return dst_dir
 
 
 if __name__ == "__main__":

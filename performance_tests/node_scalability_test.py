@@ -11,7 +11,7 @@ from pycompss.api.task import task
 def main(result_dir=None, *args):
     (dimensions, n_samples, rel_tolerance, func, max_depth, use_sensitivity,
      ax, divs_per_cell, plot_boxplot) = setUp_complex()
-    cases_df, dims_df, execution_logs = start(dimensions, n_samples,
+    execution_logs, result_dir = start(dimensions, n_samples,
                                               rel_tolerance, func, max_depth,
                                               use_sensitivity=use_sensitivity,
                                               ax=ax, divs_per_cell=2, seed=4)
@@ -25,10 +25,6 @@ def main(result_dir=None, *args):
                     os.unlink(file_path)
             except Exception as e:
                 print(f"Error deleting files within {file_path}: {e}")
-
-        cases_df.to_csv(os.path.join(result_dir, "cases_df.csv"), index=False)
-
-        dims_df.to_csv(os.path.join(result_dir, "dims_df.csv"), index=False)
 
         with open(os.path.join(result_dir, "execution_logs.txt"), "w") as log_file:
             for log_entry in execution_logs:

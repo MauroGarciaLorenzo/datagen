@@ -19,6 +19,7 @@ cases and their associated stability."""
 import os
 import random
 import logging
+import shutil
 import sys
 import traceback
 
@@ -46,7 +47,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
           feasible_rate=0.1, func_params = {}, warmup=False, logging_level=logging.INFO,
           working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
-          chunk_length=5000):
+          chunk_length=5000, yaml_path=None):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -83,9 +84,6 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     default [logging.ERROR]
     """
 
-    # Set up the logging level for the execution
-    setup_logger(logging_level, dst_dir)
-
     print(f"\n{''.join(['='] * 30)}\n"
                 f"Running application with the following parameters:"
                 f"\n{''.join(['='] * 30)}", flush=True)
@@ -111,14 +109,20 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
 
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
-        logger.info(f"Created results directory: {os.path.abspath(dst_dir)}")
-    else:
-        logger.info(
-            f"Using existing results directory: {os.path.abspath(dst_dir)}")
+        print(f"Created results directory: {os.path.abspath(dst_dir)}")
 
+    else:
+        print(f"Using existing results directory: {os.path.abspath(dst_dir)}")
+
+    # Set up the logging level for the execution
+    setup_logger(logging_level, dst_dir)
 
     # Load imports in every executor before execution
     logger.info(f"DESTINATION DIR: {dst_dir}")
+
+    #Write yaml_path
+    if yaml_path is not None:
+        shutil.copy(yaml_path, dst_dir)
 
     print(f"Current logging level: {logging.getLevelName(logging.getLogger().getEffectiveLevel())}")
 
@@ -173,8 +177,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         cases_df = pd.read_csv(f"{dst_dir}/cases_df_join.csv")
         boxplot(cases_df, dst_dir)
 
-
-    return execution_logs
+    return execution_logs, dst_dir
 
 
 def setup_logger(logging_level, dst_dir):

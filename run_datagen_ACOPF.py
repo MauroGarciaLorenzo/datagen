@@ -46,41 +46,13 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
+    dst_dir = setup.get("dst_dir") or None
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-    # Get computing units assigned to the objective function
-    cu = os.environ.get("COMPUTING_UNITS", default=None)
-    cu_str = ""
-    if cu:
-        cu_str = f"_cu{cu}"
-    print("COMPUTING_UNITS: ", cu)
-    # Get slurm job id
-    slurm_job_id = os.getenv("SLURM_JOB_ID", default=None)
-    slurm_str = ""
-    if slurm_job_id:
-        slurm_str = f"_slurm{slurm_job_id}"
-    # Get slurm n_nodes
-    slurm_num_nodes = os.environ.get('SLURM_JOB_NUM_NODES', default=None)
-    slurm_nodes_str = ""
-    if slurm_num_nodes:
-        slurm_nodes_str = f"_nodes{slurm_num_nodes}"
-    print("NUMBER OF NODES: ", slurm_num_nodes)
-    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-    # CASE CONFIGURATION
-    # Create unique directory name for results
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    rnd_num = random.randint(1000, 9999)
-    dir_name = f"datagen_ACOPF{slurm_str}{cu_str}{slurm_nodes_str}_LF09_seed{seed}_nc{n_cases}" \
-               f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
-    path_results = os.path.join(
-        working_dir, "results", dir_name)
-    if not os.path.isdir(path_results):
-        os.makedirs(path_results)
-    # Save yaml setup in the results directory
-    with open(os.path.join(path_results, 'case_setup.yaml'), 'w') as f:
-        yaml.dump(setup, f)
 
+
+    # CASE CONFIGURATION
     # %% SET FILE NAMES AND PATHS
     if grid_name == 'IEEE9':
         # IEEE 9
@@ -226,18 +198,18 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 
     stability_array = []
     output_dataframes_array = []
-    execution_logs = start(
+    execution_logs, dst_dir = start(
         dimensions=dimensions, n_samples=n_samples,
         rel_tolerance=rel_tolerance, func=feasible_power_flow_ACOPF,
         max_depth=max_depth, seed=seed, func_params=func_params,
-        dst_dir=path_results, warmup=warmup, feasible_rate=feasible_rate,
+        dst_dir=dst_dir, warmup=warmup, feasible_rate=feasible_rate,
         entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-        delta_entropy_threshold=delta_entropy_threshold,
+        delta_entropy_threshold=delta_entropy_threshold, yaml_path=setup_path
     )
 
     stability_array = compss_wait_on(stability_array)
     output_dataframes_array = compss_wait_on(output_dataframes_array)
-    return path_results
+    return dst_dir
 
 
 if __name__ == "__main__":

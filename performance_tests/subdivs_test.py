@@ -11,12 +11,11 @@ from pycompss.api.task import task
 def main():
     (dimensions, n_samples, rel_tolerance, dummy, max_depth, use_sensitivity,
      ax, divs_per_cell, plot_boxplot) = setUp_basic()
-    cases_df, dims_df, execution_logs = start(dimensions, n_samples,
+    execution_logs, result_dir = start(dimensions, n_samples,
                                               rel_tolerance, dummy, max_depth,
                                               use_sensitivity=use_sensitivity,
                                               ax=ax, divs_per_cell=2)
 
-    result_dir = "results/subdivs"
 
     for file in os.listdir(result_dir):
         file_path = os.path.join(result_dir, file)
@@ -25,10 +24,6 @@ def main():
                 os.unlink(file_path)
         except Exception as e:
             print(f"Error deleting files within {file_path}: {e}")
-
-    cases_df.to_csv(os.path.join(result_dir, "cases_df.csv"), index=False)
-
-    dims_df.to_csv(os.path.join(result_dir, "dims_df.csv"), index=False)
 
     with open(os.path.join(result_dir, "execution_logs.txt"), "w") as log_file:
         for log_entry in execution_logs:

@@ -1,5 +1,5 @@
 from datagen.src.dimensions import Dimension
-from datagen.src.objective_function import matmul
+from datagen.src.objective_function import matmul, dummy
 
 
 def setUp_basic():

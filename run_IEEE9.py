@@ -232,7 +232,7 @@ fig, ax = plt.subplots()
 use_sensitivity = True
 # %%
 
-cases_df, dims_df, execution_logs, output_dataframes = \
+execution_logs, dst_dir = \
     start(dimensions=dimensions, n_samples=n_samples,
           rel_tolerance=rel_tolerance, func=small_signal_stability,
           max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,

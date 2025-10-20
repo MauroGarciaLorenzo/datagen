@@ -62,81 +62,92 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     if not cell_name:
         cell_name = "0"
     logger.info(f"Entering cell {cell_name}")
-    # Generate samples (n_samples for each dimension)
-    samples_df = gen_samples(n_samples, dimensions, generator)
-    # Generate cases (n_cases (attribute of the class Dimension) for each dim)
-    cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
-
-    cases_df['cell_name'] = cell_name
-
     stabilities = []
     feasible_cases = 0
-    stabilities_chunk = []
-    output_dataframes_chunk = []
-    initial_index = 0
-    index = 0
 
-    for _, case in cases_df.iterrows():
-        stability, output_dfs = eval_stability(
-            case=case,
-            f=func,
-            func_params=func_params,
-            dimensions=dimensions,
-            generator=generator
-        )
+    if not os.path.exists(os.path.join(dst_dir, f"cases_df_{cell_name}.csv")):
+        # Generate samples (n_samples for each dimension)
+        samples_df = gen_samples(n_samples, dimensions, generator)
+        # Generate cases (n_cases (attribute of the class Dimension) for each dim)
+        cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
 
-        stabilities_chunk.append(stability)
-        output_dataframes_chunk.append(output_dfs)
-        index += 1
+        cases_df['cell_name'] = cell_name
+        stabilities_chunk = []
+        output_dataframes_chunk = []
+        initial_index = 0
+        index = 0
 
-        if index % chunk_length == 0 or index == len(cases_df):
-            stabilities_chunk = compss_wait_on(stabilities_chunk)
-            stabilities.extend(stabilities_chunk)
-            output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
+        for _, case in cases_df.iterrows():
+            stability, output_dfs = eval_stability(
+                case=case,
+                f=func,
+                func_params=func_params,
+                dimensions=dimensions,
+                generator=generator
+            )
 
-            # update feasible cases
-            for stability in stabilities_chunk:
-                if stability >= 0:
-                    feasible_cases += 1
+            stabilities_chunk.append(stability)
+            output_dataframes_chunk.append(output_dfs)
+            index += 1
 
-            # assign chunk results back to cases_df
-            cases_df.loc[initial_index:index - 1,
-            "Stability"] = stabilities_chunk
+            if index % chunk_length == 0 or index == len(cases_df):
+                stabilities_chunk = compss_wait_on(stabilities_chunk)
+                stabilities.extend(stabilities_chunk)
+                output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
 
-            # save cases_df incrementally
-            save_df(cases_df.iloc[initial_index:index], dst_dir, cell_name,
-                    "cases_df")
+                # update feasible cases
+                for stability in stabilities_chunk:
+                    if stability >= 0:
+                        feasible_cases += 1
 
-            # build and save total_dataframes incrementally
-            total_dataframes = None
-            for output_dfs in output_dataframes_chunk:
+                # assign chunk results back to cases_df
+                cases_df.loc[initial_index:index - 1,
+                "Stability"] = stabilities_chunk
+
+                # save cases_df incrementally
+                save_df(cases_df.iloc[initial_index:index], dst_dir, cell_name,
+                        "cases_df")
+
+                # build and save total_dataframes incrementally
+                total_dataframes = None
+                for output_dfs in output_dataframes_chunk:
+                    if total_dataframes:
+                        total_dataframes = concat_df_dict(total_dataframes,
+                                                          output_dfs)
+                    else:
+                        total_dataframes = output_dfs
+
                 if total_dataframes:
-                    total_dataframes = concat_df_dict(total_dataframes,
-                                                      output_dfs)
-                else:
-                    total_dataframes = output_dfs
+                    labels_to_remove = []
+                    for label, df in total_dataframes.items():
+                        if df is not None and type(df) is not pd.DataFrame:
+                            labels_to_remove.append(label)
+                    for label in labels_to_remove:
+                        total_dataframes.pop(label)
 
-            if total_dataframes:
-                labels_to_remove = []
-                for label, df in total_dataframes.items():
-                    if df is not None and type(df) is not pd.DataFrame:
-                        labels_to_remove.append(label)
-                for label in labels_to_remove:
-                    total_dataframes.pop(label)
+                    for df_name, df in total_dataframes.items():
+                        save_df(df, dst_dir, cell_name, df_name)
 
-                for df_name, df in total_dataframes.items():
-                    save_df(df, dst_dir, cell_name, df_name)
+                # reset chunk buffers
+                initial_index = index
+                stabilities_chunk = []
+                output_dataframes_chunk = []
 
-            # reset chunk buffers
-            initial_index = index
-            stabilities_chunk = []
-            output_dataframes_chunk = []
-
-    # dims_df is static, save once
-    save_df(dims_df, dst_dir, cell_name, "dims_df")
+        # dims_df is static, save once
+        save_df(dims_df, dst_dir, cell_name, "dims_df")
+    else:
+        logger.info(f"Skypping cell {cell_name}")
+        cases_df = pd.read_csv(os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))
+        stabilities = cases_df["Stability"]
+        for stability in stabilities:
+            if stability >= 0:
+                feasible_cases += 1
 
     # Add rectangle to plot axes representing cell borders
     if ax is not None and len(dimensions) == 2:
+        if not os.path.exists(os.path.join(dst_dir, f"cases_df_{cell_name}.csv")):
+            dims_df = pd.read_csv(
+                os.path.join(dst_dir, f"dims_df_{cell_name}.csv"))
         plot_stabilities(ax, cases_df, dims_df, dst_dir)
 
     parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy) #(cases_df, cases_heritage_df)#
