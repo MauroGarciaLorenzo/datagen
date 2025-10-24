@@ -45,7 +45,7 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0.1, func_params = {}, warmup=False, logging_level=logging.INFO,
+          feasible_rate=0, func_params = {}, warmup=False, logging_level=logging.INFO,
           working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
           chunk_length=5000, yaml_path=None):
     """In this method we work with dimensions (main axes), which represent a
@@ -101,6 +101,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     if working_dir is None:
         working_dir = os.path.join(os.path.dirname(__file__), "..", "..")
 
+    # if dst_dir is provided, apply checkpointing. Otherwise, init dst_dir
     if dst_dir is None:
         calling_module = get_calling_module()
         n_cases = dimensions[0].n_cases
