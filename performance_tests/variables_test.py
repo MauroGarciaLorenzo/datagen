@@ -12,9 +12,9 @@ def main():
     (dimensions, n_samples, rel_tolerance, dummy, max_depth, use_sensitivity,
      ax, divs_per_cell, plot_boxplot) = setUp_basic()
     execution_logs, result_dir = start(dimensions, n_samples,
-                                              rel_tolerance, dummy, max_depth,
-                                              use_sensitivity=use_sensitivity,
-                                              ax=ax, divs_per_cell=2)
+                                       rel_tolerance, dummy, max_depth,
+                                       use_sensitivity=use_sensitivity,
+                                       ax=ax, sensitivity_divs=2)
 
 
     for file in os.listdir(result_dir):

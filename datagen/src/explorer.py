@@ -29,7 +29,7 @@ from datagen.src.evaluator import eval_entropy, eval_stability
 @constraint(is_local=True)
 @task(returns=1, priority=True)
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
-                 use_sensitivity, max_depth, divs_per_cell, generator,
+                 use_sensitivity, max_depth, sensitivity_divs, generator,
                  feasible_rate, func_params, entropy_threshold, chunk_length,
                  delta_entropy_threshold, dst_dir=None, cell_name="",
                  ):
@@ -53,11 +53,23 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     :param max_depth: Maximum recursivity depth (it won't subdivide itself if
     exceeded)
     :param dims_heritage_df: Inherited independent_dims dataframe
-    :param divs_per_cell: Number of resultant cells from each recursive call
+    :param sensitivity_divs: Variable containing the number of divisions for
+    each cell at sensitivity analysis
     :param generator: Numpy generator for random values
     :param cell_name: Name of the current cell for logging purposes
     :return children_total: List of children dimensions, entropy,
     delta_entropy and depth
+    :param func_params: Func params to pass to the objective function
+    :param feasible_rate: Minimum rate of feasible cases to continue dividing the cell
+    :param entropy_threshold: Minimum entropy to keep exploring the cell
+    (create new children)
+    :param delta_entropy_threshold: Minimum delta entropy to keep exploring the
+    cell
+    :param chunk_length: Maximum number of calls to eval_stability that will
+    be executed simultaneously. Every chunk tasks, there will be a write to
+    memory of the current cases, dims and dataframes.
+    :param dst_dir: Path where the results will be stored. If the given path
+    already have expored cells, these cells will be skipped.
     """
     if not cell_name:
         cell_name = "0"
@@ -67,7 +79,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
     if os.path.exists(os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))\
             and os.path.exists(os.path.join(dst_dir, f"dims_df_{cell_name}.csv")):
-        message = f"Skypping cell {cell_name}"
+        message = f"Skipping cell {cell_name}"
         logger.info(message)
         print(message, flush=True)
         cases_df = pd.read_csv(
@@ -198,7 +210,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                     cases_heritage_df, cell, dims_heritage_df)
                 cases_df = pd.concat([cases_df, cases_heritage_df],
                                      ignore_index=True)
-            dimensions = sensitivity(cases_df, dimensions, divs_per_cell,
+            dimensions = sensitivity(cases_df, dimensions, sensitivity_divs,
                                      generator)
         children_grid = gen_grid(dimensions)
 
@@ -210,7 +222,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                                      depth=depth, dims_df=dims_df, func=func,
                                      n_samples=n_samples,
                                      use_sensitivity=use_sensitivity,
-                                     max_depth=max_depth, divs_per_cell=divs_per_cell,
+                                     max_depth=max_depth, divs_per_cell=sensitivity_divs,
                                      generator=generator, feasible_rate=feasible_rate,
                                      func_params=func_params,
                                      parent_entropy=parent_entropy,
@@ -272,7 +284,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
             parent_entropy=parent_entropy, depth=depth + 1,
             ax=ax, dimensions=children_cell.dimensions,
             use_sensitivity=use_sensitivity, max_depth=max_depth,
-            divs_per_cell=divs_per_cell, generator=generator,
+            sensitivity_divs=divs_per_cell, generator=generator,
             feasible_rate=feasible_rate, func_params=func_params,
             cell_name=cell_name, dst_dir=dst_dir,
             entropy_threshold=entropy_threshold, chunk_length=chunk_length,

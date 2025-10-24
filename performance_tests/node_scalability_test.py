@@ -12,9 +12,9 @@ def main(result_dir=None, *args):
     (dimensions, n_samples, rel_tolerance, func, max_depth, use_sensitivity,
      ax, divs_per_cell, plot_boxplot) = setUp_complex()
     execution_logs, result_dir = start(dimensions, n_samples,
-                                              rel_tolerance, func, max_depth,
-                                              use_sensitivity=use_sensitivity,
-                                              ax=ax, divs_per_cell=2, seed=4)
+                                       rel_tolerance, func, max_depth,
+                                       use_sensitivity=use_sensitivity,
+                                       ax=ax, sensitivity_divs=2, seed=4)
     if result_dir != None:
         os.makedirs(result_dir, exist_ok=True)
 

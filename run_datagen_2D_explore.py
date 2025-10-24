@@ -62,7 +62,7 @@ def main(working_dir):
               func=complex_2d_shape_obj_func,
               max_depth=max_depth,
               use_sensitivity=use_sensitivity, ax=ax,
-              divs_per_cell=divs_per_cell, plot_boxplot=True, seed=seed,
+              sensitivity_divs=divs_per_cell, plot_boxplot=True, seed=seed,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold

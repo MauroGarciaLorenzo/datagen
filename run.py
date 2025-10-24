@@ -95,9 +95,9 @@ def main():
     fig, ax = plt.subplots()
     use_sensitivity = True
     cases_df, dims_df, execution_logs = \
-        start(dimensions, n_samples, rel_tolerance, func=dummy, 
-              max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None, 
-              divs_per_cell=2, seed=10, d_raw_data=d_raw_data,d_op=d_op, 
+        start(dimensions, n_samples, rel_tolerance, func=dummy,
+              max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None,
+              sensitivity_divs=2, seed=10, d_raw_data=d_raw_data, d_op=d_op,
               GridCal_grid=GridCal_grid, d_grid=d_grid, d_sg=d_sg, d_vsc=d_vsc)
 
 if __name__ == "__main__":

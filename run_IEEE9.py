@@ -236,7 +236,7 @@ execution_logs, dst_dir = \
     start(dimensions=dimensions, n_samples=n_samples,
           rel_tolerance=rel_tolerance, func=small_signal_stability,
           max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
-          divs_per_cell=2, seed=5, feasible_rate=feasible_rate,
+          sensitivity_divs=2, seed=5, feasible_rate=feasible_rate,
           entropy_threshold=entropy_threshold, chunk_length=chunk_length,
           delta_entropy_threshold=delta_entropy_threshold
           )

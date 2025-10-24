@@ -62,7 +62,7 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
               func=test_sensitivity_obj_func,
               max_depth=max_depth, dst_dir=dst_dir,
               use_sensitivity=use_sensitivity,
-              divs_per_cell=divs_per_cell, plot_boxplot=False, seed=seed,
+              sensitivity_divs=divs_per_cell, plot_boxplot=False, seed=seed,
               logging_level=logging_level, feasible_rate=feasible_rate,
               entropy_threshold=entropy_threshold, chunk_length=chunk_length,
               delta_entropy_threshold=delta_entropy_threshold,

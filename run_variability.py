@@ -113,7 +113,7 @@ def main(setup_path="setup/default_setup.yaml"):
     execution_logs, dst_dir = \
         start(dimensions, n_samples, rel_tolerance, func=dummy,
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
-              divs_per_cell=2, plot_boxplot=False, seed=seed,
+              sensitivity_divs=2, plot_boxplot=False, seed=seed,
               dst_dir=dst_dir, logging_level=logging_level,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,

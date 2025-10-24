@@ -44,7 +44,7 @@ except ImportError:
 
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
-          seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
+          seed=1, use_sensitivity=False, ax=None, sensitivity_divs=2, plot_boxplot=False,
           feasible_rate=0, func_params = {}, warmup=False, logging_level=logging.INFO,
           working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
           chunk_length=5000, yaml_path=None):
@@ -59,8 +59,9 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         -cases_df: dataframe containing each case and associated stability
                 taken during the execution.
 
-    :param seed:
-    :param divs_per_cell:
+    :param seed: Seed for creating random numbers (used at explore_cell)
+    :param sensitivity_divs: Variable containing the number of divisions for
+    each cell at sensitivity analysis
     :param dimensions: List of dimensions involved
     :param n_samples: Number of different values for each dimension
     :param rel_tolerance: Fraction of the dimension's range that will be used
@@ -82,6 +83,17 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     :param logging_level: Desired logging level.
     Possible values [logging.INFO|logging.WARNING|logging.ERROR],
     default [logging.ERROR]
+    :param working_dir: Path where to take the data files. If not specified, it
+    is set to datagen root directory.
+    :param entropy_threshold: Minimum entropy to keep exploring the cell
+    (create new children)
+    :param delta_entropy_threshold: Minimum delta entropy to keep exploring the
+    cell
+    :param chunk_length: Maximum number of calls to eval_stability that will
+    be executed simultaneously. Every chunk tasks, there will be a write to
+    memory of the current cases, dims and dataframes.
+    :param dst_dir: Path where the results will be stored. If the given path
+    already have expored cells, these cells will be skipped.
     """
 
     print(f"\n{''.join(['='] * 30)}\n"
@@ -159,7 +171,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         explore_cell(func=func, n_samples=n_samples, parent_entropy=None,
                      depth=0, ax=ax, dimensions=dimensions,
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
-                     divs_per_cell=divs_per_cell, generator=generator,
+                     sensitivity_divs=sensitivity_divs, generator=generator,
                      feasible_rate=feasible_rate, func_params=func_params,
                      dst_dir=dst_dir, chunk_length=chunk_length,
                      entropy_threshold=entropy_threshold,
