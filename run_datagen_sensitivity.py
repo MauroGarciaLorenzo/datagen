@@ -24,8 +24,6 @@ warnings.filterwarnings("ignore")
 
 @task(on_failure='FAIL')
 def main(working_dir=None, setup_path="setup/default_setup.yaml"):
-    use_sensitivity = True
-    divs_per_cell = 4
     logging_level = logging.DEBUG
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
     setup = parse_setup_file(setup_path)
@@ -43,6 +41,8 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
     dst_dir = setup.get("dst_dir") or None
+    use_sensitivity = setup.get("use_sensitivity") or None
+    sensitivity_divs = setup.get("sensitivity_divs")
 
     dimensions = [
         Dimension(label="tau_Dim_0", n_cases=n_cases, divs=1, borders=(-1, 1)),
@@ -62,11 +62,10 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
               func=test_sensitivity_obj_func,
               max_depth=max_depth, dst_dir=dst_dir,
               use_sensitivity=use_sensitivity,
-              sensitivity_divs=divs_per_cell, plot_boxplot=False, seed=seed,
+              sensitivity_divs=sensitivity_divs, plot_boxplot=False, seed=seed,
               logging_level=logging_level, feasible_rate=feasible_rate,
               entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-              delta_entropy_threshold=delta_entropy_threshold,
-              yaml_path=setup_path
+              delta_entropy_threshold=delta_entropy_threshold
               )
 
     stability_array = compss_wait_on(stability_array)

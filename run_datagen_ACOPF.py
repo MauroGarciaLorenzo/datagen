@@ -44,6 +44,8 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
     dst_dir = setup.get("dst_dir") or None
+    use_sensitivity = setup.get("use_sensitivity") or None
+    sensitivity_divs = setup.get("sensitivity_divs")
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -201,7 +203,8 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         max_depth=max_depth, seed=seed, func_params=func_params,
         dst_dir=dst_dir, warmup=warmup, feasible_rate=feasible_rate,
         entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-        delta_entropy_threshold=delta_entropy_threshold, yaml_path=setup_path
+        delta_entropy_threshold=delta_entropy_threshold, yaml_path=setup_path,
+        use_sensitivity=use_sensitivity, sensitivity_divs=sensitivity_divs
     )
 
     stability_array = compss_wait_on(stability_array)

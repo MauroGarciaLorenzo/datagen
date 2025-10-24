@@ -13,5 +13,7 @@ feasible_rate: 0
 entropy_threshold: 0.05
 delta_entropy_threshold: 0
 chunk_length: 5000
+use_sensitivity: false
+sensitivity_divs: 2
 environment:
   COMPUTING_UNITS: 10

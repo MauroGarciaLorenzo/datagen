@@ -65,8 +65,9 @@ def main(setup_path="setup/default_setup.yaml"):
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
     dst_dir = setup.get("dst_dir") or None
+    use_sensitivity = setup.get("use_sensitivity") or None
+    sensitivity_divs = setup.get("sensitivity_divs")
 
-    use_sensitivity = True
     logging_level = logging.INFO
     #fig, ax = plt.subplots()
     dimensions = [
@@ -80,7 +81,7 @@ def main(setup_path="setup/default_setup.yaml"):
     execution_logs, dst_dir = \
         start(dimensions, n_samples, rel_tolerance, func=dummy,
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None,
-              sensitivity_divs=2, plot_boxplot=False, seed=seed,
+              sensitivity_divs=sensitivity_divs, plot_boxplot=False, seed=seed,
               dst_dir=dst_dir, logging_level=logging_level,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
