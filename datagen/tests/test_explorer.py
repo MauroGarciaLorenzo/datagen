@@ -59,6 +59,7 @@ class TestExplorer(TestCase):
         self.chunk_length = 10
         self.entropy_threshold = 0.05
         self.delta_entropy_threshold = 0
+        self.df_names=set()
 
     def test_explore_grid(self):
         print("RUNNING TEST EXPLORE GRID")
@@ -81,7 +82,8 @@ class TestExplorer(TestCase):
             dst_dir=self.dst_dir,
             chunk_length=self.chunk_length,
             entropy_threshold=self.entropy_threshold,
-            delta_entropy_threshold=self.delta_entropy_threshold
+            delta_entropy_threshold=self.delta_entropy_threshold,
+            df_names=self.df_names
         )
         join_and_cleanup_csvs(self.dst_dir)
 

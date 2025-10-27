@@ -40,8 +40,8 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
-    dst_dir = setup.get("dst_dir") or None
-    use_sensitivity = setup.get("use_sensitivity") or None
+    dst_dir = setup.get("dst_dir", None)
+    use_sensitivity = setup.get("use_sensitivity", None)
     sensitivity_divs = setup.get("sensitivity_divs")
 
     dimensions = [

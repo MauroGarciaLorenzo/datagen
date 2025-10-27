@@ -13,8 +13,8 @@ n_pf: 1
 n_samples: 10
 rel_tolerance: 0.01
 seed: 17
-use_sensitivity: false
-sensitivity_divs: 2
+sensitivity_divs: 4
+use_sensitivity: true
 v_min_v_max_delta_v:
 - 0.95
 - 1.05

@@ -138,6 +138,24 @@ def log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_rati
         writer.writerow([cell_name, depth, parent_entropy, delta_entropy, feasible_ratio, status])
 
 
+def get_df_names(dst_dir):
+    """
+    Returns a set of all unique df_names in dst_dir matching pattern {df_name}_{cell_name}.csv,
+    where cell_name = numbers separated by dots.
+    Example match: cases_df_0.1.2.csv -> df_name = cases_df
+    """
+    pattern = re.compile(r"(.+)_([0-9.]+)\.csv$")
+    csv_files = glob.glob(os.path.join(dst_dir, "*.csv"))
+
+    df_names = set()
+    for f in csv_files:
+        fname = os.path.basename(f)
+        m = pattern.match(fname)
+        if m:
+            df_names.add(m.group(1))  # group(1) = df_name
+    return df_names
+
+
 def join_and_cleanup_csvs(dst_dir):
     """
     Joins all {var_name}_{cell_name}.csv files in dst_dir into one {var_name}.csv.
