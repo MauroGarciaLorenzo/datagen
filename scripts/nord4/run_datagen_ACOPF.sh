@@ -1,10 +1,7 @@
-export COMPSS_PYTHON_VERSION="3.12.1"
 module load hdf5
-module load sqlite3
-module load python/3.12.1
-module use /apps/GPP/modulefiles/applications/COMPSs/.custom
-module load TrunkMauro
-
+module load python/3.12.0
+module use /apps/modules/modulefiles/tools/COMPSs/.custom
+module load TrunkMauroNord4
 
 # Parse username splitting the string by delimiter "/"
 IFS='/' read -ra parts <<< "$HOME"
@@ -17,7 +14,7 @@ cd "${SCRIPT_DIR}"/../.. || exit
 datagen_root_dir=$(pwd)
 stability_dir="${datagen_root_dir}/../stability_analysis"
 input_data="${stability_dir}/stability_analysis/data"
-yaml_file="${datagen_root_dir}/setup/setup_test_exploration.yaml"
+yaml_file="${datagen_root_dir}/setup/default_setup.yaml"
 working_dir="/gpfs/scratch/bsc19/$username"
 export PYTHONPATH="${datagen_root_dir}/packages/:${PYTHONPATH}:${datagen_root_dir}"
 
@@ -26,20 +23,12 @@ echo "Username is: $username"
 echo "Using $working_dir as the working directory"
 echo "Current directory is $(pwd)"
 
-# Extract COMPUTING_UNITS from YAML
-COMPUTING_UNITS=$(grep -A 5 '^environment:' "$yaml_file" | grep 'COMPUTING_UNITS' | awk '{print $2}' | tr -d ' ')
-
-if [[ -z "$COMPUTING_UNITS" ]]; then
-  echo "COMPUTING_UNITS not found in YAML"
-  exit 1
-fi
-echo "Using ${COMPUTING_UNITS} computing units"
-export COMPUTING_UNITS
-
 # Run COMPSs execution
-num_nodes=1
-while [ ${num_nodes} -le 1 ]
+num_nodes=2
+computing_units=5
+while [ ${num_nodes} -le 2 ]
 do
+  export COMPUTING_UNITS=${computing_units}
   enqueue_compss \
   --pythonpath=${PYTHONPATH} \
   --num_nodes=${num_nodes} \

@@ -71,8 +71,6 @@ def main(working_dir='', path_data='', setup_path=''):
     n_cases = setup["n_cases"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]
-    computing_units = setup["environment"]["COMPUTING_UNITS"]
-    os.environ["COMPUTING_UNITS"] = str(computing_units)
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))

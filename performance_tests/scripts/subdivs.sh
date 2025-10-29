@@ -1,6 +1,7 @@
 module load python/3.9.10
 pip install scipy
-module load COMPSs/3.3
+module use /apps/GPP/modulefiles/applications/COMPSs/.custom
+module load TrunkMauro
 
 current_directory=$(pwd)
 

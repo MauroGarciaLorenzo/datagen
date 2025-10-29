@@ -9,8 +9,8 @@ rel_tolerance: 0.01
 max_depth: 7
 seed: 3
 grid_name: IEEE118
-feasible_rate: 0.5
-entropy_threshold: 0.2
+feasible_rate: 0.1
+entropy_threshold: 0.05
 delta_entropy_threshold: 0
 chunk_length: 5000
 environment:

@@ -6,10 +6,10 @@ export COMPSS_PYTHON_VERSION="3.12.1"
 module load hdf5
 module load sqlite3
 module load python/3.12.1
-module load COMPSs/3.3.3
+module use /apps/GPP/modulefiles/applications/COMPSs/.custom
+module load TrunkMauro
 
 # Variables initialization
-computing_units=10
 num_nodes=64
 yaml_file="setup_seed3_nc1_ns127500_d0.yaml"
 
@@ -33,9 +33,17 @@ echo "Username is: $username"
 echo "Using $working_dir as the working directory"
 echo "Current directory is $(pwd)"
 
+# Extract COMPUTING_UNITS from YAML
+COMPUTING_UNITS=$(grep -A 5 '^environment:' "$yaml_path" | grep 'COMPUTING_UNITS' | awk '{print $2}' | tr -d ' ')
+
+if [[ -z "$COMPUTING_UNITS" ]]; then
+  echo "COMPUTING_UNITS not found in YAML"
+  exit 1
+fi
+echo "Using ${COMPUTING_UNITS} computing units"
+export COMPUTING_UNITS
+
 # Run COMPSs execution
-# Assign the max number of computing units used by the objective function
-export COMPUTING_UNITS=${computing_units}
 enqueue_compss \
 --pythonpath=${PYTHONPATH} \
 --num_nodes=${num_nodes} \

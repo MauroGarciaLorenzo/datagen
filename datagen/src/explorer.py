@@ -27,7 +27,7 @@ from datagen.src.evaluator import eval_entropy, eval_stability
 
 
 @constraint(is_local=True)
-@task(returns=1, on_failure='FAIL', priority=True)
+@task(returns=1, priority=True)
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  use_sensitivity, max_depth, divs_per_cell, generator,
                  feasible_rate, func_params, entropy_threshold, chunk_length,

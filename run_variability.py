@@ -66,7 +66,6 @@ def main(setup_path="setup/default_setup.yaml"):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
-    computing_units = setup["environment"]["COMPUTING_UNITS"]
 
     # Set up seeded generator
     generator = np.random.default_rng(seed)
@@ -123,8 +122,7 @@ def main(setup_path="setup/default_setup.yaml"):
               dst_dir=path_results, logging_level=logging_level,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
-              delta_entropy_threshold=delta_entropy_threshold,
-              computing_units=computing_units
+              delta_entropy_threshold=delta_entropy_threshold
               )
     return path_results
 
