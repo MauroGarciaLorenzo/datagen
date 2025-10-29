@@ -6,11 +6,11 @@ logger = logging.getLogger(__name__)
 from datagen.src.sampling import generate_columns
 from datagen.src.dimensions import Dimension
 
-def process_dimension(samples_df, dim, generator):
+def process_dimension(samples_df, dim, generator, load_factor):
     if dim.label == "p_cig":
         return process_p_cig_dimension(samples_df, dim, generator)
     elif dim.label == "p_load":
-        return process_p_load_dimension(samples_df, dim)
+        return process_p_load_dimension(samples_df, dim, load_factor)
     elif dim.label.startswith("tau"):
         return process_control_dimension(samples_df, dim)
     else:
@@ -122,12 +122,12 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
     return cases_df, dims_df
 
 
-def process_p_load_dimension(samples_df, dim):
+def process_p_load_dimension(samples_df, dim, load_factor):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
         # TODO: poner el factor de escala de la carga en el setup file
-        new_sample = (sample["p_sg"] + sample["p_cig"])*0.9
+        new_sample = (sample["p_sg"] + sample["p_cig"]) * load_factor
         cases = [[new_sample * value for value in dim.values]
                  for _ in range(dim.n_cases)]
         for case in cases:

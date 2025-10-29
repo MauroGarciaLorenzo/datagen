@@ -8,11 +8,10 @@ sys.path.insert(0, os.path.abspath(
 
 from datagen.src.case_generation import gen_samples, gen_cases
 from datagen.src.dimension_processing import process_p_load_dimension, \
-    process_control_dimension, process_other_dimensions
+    process_control_dimension, process_other_dimensions, \
+    process_p_cig_dimension
 from datagen.tests.test_sampling import create_dims, create_generator
-from datagen.src.case_generation import process_p_cig_dimension
 from datagen.src.dimensions import Dimension
-from datagen.src.sampling import generate_columns
 
 
 class Test(TestCase):
@@ -23,6 +22,7 @@ class Test(TestCase):
         self.n_samples = 100
         self.generator = create_generator()
         self.df_samples = gen_samples(self.n_samples, self.dims, self.generator)
+        self.load_factor=0.9
 
     def test_gen_samples(self):
         print("RUNNING TEST GEN SAMPLES")
@@ -35,7 +35,7 @@ class Test(TestCase):
     def test_gen_cases(self):
         print("RUNNING TEST GEN CASES")
         cases_df, dims_df = gen_cases(self.df_samples, self.dims,
-                                      self.generator)
+                                      self.generator, self.load_factor)
 
         for dim in dims_df.columns[:-1]:
             dim_cols = [col for col in cases_df.columns if
@@ -91,7 +91,7 @@ class Test(TestCase):
         df_samples["p_sg"] = self.generator.uniform(20, 100, len(df_samples))
         df_samples["p_cig"] = self.generator.uniform(20, 100, len(df_samples))
 
-        cases_df, dims_df = process_p_load_dimension(df_samples, dim)
+        cases_df, dims_df = process_p_load_dimension(df_samples, dim, self.load_factor)
 
         for i in range(len(dims_df)):
             expected = 0.9 * (

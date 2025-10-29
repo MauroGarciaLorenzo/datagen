@@ -173,6 +173,7 @@ feasible_rate = 0.1
 entropy_threshold = 0.05
 delta_entropy_threshold = 0
 chunk_length = 5000
+load_factor = 0.9
 
 dimensions = dict()
 dimensions = [
@@ -238,7 +239,7 @@ execution_logs, dst_dir = \
           max_depth=max_depth, use_sensitivity=use_sensitivity, ax=ax,
           sensitivity_divs=2, seed=5, feasible_rate=feasible_rate,
           entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-          delta_entropy_threshold=delta_entropy_threshold
+          delta_entropy_threshold=delta_entropy_threshold, load_factor=load_factor
           )
 
 # if __name__ == "__main__":

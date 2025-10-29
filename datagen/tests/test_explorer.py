@@ -31,6 +31,7 @@ class TestExplorer(TestCase):
         )
 
         self.grid = gen_grid([self.dimension])
+        self.load_factor=0.9
 
         # Generate dims_df and cases_df according to dimension
         self.samples_df = pd.DataFrame({"x": [0.25, 0.75]})
@@ -39,7 +40,8 @@ class TestExplorer(TestCase):
         stabilities = [1, 0]
         self.cases_df, self.dims_df = gen_cases(samples_df=self.samples_df,
                                                 dimensions=[self.dimension],
-                                                generator=self.generator)
+                                                generator=self.generator,
+                                                load_factor=self.load_factor)
         self.cases_df["Stability"] = stabilities
 
         # Other required parameters
@@ -83,7 +85,8 @@ class TestExplorer(TestCase):
             chunk_length=self.chunk_length,
             entropy_threshold=self.entropy_threshold,
             delta_entropy_threshold=self.delta_entropy_threshold,
-            df_names=self.df_names
+            df_names=self.df_names,
+            load_factor=self.load_factor
         )
         join_and_cleanup_csvs(self.dst_dir)
 

@@ -71,6 +71,7 @@ def main(working_dir='', path_data='', setup_path=''):
     n_cases = setup["n_cases"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]
+    load_factor = 0.9
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
@@ -242,7 +243,7 @@ def main(working_dir='', path_data='', setup_path=''):
     generator = np.random.default_rng(seed)
     samples_df = gen_samples(n_samples, dimensions, generator)
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
-    cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
+    cases_df, dims_df = gen_cases(samples_df, dimensions, generator, load_factor)
 
     # %% RUN OBJECTIVE FUNCTION
     func_params = {"n_pf": n_pf, "d_raw_data": d_raw_data, "d_op": d_op,

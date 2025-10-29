@@ -66,6 +66,7 @@ def main(setup_path="setup/default_setup.yaml"):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
+    load_factor = setup["load_factor"]
     dst_dir = setup.get("dst_dir", None)
     use_sensitivity = setup.get("use_sensitivity", None)
     sensitivity_divs = setup.get("sensitivity_divs", None)
@@ -119,7 +120,7 @@ def main(setup_path="setup/default_setup.yaml"):
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold,
-              yaml_path=setup_path
+              yaml_path=setup_path, load_factor=load_factor
               )
     return dst_dir
 

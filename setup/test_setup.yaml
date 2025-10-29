@@ -6,6 +6,7 @@ environment:
 feasible_rate: 0
 generators_power_factor: 0.98
 grid_name: IEEE118
+load_factor: 0.9
 loads_power_factor: 0.98
 max_depth: 1
 n_cases: 10

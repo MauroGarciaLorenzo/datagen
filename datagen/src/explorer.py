@@ -31,7 +31,8 @@ from datagen.src.evaluator import eval_entropy, eval_stability
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  use_sensitivity, max_depth, sensitivity_divs, generator,
                  feasible_rate, func_params, entropy_threshold, chunk_length,
-                 delta_entropy_threshold, df_names=None, dst_dir=None, cell_name=""
+                 load_factor, delta_entropy_threshold, df_names=None,
+                 dst_dir=None, cell_name=""
                  ):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
@@ -111,7 +112,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         # Generate samples (n_samples for each dimension)
         samples_df = gen_samples(n_samples, dimensions, generator)
         # Generate cases (n_cases (attribute of the class Dimension) for each dim)
-        cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
+        cases_df, dims_df = gen_cases(samples_df, dimensions, generator,
+                                      load_factor)
 
         cases_df['cell_name'] = cell_name
         stabilities_chunk = []
@@ -241,7 +243,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                                      dst_dir=dst_dir, chunk_length=chunk_length,
                                      entropy_threshold=entropy_threshold,
                                      delta_entropy_threshold=delta_entropy_threshold,
-                                     df_names=df_names
+                                     df_names=df_names, load_factor=load_factor
                                      )
 
         return children_info
@@ -251,7 +253,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
                  feasible_rate, func_params, parent_entropy, df_names,
                  parent_name, dst_dir, entropy_threshold, delta_entropy_threshold,
-                 chunk_length):
+                 chunk_length, load_factor):
     """
     For a given grid (children grid) and cases taken, this function is in
     charge of distributing those samples among those cells and, finally,
@@ -300,7 +302,8 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
             feasible_rate=feasible_rate, func_params=func_params,
             cell_name=cell_name, dst_dir=dst_dir,
             entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-            delta_entropy_threshold=delta_entropy_threshold, df_names=df_names
+            delta_entropy_threshold=delta_entropy_threshold, df_names=df_names,
+            load_factor=load_factor
         )
 
         children_info = compss_wait_on(children_info)

@@ -15,5 +15,6 @@ delta_entropy_threshold: 0
 chunk_length: 5000
 use_sensitivity: false
 sensitivity_divs: 2
+load_factor: 0.9
 environment:
   COMPUTING_UNITS: 10

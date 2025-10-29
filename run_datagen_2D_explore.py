@@ -38,6 +38,7 @@ def main(working_dir):
     entropy_threshold = 0.05
     delta_entropy_threshold = 0
     chunk_length = 5000
+    load_factor = 0.9
 
     # Get slurm job id
     slurm_job_id = os.getenv("SLURM_JOB_ID", default=None)
@@ -65,7 +66,8 @@ def main(working_dir):
               sensitivity_divs=divs_per_cell, plot_boxplot=True, seed=seed,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
-              delta_entropy_threshold=delta_entropy_threshold
+              delta_entropy_threshold=delta_entropy_threshold,
+              load_factor=load_factor
               )
 
     fig_path = os.path.join(

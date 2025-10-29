@@ -48,7 +48,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, sensitivity_divs=2, plot_boxplot=False,
           feasible_rate=0, func_params = {}, warmup=False, logging_level=logging.INFO,
           working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
-          chunk_length=5000, yaml_path=None):
+          chunk_length=5000, yaml_path=None, load_factor=0.9):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -178,7 +178,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
                      dst_dir=dst_dir, chunk_length=chunk_length,
                      entropy_threshold=entropy_threshold,
                      delta_entropy_threshold=delta_entropy_threshold,
-                     df_names=df_names))
+                     df_names=df_names, load_factor=load_factor))
 
     execution_logs = compss_wait_on(execution_logs)
 

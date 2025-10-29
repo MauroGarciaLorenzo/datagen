@@ -40,6 +40,7 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
     entropy_threshold = setup["entropy_threshold"]
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
+    load_factor = setup["load_factor"]
     dst_dir = setup.get("dst_dir", None)
     use_sensitivity = setup.get("use_sensitivity", None)
     sensitivity_divs = setup.get("sensitivity_divs")
@@ -65,7 +66,8 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
               sensitivity_divs=sensitivity_divs, plot_boxplot=False, seed=seed,
               logging_level=logging_level, feasible_rate=feasible_rate,
               entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-              delta_entropy_threshold=delta_entropy_threshold
+              delta_entropy_threshold=delta_entropy_threshold,
+              load_factor=load_factor
               )
 
     stability_array = compss_wait_on(stability_array)

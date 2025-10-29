@@ -2,13 +2,11 @@ import numpy as np
 import pandas as pd
 from scipy.stats import qmc
 
-from datagen.src.dimension_processing import process_p_cig_dimension, \
-    process_p_load_dimension, process_control_dimension, \
-    process_other_dimensions, process_dimension
+from datagen.src.dimension_processing import process_dimension
 from datagen.src.utils import generate_unique_id
 
 
-def gen_cases(samples_df, dimensions, generator):
+def gen_cases(samples_df, dimensions, generator, load_factor):
     """Produces sum combinations of the samples given. Each sample sum
     combination is called a "case".
 
@@ -22,7 +20,8 @@ def gen_cases(samples_df, dimensions, generator):
     total_dims = []
 
     for dim in dimensions:
-        partial_cases, partial_dims = process_dimension(samples_df, dim, generator)
+        partial_cases, partial_dims = process_dimension(samples_df, dim,
+                                                        generator, load_factor)
 
         # Add a new column for each p_ column in partial_cases
         for col in partial_cases.columns:
