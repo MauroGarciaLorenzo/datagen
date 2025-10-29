@@ -24,10 +24,9 @@ plt.rcParams.update({"figure.figsize": [8, 4],
                      'legend.loc': 'upper right'})
 
 # %%
-# ncig_list=['10','11','12']
-path = '../results/'
-
-dir_name=[dir_name for dir_name in os.listdir(path) if '_4909' in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+#path = '../results/'
+path = 'D:/'
+dir_name=[dir_name for dir_name in os.listdir(path) if '_5933' in dir_name and 'zip' not in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 print(dir_name)
 # dir_names = [
 #     #'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664']
@@ -35,23 +34,21 @@ print(dir_name)
 
 #%%
 path_results = os.path.join(path, dir_name)
-
+df_op='df_op'#'case_df_op'
 results_dataframes, csv_files = open_csv(
-    path_results, ['cases_df.csv', 'case_df_op.csv'])
+    path_results, ['cases_df.csv', df_op+'.csv'])
 
-perc_stability(results_dataframes['case_df_op'], dir_name)
+perc_stability(results_dataframes[df_op], dir_name)
 
 dataset_ID = dir_name[-5:]
 
-
 # %% ---- FILL NAN VALUES WITH NULL ---
 
-results_dataframes['case_df_op'] = results_dataframes['case_df_op'].fillna(0)
+results_dataframes[df_op] = results_dataframes[df_op].fillna(0)
 
 # %% ---- SELECT ONLY FEASIBLE CASES ----
 
-results_dataframes['case_df_op_feasible'] = results_dataframes['case_df_op'].query(
-    'Stability >= 0')
+results_dataframes['case_df_op_feasible'] = results_dataframes[df_op].query('Stability >= 0')
 
 case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
 
@@ -59,9 +56,8 @@ case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
 # results_dataframes['case_df_op_feasible'].query('case_id == @case_id')['P_SG12'] <--- quantities calculated by power flow
 # results_dataframes['cases_df'].query('case_id == @case_id')['p_sg_Var10'] <-- quantities sampled
 
-results_dataframes['cases_df_feasible'] = results_dataframes['cases_df'].query(
-    'case_id == @case_id_feasible')  # <-- quantities sampled
-
+results_dataframes['cases_df_feasible'] = results_dataframes['cases_df'].query('Stability >= 0')
+case_id_feasible = list(results_dataframes['cases_df_feasible']['case_id'])
 n_feas_cases = len(case_id_feasible)
 
 results_dataframes['case_df_op_feasible_X'] = results_dataframes['case_df_op_feasible'].drop(['case_id', 'Stability'], axis=1)                        
@@ -69,20 +65,28 @@ results_dataframes['case_df_op_feasible_X'] = results_dataframes['case_df_op_fea
        
 # %% ---- SELECT ONLY UNFEASIBLE CASES ----
 
-results_dataframes['case_df_op_unfeasible'] = results_dataframes['case_df_op'].query('Stability < 0')
-results_dataframes['case_df_op_unfeasible_1'] = results_dataframes['case_df_op'].query('Stability == -1')
-results_dataframes['case_df_op_unfeasible_2'] = results_dataframes['case_df_op'].query('Stability == -2')
+results_dataframes['case_df_op_unfeasible'] = results_dataframes[df_op].query('Stability < 0')
+results_dataframes['case_df_op_unfeasible_1'] = results_dataframes[df_op].query('Stability == -1')
+results_dataframes['case_df_op_unfeasible_2'] = results_dataframes[df_op].query('Stability == -2')
 
 case_id_Unfeasible = list(results_dataframes['case_df_op_unfeasible']['case_id'])
 case_id_Unfeasible1 = list(results_dataframes['case_df_op_unfeasible_1']['case_id'])
 case_id_Unfeasible2 = list(results_dataframes['case_df_op_unfeasible_2']['case_id'])
 
-results_dataframes['cases_df_unfeasible'] = results_dataframes['cases_df'].query(
-    'case_id == @case_id_Unfeasible')  # <-- quantities sampled
-results_dataframes['cases_df_unfeasible_1'] = results_dataframes['cases_df'].query(
-    'case_id == @case_id_Unfeasible1')  # <-- quantities sampled
-results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].query(
-    'case_id == @case_id_Unfeasible2')  # <-- quantities sampled
+results_dataframes['cases_df_unfeasible'] = results_dataframes['cases_df'].query('Stability < 0')
+results_dataframes['cases_df_unfeasible_1'] = results_dataframes['cases_df'].query('Stability == -1')
+results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].query('Stability == -2')
+
+case_id_Unfeasible = list(results_dataframes['cases_df']['case_id'])
+case_id_Unfeasible1 = list(results_dataframes['cases_df_unfeasible_1']['case_id'])
+case_id_Unfeasible2 = list(results_dataframes['cases_df_unfeasible_1']['case_id'])
+
+# results_dataframes['cases_df_unfeasible'] = results_dataframes['cases_df'].query(
+#     'case_id == @case_id_Unfeasible')  # <-- quantities sampled
+# results_dataframes['cases_df_unfeasible_1'] = results_dataframes['cases_df'].query(
+#     'case_id == @case_id_Unfeasible1')  # <-- quantities sampled
+# results_dataframes['cases_df_unfeasible_2'] = results_dataframes['cases_df'].query(
+#     'case_id == @case_id_Unfeasible2')  # <-- quantities sampled
 
 
 #%%
@@ -94,6 +98,7 @@ def create_dimensions_caseid_df(df_dict, df_name, vars_dim1, vars_dim2, name_dim
     dimensions_caseid['Stability'] = list(df_dict[df_name]['Stability'])
 
     return dimensions_caseid
+#%%
 
 p_sg_var=[var for var in results_dataframes['case_df_op_feasible'].columns if var.startswith('P_SG')]
 p_cig_var=[var for var in results_dataframes['case_df_op_feasible'].columns if var.startswith('P_GFOR') or var.startswith('P_GFOL')]
@@ -113,10 +118,10 @@ dimensions_caseid_unfeasible2 = create_dimensions_caseid_df(results_dataframes, 
 
 #%%
 fig, ax = plt.subplots()
-ax.scatter(dimensions_caseid_unfeasible1['p_cig'], dimensions_caseid_unfeasible1['p_sg'],color='silver', label='Unfeasable OP (-1)')
-ax.scatter(dimensions_caseid_unfeasible2['p_cig'], dimensions_caseid_unfeasible2['p_sg'],color='k', label='Unfeasable OP (-2)')
-ax.scatter(dimensions_caseid_feasible_sampled['p_cig'], dimensions_caseid_feasible_sampled['p_sg'], label='Feasable OP')
-ax.scatter(dimensions_caseid_feasible['p_cig'], dimensions_caseid_feasible['p_sg'], label='Feasable PF')
+ax.scatter(dimensions_caseid_unfeasible1['p_cig'], dimensions_caseid_unfeasible1['p_sg'],color='silver', label='Unfeasible OP (-1)')
+ax.scatter(dimensions_caseid_unfeasible2['p_cig'], dimensions_caseid_unfeasible2['p_sg'],color='k', label='Unfeasible OP (-2)')
+ax.scatter(dimensions_caseid_feasible_sampled['p_cig'], dimensions_caseid_feasible_sampled['p_sg'], label='Feasible OP')
+ax.scatter(dimensions_caseid_feasible['p_cig'], dimensions_caseid_feasible['p_sg'], label='Feasible PF')
 ax.set_xlabel('$P_{CIG}$ [MW]')
 ax.set_ylabel('$P_{SG}$ [MW]')
 plt.legend()
@@ -229,7 +234,7 @@ df_depth = pd.DataFrame(columns=['Depth','case_id','CellName'])
 
 df_depth['case_id'] = results_dataframes['cases_df']['case_id']
 df_depth['CellName'] = results_dataframes['cases_df']['cell_name']
-df_depth['Depth'] = [len(x.split('.'))-1 if '.' in x else 0 for x in results_dataframes['cases_df']['cell_name']]
+df_depth['Depth'] = [len(str(x).split('.'))-1 if '.' in str(x) else 0 for x in results_dataframes['cases_df']['cell_name']]
 
 pd.DataFrame.to_excel(df_depth, 'cases_id_depth'+dataset_ID+'.xlsx')
 #%%
@@ -264,4 +269,59 @@ for depth in np.sort(df_depth['Depth'].unique()):
 
 #ax.legend(loc='center left')#, bbox_to_anchor=(1, 0.5))
 
+#%%
+def calculate_entropy(freqs):
+    """Obtain cell entropy from stability and non-stability frequencies.
 
+    :param freqs: two-element list with the frequency (1-based) of stable and
+    non-stable cases, respectively
+    :return: Entropy
+    """
+    cell_entropy = 0
+    for i in range(len(freqs)):
+        if freqs[i] != 0:
+            cell_entropy = cell_entropy - freqs[i] * np.log(freqs[i])
+    return cell_entropy
+
+def eval_entropy(stabilities, entropy_parent):
+    """Calculate entropy of the cell using its list of stabilities.
+
+    :param stabilities: List of stabilities (result of the evaluation of every
+    case)
+    :param entropy_parent: Parent entropy based on concrete cases (those which
+    correspond to the cell)
+    :return: Entropy and delta entropy
+    """
+
+    stabilities = [x for x in stabilities if x >= 0]
+    
+    if len(stabilities)==0:
+            entropy = 0
+    else:
+        freqs = []
+        counter = 0
+        for stability in stabilities:
+            if stability == 1:
+                counter += 1
+        freqs.append(counter / len(stabilities))
+        freqs.append((len(stabilities) - counter) / len(stabilities))
+        entropy = calculate_entropy(freqs)
+    if entropy_parent is None:
+        delta_entropy = 1
+    else:
+        delta_entropy = entropy - entropy_parent
+    return entropy, delta_entropy
+
+#%%
+df_entropy_cell = pd.DataFrame(columns = ['CellName','Entropy'],index=np.arange(0,len(results_dataframes['cases_df']['cell_name'].unique())))
+
+for idx, cellname in enumerate(results_dataframes['cases_df']['cell_name'].unique()):
+    
+    stabilities = results_dataframes['cases_df_feasible'].query('cell_name == @cellname')['Stability']
+    
+    entropy, delta_entropy = eval_entropy(stabilities,None)
+    
+    df_entropy_cell.loc[idx,'CellName']=cellname
+    df_entropy_cell.loc[idx,'Entropy']=entropy
+
+pd.DataFrame.to_excel(df_entropy_cell, 'df_entropy_cell'+dataset_ID+'.xlsx')

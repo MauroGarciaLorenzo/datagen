@@ -7,8 +7,12 @@ def open_csv(path_results, csv_files=None):
 
     results_dataframes=dict()
     for file in csv_files:
-        results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop(['Unnamed: 0'],axis=1).drop_duplicates(keep='first').reset_index(drop=True)
-    
+        try:
+            results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop(['Unnamed: 0'],axis=1).drop_duplicates(keep='first').reset_index(drop=True)
+        except:
+            results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop_duplicates(keep='first').reset_index(drop=True)
+
+        results_dataframes[file.replace('.csv','')]['cell_name'] = ['0' if name == 0.0 or name == '0.0' else str(name) for name in results_dataframes[file.replace('.csv','')]['cell_name']]
     return results_dataframes, csv_files 
 
 def perc_stability(df,dir_name):
