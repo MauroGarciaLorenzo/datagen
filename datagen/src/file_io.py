@@ -7,7 +7,10 @@ import pandas as pd
 import logging
 import csv
 import glob
-from datagen.src.constants import NAN_COLUMN_NAME
+try:
+    from datagen.src.constants import NAN_COLUMN_NAME
+except ImportError:
+    NAN_COLUMN_NAME = "undefined"
 logger = logging.getLogger(__name__)
 
 
