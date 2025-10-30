@@ -7,6 +7,7 @@ import pandas as pd
 import logging
 import csv
 import glob
+from datagen.src.constants import NAN_COLUMN_NAME
 logger = logging.getLogger(__name__)
 
 
@@ -162,6 +163,8 @@ def join_and_cleanup_csvs(dst_dir):
     Detects var_name correctly even if it contains underscores.
     Deletes the partial CSV files after joining.
     Adds a continuous line index to the final CSV.
+    Prefers a first CSV whose header does not contain 'undefined' or NAN_COLUMN_NAME.
+    Falls back to alphabetical order if none qualify.
     """
     all_csvs = glob.glob(os.path.join(dst_dir, "*.csv"))
 
@@ -171,15 +174,30 @@ def join_and_cleanup_csvs(dst_dir):
         if not fname.endswith(".csv"):
             continue
 
-        # Match pattern: {var_name}_{cell_name}.csv, where cell_name = numbers + dots
         m = re.match(r"(.+)_([0-9.]+)\.csv$", fname)
         if m:
             var_name = m.group(1)
             var_files.setdefault(var_name, []).append(f)
 
-    # Process each var_name group
     for var_name, files in var_files.items():
         print(f"Joining {len(files)} CSVs for {var_name}...")
+
+        sorted_files = sorted(files)
+        valid_first_file = None
+
+        # Prefer first file whose header has no undefined or NAN_COLUMN_NAME
+        for f in sorted_files:
+            try:
+                header = pd.read_csv(f, nrows=0).columns.tolist()
+                if not any(h in ("undefined", NAN_COLUMN_NAME) for h in header):
+                    valid_first_file = f
+                    break
+            except Exception:
+                continue
+
+        if valid_first_file:
+            sorted_files.remove(valid_first_file)
+            sorted_files.insert(0, valid_first_file)
 
         out_path = os.path.join(dst_dir, f"{var_name}.csv")
 
@@ -187,33 +205,25 @@ def join_and_cleanup_csvs(dst_dir):
             writer = None
             reference_header = None
 
-            for idx, f in enumerate(sorted(files)):
+            for idx, f in enumerate(sorted_files):
                 with open(f, "r", newline="", encoding="utf-8") as infile:
                     reader = csv.DictReader(infile)
 
-                    # For the first file, establish the canonical column order
                     if idx == 0:
                         reference_header = reader.fieldnames
-                        writer = csv.DictWriter(out,
-                                                fieldnames=reference_header)
+                        writer = csv.DictWriter(out, fieldnames=reference_header)
                         writer.writeheader()
 
-                    # For subsequent files, reorder according to reference header
                     for row in reader:
-                        # Reorder row according to reference_header
-                        aligned_row = {col: row.get(col, "") for col in
-                                       reference_header}
+                        aligned_row = {col: row.get(col, "") for col in reference_header}
                         writer.writerow(aligned_row)
 
         print(f"Saved: {out_path}")
 
-        # Delete partial CSVs
         logger = logging.getLogger(__name__)
-        level = logger.getEffectiveLevel()
-        level_name = logging.getLevelName(level)
-        if level_name != "DEBUG":
+        if logging.getLevelName(logger.getEffectiveLevel()) != "DEBUG":
             for f in files:
-                os.remove(f)
+                #os.remove(f)
                 print(f"Deleted: {f}")
         else:
             print("Logging level is DEBUG; keeping partial files")
