@@ -142,22 +142,38 @@ def log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_rati
         writer.writerow([cell_name, depth, parent_entropy, delta_entropy, feasible_ratio, status])
 
 
-def get_df_names(dst_dir):
+def clean_incomplete_cells(dst_dir):
     """
-    Returns a set of all unique df_names in dst_dir matching pattern {df_name}_{cell_name}.csv,
-    where cell_name = numbers separated by dots.
-    Example match: cases_df_0.1.2.csv -> df_name = cases_df
+    Removes all CSVs for cells that do not have every required df_name.
+    Example filenames: cases_df_0.1.2.csv, samples_df_0.1.2.csv, ...
     """
     pattern = re.compile(r"(.+)_([0-9.]+)\.csv$")
     csv_files = glob.glob(os.path.join(dst_dir, "*.csv"))
 
-    df_names = set()
+    cell_to_dfs = {}   # {cell_name: set of df_names}
+    all_df_names = set()
+
     for f in csv_files:
         fname = os.path.basename(f)
         m = pattern.match(fname)
-        if m:
-            df_names.add(m.group(1))  # group(1) = df_name
-    return df_names
+        if not m:
+            continue
+        df_name, cell_name = m.groups()
+        all_df_names.add(df_name)
+        cell_to_dfs.setdefault(cell_name, set()).add(df_name)
+
+    # Find incomplete cells
+    incomplete_cells = [cell for cell, dfs in cell_to_dfs.items()
+                        if dfs != all_df_names]
+
+    # Delete their CSVs
+    for cell_name in incomplete_cells:
+        for df_name in all_df_names:
+            file_path = os.path.join(dst_dir, f"{df_name}_{cell_name}.csv")
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"[CLEAN] Deleted incomplete file: {file_path}", flush=True)
+
 
 
 def join_and_cleanup_csvs(dst_dir):

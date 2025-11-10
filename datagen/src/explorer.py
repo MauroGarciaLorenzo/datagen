@@ -31,8 +31,7 @@ from datagen.src.evaluator import eval_entropy, eval_stability
 def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                  use_sensitivity, max_depth, sensitivity_divs, generator,
                  feasible_rate, func_params, entropy_threshold, chunk_length,
-                 load_factor, delta_entropy_threshold, df_names=None,
-                 dst_dir=None, cell_name=""
+                 load_factor, delta_entropy_threshold, dst_dir=None, cell_name=""
                  ):
     """Explore every cell in the algorithm while its delta entropy is positive.
     It receives a dataframe (cases_df) and an entropy from its parent, and
@@ -72,11 +71,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     :param dst_dir: Path where the results will be stored. If the given path
     already have expored cells, these cells will be skipped.
     """
-    if df_names is None:
-        df_names = set()
-
-    df_names.add("cases_df")
-    df_names.add("dims_df")
 
     if not cell_name:
         cell_name = "0"
@@ -84,12 +78,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     stabilities = []
     feasible_cases = 0
 
-    all_exist = all(
-        os.path.exists(os.path.join(dst_dir, f"{df_name}_{cell_name}.csv"))
-        for df_name in df_names
-    )
-
-    if all_exist:
+    if any(cell_name in f for f in os.listdir(dst_dir)):
         message = f"Skipping cell {cell_name}"
         logger.info(message)
         print(message, flush=True)
@@ -103,12 +92,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                 feasible_cases += 1
 
     else:
-        for df_name in df_names:
-            file_path = os.path.join(dst_dir, f"{df_name}_{cell_name}.csv")
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                logger.info(f"Deleted incomplete file: {file_path}")
-
         # Generate samples (n_samples for each dimension)
         samples_df = gen_samples(n_samples, dimensions, generator)
         # Generate cases (n_cases (attribute of the class Dimension) for each dim)
@@ -243,7 +226,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                                      dst_dir=dst_dir, chunk_length=chunk_length,
                                      entropy_threshold=entropy_threshold,
                                      delta_entropy_threshold=delta_entropy_threshold,
-                                     df_names=df_names, load_factor=load_factor
+                                     load_factor=load_factor
                                      )
 
         return children_info
@@ -251,8 +234,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
 def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
                  use_sensitivity, max_depth, divs_per_cell, generator,
-                 feasible_rate, func_params, parent_entropy, df_names,
-                 parent_name, dst_dir, entropy_threshold, delta_entropy_threshold,
+                 feasible_rate, func_params, parent_entropy, parent_name,
+                 dst_dir, entropy_threshold, delta_entropy_threshold,
                  chunk_length, load_factor):
     """
     For a given grid (children grid) and cases taken, this function is in
@@ -302,7 +285,7 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
             feasible_rate=feasible_rate, func_params=func_params,
             cell_name=cell_name, dst_dir=dst_dir,
             entropy_threshold=entropy_threshold, chunk_length=chunk_length,
-            delta_entropy_threshold=delta_entropy_threshold, df_names=df_names,
+            delta_entropy_threshold=delta_entropy_threshold,
             load_factor=load_factor
         )
 

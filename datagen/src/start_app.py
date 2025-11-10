@@ -33,7 +33,7 @@ import time
 from .explorer import explore_cell
 from .viz import print_results, boxplot
 from .file_io import save_results, init_dst_dir, join_and_cleanup_csvs, \
-    get_df_names
+    clean_incomplete_cells
 
 try:
     from pycompss.api.task import task
@@ -121,13 +121,13 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         dst_dir = init_dst_dir(calling_module, seed, n_cases, n_samples,
                                max_depth, working_dir, ax, dimensions)
 
-    df_names = set()
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
         print(f"Created results directory: {os.path.abspath(dst_dir)}")
     else:
-        df_names = get_df_names(dst_dir)
+        clean_incomplete_cells(dst_dir)
         print(f"Using existing results directory: {os.path.abspath(dst_dir)}")
+
 
     # Set up the logging level for the execution
     setup_logger(logging_level, dst_dir)
@@ -178,7 +178,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
                      dst_dir=dst_dir, chunk_length=chunk_length,
                      entropy_threshold=entropy_threshold,
                      delta_entropy_threshold=delta_entropy_threshold,
-                     df_names=df_names, load_factor=load_factor))
+                     load_factor=load_factor))
 
     execution_logs = compss_wait_on(execution_logs)
 
