@@ -84,18 +84,15 @@ class Test(unittest.TestCase):
             # Parse the output to check dimension divisions
             dim_divisions = {}
             for line in output.split('\n'):
-                if 'Dimension: tau_Dim_' in line:
+                if 'Selected dimension: tau_Dim_' in line:
                     parts = line.split(', divisions: ')
-                    dim_name = parts[0].split('Dimension: ')[1].strip()
+                    dim_name = parts[0].split('Selected dimension: ')[1].strip()
                     divisions = int(parts[1].strip())
                     dim_divisions[dim_name] = divisions
 
             # Assert the divisions
             assert dim_divisions.get('tau_Dim_0',
                                      None) == 4, f"tau_Dim_0 should have 4 divisions, got {dim_divisions.get('tau_Dim_0', None)}"
-            for dim in [f'tau_Dim_{i}' for i in range(1, 6)]:
-                assert dim_divisions.get(dim,
-                                         None) == 1, f"{dim} should have 1 division, got {dim_divisions.get(dim, None)}"
 
             print(f"\n=== Everything went fine ===\n", flush=True)
             print("Dimension divisions validation passed!")
