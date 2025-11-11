@@ -25,8 +25,7 @@ maintaining the integrity of the sum of variable_borders.
 """
 
 import numpy as np
-import logging
-logger = logging.getLogger(__name__)
+from datagen.src.logger import logger
 
 
 class Cell:

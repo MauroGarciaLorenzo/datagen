@@ -18,13 +18,10 @@ produce both a record of execution logs and a DataFrame containing specific
 cases and their associated stability."""
 import os
 import random
-import logging
 import shutil
-import sys
 import traceback
 
-
-logger = logging.getLogger(__name__)
+from datagen.src.logger import setup_logger, logger
 
 import numpy as np
 import pandas as pd
@@ -46,7 +43,7 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, sensitivity_divs=2, plot_boxplot=False,
-          feasible_rate=0, func_params = {}, warmup=False, logging_level=logging.INFO,
+          feasible_rate=0, func_params = {}, warmup=False, logging_level="INFO",
           working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
           chunk_length=5000, yaml_path=None, load_factor=0.9):
     """In this method we work with dimensions (main axes), which represent a
@@ -139,7 +136,8 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     if yaml_path is not None:
         shutil.copy(yaml_path, dst_dir)
 
-    print(f"Current logging level: {logging.getLevelName(logging.getLogger().getEffectiveLevel())}")
+    logging_level = logger.get_logging_level()
+    print(f"Current logging level: {logging_level}")
 
     if warmup:
         for _ in range(200):
@@ -196,26 +194,6 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     return execution_logs, dst_dir
 
 
-def setup_logger(logging_level, dst_dir):
-    os.makedirs(dst_dir, exist_ok=True)
-    log_file = os.path.join(dst_dir, "log.txt")
-
-    logger = logging.getLogger()
-    logger.setLevel(logging_level)
-
-    logger.handlers.clear()
-
-    format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    # Stream handler (console)
-    stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setFormatter(logging.Formatter(format))
-    logger.addHandler(stream_handler)
-
-    # File handler
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setFormatter(logging.Formatter(format))
-    logger.addHandler(file_handler)
-
 @task(is_replicated=True)
 def warmup_nodes():
     from . import sampling, utils, objective_function_ACOPF
@@ -231,11 +209,3 @@ def get_calling_module():
         return os.path.basename(calling_frame.filename)
     else:
         return "unknown"
-
-def get_log_file_paths(logger=None):
-    logger = logger or logging.getLogger()
-    paths = []
-    for handler in logger.handlers:
-        if isinstance(handler, logging.FileHandler):
-            paths.append(handler.baseFilename)
-    return paths

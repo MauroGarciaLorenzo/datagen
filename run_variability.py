@@ -1,8 +1,4 @@
-import os
-import random
-import logging
 import sys
-from datetime import datetime
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -11,7 +7,6 @@ from datagen.src.objective_function import dummy
 from datagen.src.dimensions import Dimension
 from datagen.src.parsing import parse_setup_file
 from datagen.src.start_app import start
-import yaml
 
 try:
     from pycompss.api.task import task
@@ -110,7 +105,7 @@ def main(setup_path="setup/default_setup.yaml"):
 
     # Run experiment
     fig, ax = plt.subplots()
-    logging_level = logging.DEBUG
+    logging_level = "DEBUG"
 
     execution_logs, dst_dir = \
         start(dimensions, n_samples, rel_tolerance, func=dummy,

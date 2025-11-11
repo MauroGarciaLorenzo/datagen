@@ -4,14 +4,13 @@ import re
 import sys
 from datetime import datetime
 import pandas as pd
-import logging
+from datagen.src.logger import logger
 import csv
 import glob
 try:
     from datagen.src.constants import NAN_COLUMN_NAME
 except ImportError:
     NAN_COLUMN_NAME = "undefined"
-logger = logging.getLogger(__name__)
 
 
 def write_dataframes_to_excel(df_dict, path, filename):
@@ -239,8 +238,7 @@ def join_and_cleanup_csvs(dst_dir):
 
         print(f"Saved: {out_path}")
 
-        logger = logging.getLogger(__name__)
-        if logging.getLevelName(logger.getEffectiveLevel()) != "DEBUG":
+        if logger.get_logging_level() != "DEBUG":
             for f in files:
                 #os.remove(f)
                 print(f"Deleted: {f}")

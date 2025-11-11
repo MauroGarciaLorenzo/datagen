@@ -1,12 +1,10 @@
 import os
 
 import pandas as pd
-import logging
+from datagen.src.start_app import logger
 
 from datagen.src.dimensions import Cell
 from datagen.src.file_io import log_cell_info, save_df
-
-logger = logging.getLogger(__name__)
 
 try:
     from pycompss.api.task import task
@@ -78,7 +76,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     stabilities = []
     feasible_cases = 0
 
-    if any(cell_name in f for f in os.listdir(dst_dir)):
+    if (os.path.exists(dst_dir) and
+            any(cell_name in f for f in os.listdir(dst_dir))):
         message = f"Skipping cell {cell_name}"
         logger.info(message)
         print(message, flush=True)

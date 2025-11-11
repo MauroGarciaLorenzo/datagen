@@ -3,20 +3,13 @@ Utility functions to postprocess results.
 """
 import os
 import re
-import logging
-logger = logging.getLogger(__name__)
+from datagen.src.logger import logger
 
-from sys import argv
 
 import pandas as pd
-import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
-import scienceplots
-
-plt.style.use('science')
 
 
 def cu_perf_standalone(src_dir, case_name, dst_dir):

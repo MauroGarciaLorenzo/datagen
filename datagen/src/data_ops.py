@@ -2,8 +2,7 @@ from typing import Sequence
 
 import numpy as np
 import pandas as pd
-import logging
-logger = logging.getLogger(__name__)
+from datagen.src.logger import logger
 
 from datagen.src.constants import NAN_COLUMN_NAME
 

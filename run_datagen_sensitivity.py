@@ -1,8 +1,5 @@
 import os
 import sys
-import logging
-
-logger = logging.getLogger(__name__)
 
 import matplotlib
 matplotlib.use("Agg")
@@ -24,7 +21,7 @@ warnings.filterwarnings("ignore")
 
 @task(on_failure='FAIL')
 def main(working_dir=None, setup_path="setup/default_setup.yaml"):
-    logging_level = logging.DEBUG
+    logging_level = "INFO"
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
     setup = parse_setup_file(setup_path)
 

@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
-import logging
-logger = logging.getLogger(__name__)
+from datagen.src.logger import logger
 
 from datagen.src.sampling import generate_columns
 from datagen.src.dimensions import Dimension

@@ -1,4 +1,3 @@
-import logging
 import sys
 
 from datagen.src.objective_function import dummy
@@ -66,7 +65,7 @@ def main(setup_path="setup/default_setup.yaml"):
     use_sensitivity = setup.get("use_sensitivity", None)
     sensitivity_divs = setup.get("sensitivity_divs")
 
-    logging_level = logging.INFO
+    logging_level = "INFO"
     #fig, ax = plt.subplots()
     dimensions = [
         Dimension(variable_borders=variables_d0, n_cases=n_cases, divs=2,

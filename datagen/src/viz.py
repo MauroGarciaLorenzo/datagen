@@ -25,8 +25,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt, patches
-import logging
-logger = logging.getLogger(__name__)
+from datagen.src.logger import logger
 
 
 def plot_importances_and_divisions(dimensions, importances):
