@@ -51,25 +51,39 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 
 #path = '../results/'
 path = 'D:/'
-dir_names=[dir_name for dir_name in os.listdir(path) if '_2862' in dir_name and 'zip' not in dir_name]#  or '_2862' in dir_name  and 'zip' not in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+dir_names=[dir_name for dir_name in os.listdir(path) if '_5933' in dir_name and 'zip' not in dir_name  or '_2862' in dir_name  and 'zip' not in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+#dir_names=[dir_names[0],dir_names[2]]
 
 #dir_names=[dir_name for dir_name in os.listdir(path) if '_4909' in dir_name]# or '_3518' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 results_dataframes_datasets=dict()
-dataset_ID_list=[]
+dataset_ID_list=[]#'complete_sensitivity','partial_sensitivity']
 
 df_op = 'df_op'#'case_df_op' #df_op
-for dir_name in dir_names:
+for idx, dir_name in enumerate(dir_names):
     path_results = os.path.join(path, dir_name)
 
-    dataset_ID = dir_name[-5:]
+    dataset_ID = dir_name[-5:] #dataset_ID_list[idx]#
     dataset_ID_list.append(dataset_ID)
     results_dataframes_datasets[dataset_ID], csv_files = open_csv(
-        path_results, ['cases_df.csv', df_op+'.csv'])
+        path_results, ['cases_df.csv', df_op+'.csv','dims_df.csv', 'cell_info.csv'])
 
     perc_stability(results_dataframes_datasets[dataset_ID]['cases_df'], dir_name)
       
+dir_name=[dir_name for dir_name in os.listdir(path) if '_20251030_sensitivity'  in dir_name and 'zip' not in dir_name][0]
+path_results = os.path.join(path, dir_name)
+dataset_ID ='sensitivity'
+results_dataframes_datasets[dataset_ID], csv_files = open_csv(
+    path_results, ['cases_df.csv', df_op+'.csv','dims_df.csv', 'cell_info.csv'])
 
+perc_stability(results_dataframes_datasets[dataset_ID]['cases_df'], dir_name)
+dataset_ID_list.append(dataset_ID)
+# for idx, dir_name in enumerate(dir_names):
+#     path_results = os.path.join(path, dir_name)
 
+#     dataset_ID = dataset_ID_list[idx]#dir_name[-5:]
+#     results_dataframes_datasets[dataset_ID], csv_files = open_csv(
+#         path_results, ['dims_df.csv', 'cell_info.csv'],results_dataframes_datasets[dataset_ID])
+    
 # **Data Set 7664**:
 # - Entropy <u>is not</u> considered as cut-off criteria in the data generation process
 # - Fasibility ratio <u>is</u> considered as cut-off criteria in the data generation process, rel_tolerance = 0.01 (if feasibility ratio in the cell is less then 0.01 the cell dies? correct?)
@@ -248,6 +262,7 @@ for dataset_ID in dataset_ID_list:
     p_cig_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOR') or var.startswith('P_GFOL')]
     p_gfor_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOR')]
     p_gfol_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOL')]
+    taus_var = [var for var in  results_dataframes_datasets[dataset_ID]['dims_df'].columns if var.startswith('tau')]
 
     list_of_var = dict()
     list_of_var['p_sg'] =  p_sg_var
@@ -256,7 +271,10 @@ for dataset_ID in dataset_ID_list:
     list_of_var['p_gfol'] =  p_gfol_var
     
     dimensions_caseid_feasible_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'df_op_feasible', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'], Sbase=100)
-    
+    case_id_feasible = case_id_feasible_DS[dataset_ID]
+    dimensions_caseid_feasible_DS[dataset_ID][taus_var] = results_dataframes_datasets[dataset_ID]['dims_df'].query('case_id == @case_id_feasible')[taus_var]
+    dimensions_caseid_feasible_DS[dataset_ID]['perc_g_for'] = dimensions_caseid_feasible_DS[dataset_ID]['p_gfor']/dimensions_caseid_feasible_DS[dataset_ID]['p_cig']
+
     p_sg_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_sg')]
     p_cig_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_cig')]
     p_gfor_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_g_for')]
@@ -272,6 +290,9 @@ for dataset_ID in dataset_ID_list:
     dimensions_caseid_unfeasible_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
     dimensions_caseid_unfeasible1_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_1', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
     dimensions_caseid_unfeasible2_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_2', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
+    case_id_feasible = case_id_Unfeasible_DS[dataset_ID]
+    dimensions_caseid_unfeasible_DS[dataset_ID][taus_var] = results_dataframes_datasets[dataset_ID]['dims_df'].query('case_id == @case_id_feasible')[taus_var]
+    dimensions_caseid_unfeasible_DS[dataset_ID]['perc_g_for'] = dimensions_caseid_unfeasible_DS[dataset_ID]['p_gfor']/dimensions_caseid_unfeasible_DS[dataset_ID]['p_cig']
 
     
 # In[15]:
@@ -386,11 +407,11 @@ for dataset_ID in dataset_ID_list:
 
 # In[18]:
 
-
 df_depth_DS = dict()
-for dataset_ID in dataset_ID_list:
+for path, dataset_ID in zip(dir_names,dataset_ID_list):
     
-    df_depth_DS[dataset_ID]= pd.read_excel('cases_id_depth'+dataset_ID+'.xlsx')
+    #df_depth_DS[dataset_ID]= pd.read_excel('D:/'+path+'/cases_id_depth'+dataset_ID+'.xlsx')
+    df_depth_DS[dataset_ID]= pd.read_excel('D:/'+path+'/cases_id_depthSensitivity.xlsx')
 
 #%%    
 for dataset_ID in dataset_ID_list:
@@ -462,9 +483,22 @@ for dataset_ID in dataset_ID_list:
         df_feasibility_balancing_DS[dataset_ID].loc[idx, 'mean_unfeas_2'] = np.mean(unfeas2_cell)
         df_feasibility_balancing_DS[dataset_ID].loc[idx, 'std_unfeas_2'] = np.std(unfeas2_cell)
    
-        # balance_cell = [cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum() if 0 in cases_x_stab.loc[cell].index or 1 in cases_x_stab.loc[cell].index else 0 for cell in tot_cases.index]
-        # df_feasibility_balancing_DS[dataset_ID].loc[idx, 'mean_balance_cell'] = np.mean(balance_cell)
-        # df_feasibility_balancing_DS[dataset_ID].loc[idx, 'std_balance_cell'] = np.std(balance_cell)
+        balance_cell=[]
+        for cell in tot_cases.index:
+            if 0 in cases_x_stab.loc[cell].index and 1 in cases_x_stab.loc[cell].index:
+                balance_cell.append(cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum())
+            else:
+                if 0 not in cases_x_stab.loc[cell].index:
+                    balance_cell.append(1)
+                else:
+                    balance_cell.append(0)
+                    
+        # balance_cell = [cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum() 
+        #                 if 0 in cases_x_stab.loc[cell].index or 1 in cases_x_stab.loc[cell].index else 0 for cell in tot_cases.index]
+        
+        
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'mean_balance_cell'] = np.mean(balance_cell)
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'std_balance_cell'] = np.std(balance_cell)
 
 
         entropy_cell = [-cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum()*np.log(cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum())\
@@ -566,9 +600,11 @@ for idx, dataset_ID in enumerate(dataset_ID_list):
         color=cls[2],
         label='Feasible'
     )
-
+    
+    ax.plot(np.arange(-1,12), np.ones(len(np.arange(-1,12)))*0.05, color='red')#, linewidth=0.5)
+    ax.set_xlim(-0.5, df_feasibility_balancing_DS[dataset_ID]['depth'].max()+0.05)
     ax.set_xlabel('Depth')
-    ax.set_title(dataset_ID)
+    ax.set_title(['Sensitivity' if dataset_ID == 'ivity' else dataset_ID][0])
     ax.grid(True)
 
 # Shared Y label
@@ -587,6 +623,74 @@ fig.legend(
 fig.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space for legend
 
 plt.show()
+
+#%%
+
+cls = ['green']
+
+# Create 1 row, 2 columns of subplots, sharing the Y axis
+fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 5))
+
+for idx, dataset_ID in enumerate(dataset_ID_list):
+    ax = axes[idx]  # Select subplot
+
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_balance_cell'],
+        df_feasibility_balancing_DS[dataset_ID]['std_balance_cell'],
+        fmt='o-',
+        ecolor=cls[0],
+        elinewidth=1.5,
+        capsize=5,
+        capthick=1.5,
+        markersize=8,
+        color=cls[0],
+        #label='Unfeasible'
+    )
+    
+    ax.set_xlabel('Depth')
+    ax.set_title(['Sensitivity' if dataset_ID == 'ivity' else dataset_ID][0])
+    ax.grid(True)
+
+# Shared Y label
+axes[0].set_ylabel('\% Balance')
+
+
+fig.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space for legend
+
+#%%
+cls = ['green']
+
+# Create 1 row, 2 columns of subplots, sharing the Y axis
+fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 5))
+
+for idx, dataset_ID in enumerate(dataset_ID_list):
+    ax = axes[idx]  # Select subplot
+
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_entropy_cell'],
+        df_feasibility_balancing_DS[dataset_ID]['std_entropy_cell'],
+        fmt='o-',
+        ecolor=cls[0],
+        elinewidth=1.5,
+        capsize=5,
+        capthick=1.5,
+        markersize=8,
+        color=cls[0],
+        #label='Unfeasible'
+    )
+    
+    ax.set_xlabel('Depth')
+    ax.set_title(['Sensitivity' if dataset_ID == 'ivity' else dataset_ID][0])
+    ax.grid(True)
+
+# Shared Y label
+axes[0].set_ylabel('Entropy')
+
+
+fig.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space for legend
+
 
 #%%
 cls=['b','r']
