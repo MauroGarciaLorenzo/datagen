@@ -4,7 +4,7 @@ import pandas as pd
 from datagen.src.start_app import logger
 
 from datagen.src.dimensions import Cell
-from datagen.src.file_io import log_cell_info, save_df
+from datagen.src.file_io import log_cell_info, save_df, save_execution_logs
 
 try:
     from pycompss.api.task import task
@@ -174,6 +174,9 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                   1, dst_dir)
     logger.info(message)
 
+    children_info = [(dimensions, parent_entropy, delta_entropy, depth)]
+    save_execution_logs(children_info, dst_dir)
+
     check_entropy = False
     if delta_entropy > delta_entropy_threshold or parent_entropy > entropy_threshold:
         check_entropy = True
@@ -192,7 +195,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                       feasible_cases / total_cases,
                       0, dst_dir)
 
-        children_info = [(dimensions, parent_entropy, delta_entropy, depth)]
+
         return children_info
     else:
         if use_sensitivity:

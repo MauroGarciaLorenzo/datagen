@@ -80,16 +80,20 @@ def save_results(execution_logs, dst_dir, execution_time):
 
     execution_time_df.to_csv((os.path.join(dst_dir, "execution_time.csv")), index=False)
 
-    if execution_logs!=None:
-        with open(os.path.join(dst_dir, "execution_logs.txt"), "w") as log_file:
-            for log_entry in execution_logs:
-                log_file.write("Dimensions:\n")
-                for dim in log_entry[0]:
-                    log_file.write(f"{dim}\n")
-                log_file.write(f"Entropy: {log_entry[1]}\n")
-                log_file.write(f"Delta Entropy: {log_entry[2]}\n")
-                log_file.write(f"Depth: {log_entry[3]}\n")
-                log_file.write("\n")
+
+def save_execution_logs(children_info, dst_dir):
+    log_path = os.path.join(dst_dir, "execution_logs.txt")
+
+    with open(log_path, "a") as log_file:
+        for log_entry in children_info:
+            log_file.write("Dimensions:\n")
+            for dim in log_entry[0]:
+                log_file.write(f"{dim}\n")
+            log_file.write(f"Entropy: {log_entry[1]}\n")
+            log_file.write(f"Delta Entropy: {log_entry[2]}\n")
+            log_file.write(f"Depth: {log_entry[3]}\n")
+            log_file.write("\n")
+
 
 def init_dst_dir(calling_module, seed, n_cases, n_samples, max_depth,
                  working_dir, ax, dimensions):
