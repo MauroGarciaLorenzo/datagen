@@ -11,6 +11,8 @@ if [[ ! -d "venv" || ! -d "venv/lib/python3.10/site-packages/" ]]; then
     echo "    python3.10 -m venv venv"
     echo "Then activate it and install dependencies with:"
     echo "    source venv/bin/activate && python3.10 -m pip install -r requirements.txt"
+    echo "    pip install -e ../GridCal/src/GridCalEngine"
+    echo "    pip install -e ../stability_analysis"
     exit 1
 fi
 
