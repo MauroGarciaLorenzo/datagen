@@ -76,6 +76,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     stabilities = []
     feasible_cases = 0
 
+    # If cell is already explored, skip computation and get csvs from disk
     if (os.path.exists(dst_dir) and
             any(cell_name in f for f in os.listdir(dst_dir))):
         message = f"Skipping cell {cell_name}"
@@ -103,6 +104,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         initial_index = 0
         index = 0
 
+        # Evaluate stabilities
         for _, case in cases_df.iterrows():
             stability, output_dfs = eval_stability(
                 case=case,
@@ -116,25 +118,26 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
             output_dataframes_chunk.append(output_dfs)
             index += 1
 
+            # Save dataframes on disk every chunk_length
             if index % chunk_length == 0 or index == len(cases_df):
                 stabilities_chunk = compss_wait_on(stabilities_chunk)
                 stabilities.extend(stabilities_chunk)
                 output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
 
-                # update feasible cases
+                # Update feasible cases
                 for stability in stabilities_chunk:
                     if stability >= 0:
                         feasible_cases += 1
 
-                # assign chunk results back to cases_df
+                # Assign chunk results back to cases_df
                 cases_df.loc[initial_index:index - 1,
                 "Stability"] = stabilities_chunk
 
-                # save cases_df incrementally
+                # Save cases_df incrementally
                 save_df(cases_df.iloc[initial_index:index], dst_dir, cell_name,
                         "cases_df")
 
-                # build and save total_dataframes incrementally
+                # Build and save total_dataframes incrementally
                 total_dataframes = None
                 for output_dfs in output_dataframes_chunk:
                     if total_dataframes:
@@ -143,6 +146,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                     else:
                         total_dataframes = output_dfs
 
+                # If there are extra dataframes (apart from cases and dims),
+                # concatenate and save on disk
                 if total_dataframes:
                     labels_to_remove = []
                     for label, df in total_dataframes.items():
@@ -168,12 +173,14 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
     parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy) #(cases_df, cases_heritage_df)
 
+    # Log cell info
     total_cases = n_samples * dimensions[0].n_cases
     message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
     log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_cases / total_cases,
                   1, dst_dir)
     logger.info(message)
 
+    # Save execution logs on disk
     children_info = [(dimensions, parent_entropy, delta_entropy, depth)]
     save_execution_logs(children_info, dst_dir)
 
@@ -198,6 +205,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
         return children_info
     else:
+        # If use_sensitivity and there are few cases, get cases from parent
+        # (sensitivity needs several cases to work)
         if use_sensitivity:
             if total_cases < 100:
                 cell = Cell(dimensions)
@@ -208,8 +217,12 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                     cases_heritage_df, cell, dims_heritage_df)
                 cases_df = pd.concat([cases_df, cases_heritage_df],
                                      ignore_index=True)
+
+            # Compute sensitivity analysis
             dimensions = sensitivity(cases_df, dimensions, sensitivity_divs,
                                      generator)
+
+        # Create dimensions for children cells
         children_grid = gen_grid(dimensions)
 
         if ax is not None and len(dimensions) == 2:
@@ -269,9 +282,11 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
         i += 1
         cell_name = f"{parent_name}.{i}"
 
+        # Distribute samples among children
         cases_children_df, dims_children_df = get_children_samples(
             cases_df, children_cell, dims_df)
 
+        # Complete "Stability" column for non evaluated cases
         if not cases_children_df.empty and "Stability" not in cases_children_df.columns:
             parent_entropy, _ = eval_entropy(cases_children_df["Stability"], None)
         else:
@@ -325,9 +340,14 @@ def get_children_samples(cases_heritage_df, cell, dims_heritage_df):
             cell_independent_dims[t].label: cell_independent_dims[t].borders
             for t in range(len(cell_independent_dims))
         }
+        # The case belongs to a cell if every value of the sample matches its
+        # dimension
         belongs = all(cell_borders[label][0] <= value <= cell_borders[label][1]
                       for label, value in row.items()
                       if label in cell_borders)
+
+        # Does not belong if the sample is over the lower boundary if the
+        # sample is the first or the last
         if all(
                 value == cell_borders[label][0]
                 for label, value in row.items()
@@ -340,6 +360,8 @@ def get_children_samples(cases_heritage_df, cell, dims_heritage_df):
                 if label in cell_borders
         ) and idx != len(dims_heritage_df) - 1:
             belongs = False
+
+        # If belongs, append to children cell's dfs
         if belongs:
             matching_case = cases_heritage_df[
                 cases_heritage_df["case_id"] == case_id]
@@ -360,7 +382,8 @@ def get_children_samples(cases_heritage_df, cell, dims_heritage_df):
 def get_parent_samples(dst_dir, cell_name):
     """
     Retrieve parent cases_df and dims_df CSVs for a given cell_name,
-    and return them as concatenated pandas DataFrames.
+    and return them as concatenated pandas DataFrames. Checks for cell_names
+    matching the prefixes of cell_name.
 
     Example: if cell_name = "0.1.4.2",
       -> combines [cases_df_0.1.4.csv, cases_df_0.1.csv, cases_df_0.csv]
@@ -380,12 +403,12 @@ def get_parent_samples(dst_dir, cell_name):
         if os.path.exists(cases_path):
             cases_dfs.append(pd.read_csv(cases_path))
         else:
-            print(f"⚠️ Missing: {cases_path}")
+            print(f"Missing: {cases_path}")
 
         if os.path.exists(dims_path):
             dims_dfs.append(pd.read_csv(dims_path))
         else:
-            print(f"⚠️ Missing: {dims_path}")
+            print(f"Missing: {dims_path}")
 
     cases_df = pd.concat(cases_dfs, ignore_index=True) if cases_dfs else pd.DataFrame()
     dims_df  = pd.concat(dims_dfs, ignore_index=True) if dims_dfs else pd.DataFrame()
