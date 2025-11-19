@@ -77,7 +77,8 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     dir_name = f"datagen_ACOPF{slurm_str}{cu_str}{slurm_nodes_str}_LF09_seed{seed}_nc{n_cases}" \
                f"_ns{n_samples}_d{max_depth}_{timestamp}_{rnd_num}"
     path_results = os.path.join(
-        working_dir, "results", dir_name)
+        #working_dir, "results", dir_name)
+        'D:/',dir_name)
     if not os.path.isdir(path_results):
         os.makedirs(path_results)
     # Save yaml setup in the results directory
@@ -194,7 +195,14 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
                   independent_dimension=True,
                   cosphi=generators_power_factor),
         Dimension(label="perc_g_for", variable_borders=[(0,1)],
-                  n_cases=n_cases, divs=1, borders=(0, 1), values=[1,-1,0],
+                  n_cases=n_cases, divs=1, borders=(0, 1), values = [-1, -1, -1, -1, -1, 0,  1,  0,  1,
+                                                                    -1, -1,  0,  1,  0,
+                                                                    -1, -1, -1, -1, -1,
+                                                                    -1,  0,  1,
+                                                                    -1, -1, -1, -1, -1, -1,0,-1, -1, -1,  1,
+                                                                    -1, -1,  0, -1, -1, -1, -1, -1,
+                                                                    1, -1,  0, -1,  1,  0,-1,  1, -1, 0, -1, -1],
+#values=[1,-1,0],
                   independent_dimension=True, cosphi=None),
         Dimension(label="p_load", values=p_loads,
                   n_cases=n_cases, divs=1,
@@ -251,7 +259,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
-        setup_path = "./setup/setup_seed3_nc3_ns20_d3.yaml"
+        setup_path = "./setup/setup_test_118_fix_control.yaml"
     else:
         setup_path = args[1]
     main(setup_path=setup_path)

@@ -75,8 +75,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
 
     # Set a slack bus
-    slack_bus_num=1
-    d_raw_data['data_global'].loc[0,'ref_element']='GFOR'
+    slack_bus_num=26
+    d_raw_data['data_global'].loc[0,'ref_element']='SG'
     d_raw_data['data_global'].loc[0,'ref_bus'] = slack_bus
     i_slack = 0
 
