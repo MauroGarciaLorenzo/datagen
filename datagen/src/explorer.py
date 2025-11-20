@@ -223,7 +223,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                     cases_heritage_df, cell, dims_heritage_df)
                 cases_df = pd.concat([cases_df, cases_heritage_df],
                                      ignore_index=True)
-            dimensions = sensitivity(cases_df, dimensions, sensitivity_divs,
+            dimensions = sensitivity(cases_df, total_dataframes['df_op'], dimensions, sensitivity_divs,
                                      generator)
         children_grid = gen_grid(dimensions)
 
