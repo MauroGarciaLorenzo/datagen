@@ -32,10 +32,6 @@ class Logger:
     def error(self, msg):    self._log("ERROR", msg)
     def critical(self, msg): self._log("CRITICAL", msg)
 
-    def close(self):
-        if self.log_file:
-            self.log_file.close()
-
     def get_logging_level(self):
         for name, value in self.LEVELS.items():
             if value == self.level:

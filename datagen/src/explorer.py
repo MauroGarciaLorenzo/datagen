@@ -202,7 +202,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                       feasible_cases / total_cases,
                       0, dst_dir)
 
-
         return children_info
     else:
         # If use_sensitivity and there are few cases, get cases from parent

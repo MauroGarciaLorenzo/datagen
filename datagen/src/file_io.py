@@ -169,6 +169,9 @@ def clean_incomplete_cells(dst_dir):
     incomplete_cells = [cell for cell, dfs in cell_to_dfs.items()
                         if dfs != all_df_names]
 
+    if len(cell_to_dfs.items()) == 1 and "0" in cell_to_dfs.keys():
+        incomplete_cells = ["0"]
+
     # Delete their CSVs
     for cell_name in incomplete_cells:
         for df_name in all_df_names:
