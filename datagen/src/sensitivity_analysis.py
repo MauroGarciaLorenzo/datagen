@@ -20,7 +20,7 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator):
     :param divs_per_cell: Number of resultant cells from each recursive call
     :return: Divisions for each dimension
     """
-    print("=== STARTING SENSITIVITY ANALYSIS ===")
+    print("=== STARTING SENSITIVITY ANALYSIS ===", flush=True)
     # Extract labels for dimensions that are marked as independent
     labels = [dim.label for dim in dimensions if dim.independent_dimension]
 
@@ -69,7 +69,7 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator):
 
     # Get feature importances (sensitivity indicators)
     importances = model.feature_importances_
-    print(f"IMPORTANCES: {importances}")
+    print(f"IMPORTANCES: {importances}", flush=True)
 
     # Reset all dimension divisions to 1 (baseline state)
     for d in dimensions:
@@ -105,11 +105,11 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator):
     for d in dimensions:
         if d.divs > 1:
             success = True
-            print(f"Selected dimension: {d.label}, divisions: {d.divs}")
+            print(f"Selected dimension: {d.label}, divisions: {d.divs}", flush=True)
     if not success:
         print("Could not split based on sensitivity. Only one "
-                    "cell will appear at the next level of depth")
-    print("=== FINISHED SENSITIVITY ANALYSIS ===")
+                    "cell will appear at the next level of depth", flush=True)
+    print("=== FINISHED SENSITIVITY ANALYSIS ===", flush=True)
     return dimensions
 
 
