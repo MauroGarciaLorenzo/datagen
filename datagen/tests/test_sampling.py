@@ -132,14 +132,24 @@ class Test(TestCase):
         parab_cases_df["Stability"] = parab_cases_df.apply(parab_func, axis=1)
         dim0_cases_df["Stability"] = dim0_cases_df.apply(dim0_func, axis=1)
 
-        dims_linear = sensitivity(linear_cases_df, dims, divs_per_cell=2,
-                                  generator=self.generator)
+        # Test case is not executing datagen
+        df_op = pd.DataFrame()
+        use_all_vars = True
+
+        dims_linear = sensitivity(cases_df=linear_cases_df,
+                                  df_op=df_op, dimensions=dims, divs_per_cell=2,
+                                  generator=self.generator,
+                                  use_all_vars=use_all_vars)
         dims_linear_divs = [dim.divs for dim in dims_linear]
-        dims_parab = sensitivity(parab_cases_df, dims, divs_per_cell=2,
-                                 generator=self.generator)
+        dims_parab = sensitivity(cases_df=parab_cases_df,
+                                  df_op=df_op, dimensions=dims, divs_per_cell=2,
+                                  generator=self.generator,
+                                  use_all_vars=use_all_vars)
         dims_parab_divs = [dim.divs for dim in dims_parab]
-        dims_dim0 = sensitivity(dim0_cases_df, dims, divs_per_cell=2,
-                                generator=self.generator)
+        dims_dim0 = sensitivity(cases_df=dim0_cases_df,
+                                  df_op=df_op, dimensions=dims, divs_per_cell=2,
+                                  generator=self.generator,
+                                  use_all_vars=use_all_vars)
         dims_dim0_divs = [dim.divs for dim in dims_dim0]
 
         self.assertEqual(dims_linear_divs, [1, 1, 2])

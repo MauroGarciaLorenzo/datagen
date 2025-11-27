@@ -28,6 +28,10 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_v
 
     # Discard unfeasible cases for the sensitivity calculations
     cases_df_feas = cases_df.query('Stability >=0')
+
+    if cases_df_feas.empty:
+        return dimensions
+
     if use_all_vars:
         # Run sensitivity using all variables
         dims_df_feas = pd.DataFrame()
@@ -109,11 +113,11 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_v
     for d in dimensions:
         if d.divs > 1:
             success = True
-            print(f"Selected dimension: {d.label}, divisions: {d.divs}", flush=True)
+            logger.info(f"Selected dimension: {d.label}, divisions: {d.divs}")
     if not success:
-        print("Could not split based on sensitivity. Only one "
-                    "cell will appear at the next level of depth", flush=True)
-    print("=== FINISHED SENSITIVITY ANALYSIS ===", flush=True)
+        logger.warning("Could not split based on sensitivity. Only one "
+                    "cell will appear at the next level of depth")
+    logger.debug("=== FINISHED SENSITIVITY ANALYSIS ===")
     return dimensions
 
 
