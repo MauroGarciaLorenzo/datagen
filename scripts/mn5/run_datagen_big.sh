@@ -7,13 +7,11 @@ export COMPSS_PYTHON_VERSION="3.12.1"
 module load hdf5
 module load sqlite3
 module load python/3.12.1
-module use /apps/GPP/modulefiles/applications/COMPSs/.custom
-module load TrunkMauro
+module load COMPSs/Trunk
 
 # Variables initialization
-computing_units=8
-num_nodes=32
-yaml_file="setup_seed3_nc3_ns500_d7.yaml"
+num_nodes=8
+yaml_file="setup_seed3_nc3_ns333_d5_cpus8_th0.2_fr0.05_sensitivity.yaml"
 
 # Parse username splitting the string by delimiter "/"
 IFS='/' read -ra parts <<< "$HOME"

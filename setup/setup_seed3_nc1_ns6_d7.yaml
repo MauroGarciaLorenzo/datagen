@@ -1,0 +1,14 @@
+descr: "Designed to obtain 131,070 cases when modifying the source code to avoid checking entropy nor feasibility to search deeper"
+n_pf: 1
+voltage_profile: true
+v_min_v_max_delta_v: [0.95, 1.05, 0.02]
+loads_power_factor: 0.98
+generators_power_factor: 0.98
+n_samples: 6
+n_cases: 1
+rel_tolerance: 0.00000001
+max_depth: 7
+seed: 3
+grid_name: IEEE118
+environment:
+  COMPUTING_UNITS: 10

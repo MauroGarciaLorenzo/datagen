@@ -49,25 +49,41 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 # In[7]:
 
 
-path = '../results/'
+#path = '../results/'
+path = 'D:/'
+dir_names=[dir_name for dir_name in os.listdir(path) if '_5933' in dir_name and 'zip' not in dir_name  or '_2862' in dir_name  and 'zip' not in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+#dir_names=[dir_names[0],dir_names[2]]
 
-dir_names=[dir_name for dir_name in os.listdir(path) if '_4909' in dir_name]# or '_3518' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+#dir_names=[dir_name for dir_name in os.listdir(path) if '_4909' in dir_name]# or '_3518' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 results_dataframes_datasets=dict()
-dataset_ID_list=[]
+dataset_ID_list=[]#'complete_sensitivity','partial_sensitivity']
 
-df_op = 'case_df_op' #df_op
-for dir_name in dir_names:
+df_op = 'df_op'#'case_df_op' #df_op
+for idx, dir_name in enumerate(dir_names):
     path_results = os.path.join(path, dir_name)
 
-    dataset_ID = dir_name[-5:]
+    dataset_ID = dir_name[-5:] #dataset_ID_list[idx]#
     dataset_ID_list.append(dataset_ID)
     results_dataframes_datasets[dataset_ID], csv_files = open_csv(
-        path_results, ['cases_df.csv', df_op+'.csv'])
+        path_results, ['cases_df.csv', df_op+'.csv','dims_df.csv', 'cell_info.csv'])
 
-    perc_stability(results_dataframes_datasets[dataset_ID][df_op], dir_name)
+    perc_stability(results_dataframes_datasets[dataset_ID]['cases_df'], dir_name)
       
+dir_name=[dir_name for dir_name in os.listdir(path) if '_20251030_sensitivity'  in dir_name and 'zip' not in dir_name][0]
+path_results = os.path.join(path, dir_name)
+dataset_ID ='sensitivity'
+results_dataframes_datasets[dataset_ID], csv_files = open_csv(
+    path_results, ['cases_df.csv', df_op+'.csv','dims_df.csv', 'cell_info.csv'])
 
+perc_stability(results_dataframes_datasets[dataset_ID]['cases_df'], dir_name)
+dataset_ID_list.append(dataset_ID)
+# for idx, dir_name in enumerate(dir_names):
+#     path_results = os.path.join(path, dir_name)
 
+#     dataset_ID = dataset_ID_list[idx]#dir_name[-5:]
+#     results_dataframes_datasets[dataset_ID], csv_files = open_csv(
+#         path_results, ['dims_df.csv', 'cell_info.csv'],results_dataframes_datasets[dataset_ID])
+    
 # **Data Set 7664**:
 # - Entropy <u>is not</u> considered as cut-off criteria in the data generation process
 # - Fasibility ratio <u>is</u> considered as cut-off criteria in the data generation process, rel_tolerance = 0.01 (if feasibility ratio in the cell is less then 0.01 the cell dies? correct?)
@@ -156,13 +172,13 @@ for dataset_ID in dataset_ID_list:
                if col.startswith('Sn')]
     results_dataframes_datasets[dataset_ID][df_op][Sn_cols] = results_dataframes_datasets[dataset_ID][df_op][Sn_cols]/100 #p.u. system base 100 MVA
     
-    theta_cols = [col for col in results_dataframes_datasets[dataset_ID][df_op]
-                  if col.startswith('theta')]
-    # Adjust angles greater than 180°
-    results_dataframes_datasets[dataset_ID][df_op][theta_cols] = results_dataframes_datasets[dataset_ID][df_op][theta_cols] - \
-        (results_dataframes_datasets[dataset_ID][df_op][theta_cols] > 180) * 360
+    # theta_cols = [col for col in results_dataframes_datasets[dataset_ID][df_op]
+    #               if col.startswith('theta')]
+    # # Adjust angles greater than 180°
+    # results_dataframes_datasets[dataset_ID][df_op][theta_cols] = results_dataframes_datasets[dataset_ID][df_op][theta_cols] - \
+    #     (results_dataframes_datasets[dataset_ID][df_op][theta_cols] > 180) * 360
     
-    results_dataframes_datasets[dataset_ID][df_op][theta_cols] = results_dataframes_datasets[dataset_ID][df_op][theta_cols] * np.pi/180
+    # results_dataframes_datasets[dataset_ID][df_op][theta_cols] = results_dataframes_datasets[dataset_ID][df_op][theta_cols] * np.pi/180
     
     # add total demand variables
     PL_cols = [
@@ -204,7 +220,8 @@ for dataset_ID in dataset_ID_list:
     # from data frame with sampled quantities: cases_df
     results_dataframes_datasets[dataset_ID]['cases_df_feasible'] = results_dataframes_datasets[dataset_ID]['cases_df'].query(
         'Stability >= 0')
-    case_id_feasible_DS[dataset_ID] = list(results_dataframes_datasets[dataset_ID]['df_op_feasible']['case_id'])
+    
+    case_id_feasible_DS[dataset_ID] = list(results_dataframes_datasets[dataset_ID]['cases_df_feasible']['case_id'])
     
     # ---- SELECT ONLY UNFEASIBLE CASES (from data frame with sampled quantities: cases_df)----
     
@@ -245,6 +262,7 @@ for dataset_ID in dataset_ID_list:
     p_cig_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOR') or var.startswith('P_GFOL')]
     p_gfor_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOR')]
     p_gfol_var=[var for var in results_dataframes_datasets[dataset_ID]['df_op_feasible'].columns if var.startswith('P_GFOL')]
+    taus_var = [var for var in  results_dataframes_datasets[dataset_ID]['dims_df'].columns if var.startswith('tau')]
 
     list_of_var = dict()
     list_of_var['p_sg'] =  p_sg_var
@@ -253,11 +271,14 @@ for dataset_ID in dataset_ID_list:
     list_of_var['p_gfol'] =  p_gfol_var
     
     dimensions_caseid_feasible_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'df_op_feasible', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'], Sbase=100)
-    
+    case_id_feasible = case_id_feasible_DS[dataset_ID]
+    dimensions_caseid_feasible_DS[dataset_ID][taus_var] = results_dataframes_datasets[dataset_ID]['dims_df'].query('case_id == @case_id_feasible')[taus_var]
+    dimensions_caseid_feasible_DS[dataset_ID]['perc_g_for'] = dimensions_caseid_feasible_DS[dataset_ID]['p_gfor']/dimensions_caseid_feasible_DS[dataset_ID]['p_cig']
+
     p_sg_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_sg')]
     p_cig_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_cig')]
-    p_gfor_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('P_GFOR')]
-    p_gfol_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('P_GFOL')]
+    p_gfor_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_g_for')]
+    p_gfol_var=[var for var in results_dataframes_datasets[dataset_ID]['cases_df_unfeasible'].columns if var.startswith('p_g_fol')]
     
     list_of_var = dict()
     list_of_var['p_sg'] =  p_sg_var
@@ -265,9 +286,13 @@ for dataset_ID in dataset_ID_list:
     list_of_var['p_gfor'] =  p_gfor_var
     list_of_var['p_gfol'] =  p_gfol_var
     
-    dimensions_caseid_feasible_sampled_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
-    dimensions_caseid_feasible_sampled_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_1', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
-    dimensions_caseid_feasible_sampled_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_2', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
+    dimensions_caseid_feasible_sampled_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_feasible', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
+    dimensions_caseid_unfeasible_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
+    dimensions_caseid_unfeasible1_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_1', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
+    dimensions_caseid_unfeasible2_DS[dataset_ID] = create_dimensions_caseid_df(results_dataframes_datasets[dataset_ID], 'cases_df_unfeasible_2', list_of_var, ['p_sg', 'p_cig', 'p_gfor','p_gfol'])
+    case_id_feasible = case_id_Unfeasible_DS[dataset_ID]
+    dimensions_caseid_unfeasible_DS[dataset_ID][taus_var] = results_dataframes_datasets[dataset_ID]['dims_df'].query('case_id == @case_id_feasible')[taus_var]
+    dimensions_caseid_unfeasible_DS[dataset_ID]['perc_g_for'] = dimensions_caseid_unfeasible_DS[dataset_ID]['p_gfor']/dimensions_caseid_unfeasible_DS[dataset_ID]['p_cig']
 
     
 # In[15]:
@@ -304,34 +329,35 @@ for dataset_ID in dataset_ID_list:
 
 #%%
 
-from mpl_toolkits.mplot3d import Axes3D
+# from mpl_toolkits.mplot3d import Axes3D
 
-for dataset_ID in dataset_ID_list:
-    # Create 3D scatter plot
-    fig = plt.figure(figsize=(5,4))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_sg'], 
-               dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_gfor'],
-               dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_gfol'], color='r',label='Unstable OP', marker='o')
+# for dataset_ID in dataset_ID_list:
+#     # Create 3D scatter plot
+#     fig = plt.figure(figsize=(5,4))
+#     ax = fig.add_subplot(111, projection='3d')
+#     ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_sg'], 
+#                dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_gfor'],
+#                dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_gfol'], color='r',label='Unstable OP', marker='o')
     
-    ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_sg'], 
-               dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_gfor'],
-               dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_gfol'], color='g',label='Stable OP', marker='o')
+#     ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_sg'], 
+#                dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_gfor'],
+#                dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_gfol'], color='g',label='Stable OP', marker='o')
     
-    # Labels
-    ax.set_xlabel('$P_{SG}$ [MW]', labelpad =10)
-    ax.set_ylabel('$P_{GFOR}$ [MW]', labelpad =10)
-    ax.set_zlabel('$P_{GFOL}$ [MW]', labelpad =10)
+#     # Labels
+#     ax.set_xlabel('$P_{SG}$ [MW]', labelpad =10)
+#     ax.set_ylabel('$P_{GFOR}$ [MW]', labelpad =10)
+#     ax.set_zlabel('$P_{GFOL}$ [MW]', labelpad =10)
     
-    ax.view_init(elev=10,azim=60)
-    ax.legend(loc="upper center", ncols=2, bbox_to_anchor=(.5, 1.0))
-    fig.subplots_adjust(left=0.0, right=1, top=1, bottom=0.05)
+#     ax.view_init(elev=10,azim=60)
+#     ax.legend(loc="upper center", ncols=2, bbox_to_anchor=(.5, 1.0))
+#     fig.subplots_adjust(left=0.0, right=1, top=1, bottom=0.05)
     
-    fig.savefig('Training_3D_dataset'+dataset_id+'.pdf', format='pdf')
+#     fig.savefig('Training_3D_dataset'+dataset_id+'.pdf', format='pdf')
 
-# Mesh obtained from parsing the logs file of the data generator process: the mesh shows the cell splitting process. It is obtained from the parsing_dimensions.py code.
-# 
-# Plot the mesh on top of the OPs scatter plot.
+#%%
+# # Mesh obtained from parsing the logs file of the data generator process: the mesh shows the cell splitting process. It is obtained from the parsing_dimensions.py code.
+# # 
+# # Plot the mesh on top of the OPs scatter plot.
 
 # In[17]:
 
@@ -381,18 +407,42 @@ for dataset_ID in dataset_ID_list:
 
 # In[18]:
 
-
 df_depth_DS = dict()
-for dataset_ID in dataset_ID_list:
+for path, dataset_ID in zip(dir_names,dataset_ID_list):
     
-    df_depth_DS[dataset_ID]= pd.read_excel('cases_id_depth'+dataset_ID+'.xlsx')
+    #df_depth_DS[dataset_ID]= pd.read_excel('D:/'+path+'/cases_id_depth'+dataset_ID+'.xlsx')
+    df_depth_DS[dataset_ID]= pd.read_excel('D:/'+path+'/cases_id_depthSensitivity.xlsx')
 
+#%%    
+for dataset_ID in dataset_ID_list:
+   
+    df_depth_DS[dataset_ID]= df_depth_DS[dataset_ID].set_index('case_id')
+    
+    df_depth_DS[dataset_ID] = df_depth_DS[dataset_ID].merge(
+    results_dataframes_datasets[dataset_ID][df_op].set_index('case_id')[['Stability']],
+    left_index=True,
+    right_index=True,
+    how='outer')
+    df_depth_DS[dataset_ID] = df_depth_DS[dataset_ID].reset_index()
 
 # In[20]:
 
 
 df_depth_DS[dataset_ID_list[0]].query('Depth == 0')['case_id']
 
+#%%
+def calculate_entropy(freqs):
+    """Obtain cell entropy from stability and non-stability frequencies.
+
+    :param freqs: two-element list with the frequency (1-based) of stable and
+    non-stable cases, respectively
+    :return: Entropy
+    """
+    cell_entropy = 0
+    for i in range(len(freqs)):
+        if freqs[i] != 0:
+            cell_entropy = cell_entropy - freqs[i] * np.log(freqs[i])
+    return cell_entropy
 
 # In[23]:
 
@@ -401,7 +451,8 @@ df_feasibility_balancing_DS=dict()
 
 for dataset_ID in dataset_ID_list:
 
-    df_feasibility_balancing_DS[dataset_ID]= pd.DataFrame(columns=['depth','feasibility','cumulative_feasibility','feasiblity_no_2','balance','cumulative_balancing'])
+    df_feasibility_balancing_DS[dataset_ID]= pd.DataFrame(columns=['depth','feasibility','cumulative_feasibility','mean_feasiblity_cell','std_feasiblity_cell','balance','cumulative_balancing', 'mean_balance_cell','std_balance_cell', 'mean_entropy_cell', 'std_entropy_cell'
+                                                                   'mean_unfeas_1','std_unfeas_1','mean_unfeas_2','std_unfeas_2'])
     cum_case_id_depth=[]
     for idx, depth in enumerate(np.sort(df_depth_DS[dataset_ID]['Depth'].unique())):
         df_feasibility_balancing_DS[dataset_ID].loc[idx, 'depth']=depth
@@ -416,8 +467,50 @@ for dataset_ID in dataset_ID_list:
         feas_stab_depth = len(results_dataframes_datasets[dataset_ID]['cases_df_feasible'].query('case_id == @feas_case_id_depth and Stability ==1'))
         cum_feas_stab_case_id_depth = len(results_dataframes_datasets[dataset_ID]['cases_df_feasible'].query('case_id == @cum_feas_case_id_depth and Stability ==1'))
 
+        tot_cases = df_depth_DS[dataset_ID].query('Depth == @depth').groupby('CellName')[['Stability']].count()
+        cases_x_stab = df_depth_DS[dataset_ID].query('Depth == @depth').groupby(['CellName', 'Stability'])[['Stability']].count()
+        
+        
+        feas_cell = [cases_x_stab.loc[(cell,[0,1]),'Stability'].sum()/tot_cases.loc[cell,'Stability'] if 0 in cases_x_stab.loc[cell].index or 1 in cases_x_stab.loc[cell].index else 0 for cell in tot_cases.index]
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'mean_feasiblity_cell'] = np.mean(feas_cell)
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'std_feasiblity_cell'] = np.std(feas_cell)
+        
+        unfeas1_cell = [cases_x_stab.loc[(cell,[-1]),'Stability'].sum()/tot_cases.loc[cell,'Stability'] if -1 in cases_x_stab.loc[cell].index else 0 for cell in tot_cases.index]
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'mean_unfeas_1'] = np.mean(unfeas1_cell)
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'std_unfeas_1'] = np.std(unfeas1_cell)
+   
+        unfeas2_cell = [cases_x_stab.loc[(cell,[-2]),'Stability'].sum()/tot_cases.loc[cell,'Stability'] if -2 in cases_x_stab.loc[cell].index else 0 for cell in tot_cases.index]
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'mean_unfeas_2'] = np.mean(unfeas2_cell)
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'std_unfeas_2'] = np.std(unfeas2_cell)
+   
+        balance_cell=[]
+        for cell in tot_cases.index:
+            if 0 in cases_x_stab.loc[cell].index and 1 in cases_x_stab.loc[cell].index:
+                balance_cell.append(cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum())
+            else:
+                if 0 not in cases_x_stab.loc[cell].index:
+                    balance_cell.append(1)
+                else:
+                    balance_cell.append(0)
+                    
+        # balance_cell = [cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum() 
+        #                 if 0 in cases_x_stab.loc[cell].index or 1 in cases_x_stab.loc[cell].index else 0 for cell in tot_cases.index]
+        
+        
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'mean_balance_cell'] = np.mean(balance_cell)
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'std_balance_cell'] = np.std(balance_cell)
+
+
+        entropy_cell = [-cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum()*np.log(cases_x_stab.loc[(cell,[1]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum())\
+                        -cases_x_stab.loc[(cell,[0]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum()*np.log(cases_x_stab.loc[(cell,[0]),'Stability'].sum()/cases_x_stab.loc[(cell,[0,1]),'Stability'].sum())
+                        if 0 in cases_x_stab.loc[cell].index and 1 in cases_x_stab.loc[cell].index else 0
+                        for cell in tot_cases.index]
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'mean_entropy_cell'] = np.mean([x for x in entropy_cell if x != 0])
+        df_feasibility_balancing_DS[dataset_ID].loc[idx, 'std_entropy_cell'] = np.std([x for x in entropy_cell if x != 0])
+
         if len(feas_case_id_depth) !=0:
             df_feasibility_balancing_DS[dataset_ID].loc[idx, 'balance']= feas_stab_depth/len(feas_case_id_depth) 
+            
         else:
              df_feasibility_balancing_DS[dataset_ID].loc[idx, 'balance'] = 0
         
@@ -454,8 +547,178 @@ ax.grid(True)
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 fig.tight_layout()
 
+#%%
 
-# very large difference in feasibility ratio when exploring at depth >=4 
+import matplotlib.pyplot as plt
+
+cls = ['gray', 'black', 'blue']
+
+# Create 1 row, 2 columns of subplots, sharing the Y axis
+fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 5))
+
+for idx, dataset_ID in enumerate(dataset_ID_list):
+    ax = axes[idx]  # Select subplot
+
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_unfeas_1'],
+        df_feasibility_balancing_DS[dataset_ID]['std_unfeas_1'],
+        fmt='o-',
+        ecolor=cls[0],
+        elinewidth=1.5,
+        capsize=5,
+        capthick=1.5,
+        markersize=8,
+        color=cls[0],
+        label='Unfeasible'
+    )
+
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_unfeas_2'],
+        df_feasibility_balancing_DS[dataset_ID]['std_unfeas_2'],
+        fmt='o-',
+        ecolor=cls[1],
+        elinewidth=1.5,
+        capsize=5,
+        capthick=1.5,
+        markersize=8,
+        color=cls[1],
+        label='Out of cell'
+    )
+
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_feasiblity_cell'],
+        df_feasibility_balancing_DS[dataset_ID]['std_feasiblity_cell'],
+        fmt='o-',
+        ecolor=cls[2],
+        elinewidth=1.5,
+        capsize=5,
+        capthick=1.5,
+        markersize=8,
+        color=cls[2],
+        label='Feasible'
+    )
+    
+    ax.plot(np.arange(-1,12), np.ones(len(np.arange(-1,12)))*0.05, color='red')#, linewidth=0.5)
+    ax.set_xlim(-0.5, df_feasibility_balancing_DS[dataset_ID]['depth'].max()+0.05)
+    ax.set_xlabel('Depth')
+    ax.set_title(['Sensitivity' if dataset_ID == 'ivity' else dataset_ID][0])
+    ax.grid(True)
+
+# Shared Y label
+axes[0].set_ylabel('Feasibility')
+
+# Common legend at the bottom (outside)
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(
+    handles, labels,
+    loc='lower center',
+    ncol=3,
+    frameon=True,
+    bbox_to_anchor=(0.5, 0)
+)
+
+fig.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space for legend
+
+plt.show()
+
+#%%
+
+cls = ['green']
+
+# Create 1 row, 2 columns of subplots, sharing the Y axis
+fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 5))
+
+for idx, dataset_ID in enumerate(dataset_ID_list):
+    ax = axes[idx]  # Select subplot
+
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_balance_cell'],
+        df_feasibility_balancing_DS[dataset_ID]['std_balance_cell'],
+        fmt='o-',
+        ecolor=cls[0],
+        elinewidth=1.5,
+        capsize=5,
+        capthick=1.5,
+        markersize=8,
+        color=cls[0],
+        #label='Unfeasible'
+    )
+    
+    ax.set_xlabel('Depth')
+    ax.set_title(['Sensitivity' if dataset_ID == 'ivity' else dataset_ID][0])
+    ax.grid(True)
+
+# Shared Y label
+axes[0].set_ylabel('\% Balance')
+
+
+fig.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space for legend
+
+#%%
+cls = ['green']
+
+# Create 1 row, 2 columns of subplots, sharing the Y axis
+fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 5))
+
+for idx, dataset_ID in enumerate(dataset_ID_list):
+    ax = axes[idx]  # Select subplot
+
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_entropy_cell'],
+        df_feasibility_balancing_DS[dataset_ID]['std_entropy_cell'],
+        fmt='o-',
+        ecolor=cls[0],
+        elinewidth=1.5,
+        capsize=5,
+        capthick=1.5,
+        markersize=8,
+        color=cls[0],
+        #label='Unfeasible'
+    )
+    
+    ax.set_xlabel('Depth')
+    ax.set_title(['Sensitivity' if dataset_ID == 'ivity' else dataset_ID][0])
+    ax.grid(True)
+
+# Shared Y label
+axes[0].set_ylabel('Entropy')
+
+
+fig.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space for legend
+
+
+#%%
+cls=['b','r']
+mrk = ['o-','s-']
+fig, ax = plt.subplots()
+
+for idx, dataset_ID in enumerate(dataset_ID_list):
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_feasiblity_cell'],
+        df_feasibility_balancing_DS[dataset_ID]['std_feasiblity_cell'],
+        fmt=mrk[idx],                    # 'o' for circular markers, '-' for connecting line
+        ecolor='black',              # color of error bars
+        elinewidth=1.5,              # thickness of error bar lines
+        capsize=5,                   # length of error bar caps
+        capthick=1.5,                # thickness of the cap lines
+        markersize=8,                # size of markers
+        color='blue',                # color of line and markers
+        label='Data with error bars'
+    )    
+    ax.plot(df_feasibility_balancing_DS[dataset_ID]['depth'], df_feasibility_balancing_DS[dataset_ID]['cumulative_feasibility'], marker='s',color=cls[idx], label='Cumulative Feasibility'+dataset_ID)
+ax.set_xlabel('Depth')
+ax.set_ylabel('Feasibility')
+ax.set_title('Feasibility vs Depth')
+ax.grid(True)
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+fig.tight_layout()
+
 
 # In[26]:
 
@@ -477,6 +740,35 @@ fig.tight_layout()
 
 
 # very large difference in classes balance ratio since the beginning of the exporation, then both tend to 0.5 more or less (that is ok)
+
+#%%
+cls=['b','r']
+mrk = ['o-','s-']
+
+fig, ax = plt.subplots()
+
+for idx, dataset_ID in enumerate(dataset_ID_list):
+    ax.errorbar(
+        df_feasibility_balancing_DS[dataset_ID]['depth'],
+        df_feasibility_balancing_DS[dataset_ID]['mean_entropy_cell'],
+        df_feasibility_balancing_DS[dataset_ID]['std_entropy_cell'],
+        fmt=mrk[idx],                    # 'o' for circular markers, '-' for connecting line
+        ecolor=cls[idx],              # color of error bars
+        elinewidth=1.5,              # thickness of error bar lines
+        capsize=5,                   # length of error bar caps
+        capthick=1.5,                # thickness of the cap lines
+        markersize=8,                # size of markers
+        color=cls[idx],                # color of line and markers
+        label= dataset_ID[1:]
+    )        
+    #ax.plot(df_feasibility_balancing_DS[dataset_ID]['depth'], df_feasibility_balancing_DS[dataset_ID]['cumulative_balancing'], marker='s',color=cls[idx], label='Cumulative Balance'+dataset_ID)
+ax.set_xlabel('Depth')
+ax.set_ylabel('Entropy')
+#ax.set_title('Balance vs Depth')
+ax.grid(True)
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+fig.tight_layout()
+
 
 # In[55]:
 
@@ -544,8 +836,28 @@ for idx_DS, dataset_ID in enumerate(dataset_ID_list):
         #     continue
         #plt.legend()
         ax.set_title('Data Set'+dataset_ID+' depth ='+str(depth))
-        ax.set_xlim([100,620])        
-        ax.set_ylim([0,300])
+        #ax.set_xlim([100,620])        
+        #ax.set_ylim([0,300])
+        
+#%%
+df_entropy_cell_DS = dict()
+for dataset_ID in dataset_ID_list:
+    
+    df_entropy_cell_DS[dataset_ID]= pd.read_excel('df_entropy_cell'+dataset_ID+'.xlsx')
+    #df_entropy_cell_DS[dataset_ID]['CellName'] = [str(c) for c in df_entropy_cell_DS[dataset_ID]['CellName']]
+#%%
+df_entropy_cell_comparison=df_entropy_cell_DS[dataset_ID_list[0]].set_index('CellName')
+
+df_entropy_cell_comparison = df_entropy_cell_comparison.merge(
+    df_entropy_cell_DS[dataset_ID_list[1]].set_index('CellName'),
+    right_index=True,
+    left_on='CellName'
+)
+
+#%%
+stability_cell_DS=dict()
+for dataset_ID in dataset_ID_list:
+    stability_cell_DS[dataset_ID]=results_dataframes_datasets[dataset_ID]['cases_df'].query('cell_name == "0.1.1.3.1"')['Stability']
 
 #%%
 

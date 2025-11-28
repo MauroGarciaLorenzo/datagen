@@ -1,7 +1,7 @@
 import os
 
 import pandas as pd
-from datagen.src.start_app import logger
+from datagen.src.logger import logger
 
 from datagen.src.dimensions import Cell
 from datagen.src.file_io import log_cell_info, save_df, save_execution_logs
@@ -75,6 +75,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     logger.info(f"Entering cell {cell_name}")
     stabilities = []
     feasible_cases = 0
+    total_dataframes = {}
 
     # If cell is already explored, skip computation and get csvs from disk
     if (os.path.exists(dst_dir) and
@@ -82,14 +83,43 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         message = f"Skipping cell {cell_name}"
         logger.info(message)
         print(message, flush=True)
+
+        # Load mandatory dataframes
         cases_df = pd.read_csv(
             os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))
         dims_df = pd.read_csv(
             os.path.join(dst_dir, f"dims_df_{cell_name}.csv"))
+
         stabilities = cases_df["Stability"]
         for stability in stabilities:
             if stability >= 0:
                 feasible_cases += 1
+
+        # Find all files named '{df_name}_{cell_name}.csv' that aren't
+        # cases_df or dims_df.
+        files_in_dir = os.listdir(dst_dir)
+
+        # Define the prefixes to exclude
+        exclude_prefixes = {f"cases_df_{cell_name}.csv",
+                            f"dims_df_{cell_name}.csv"}
+
+        # Iterate over all files in the directory
+        for filename in files_in_dir:
+            # Check if the filename belongs to the current cell and is a CSV file
+            if filename.endswith(
+                    f"_{cell_name}.csv") and filename not in exclude_prefixes:
+
+                df_path = os.path.join(dst_dir, filename)
+
+                # Get the dataframe name (e.g., 'df_op' from 'df_op_0.1.csv')
+                df_name = filename.removesuffix(f"_{cell_name}.csv")
+
+                try:
+                    # Load df into the dictionary
+                    total_dataframes[df_name] = pd.read_csv(df_path)
+                    pass
+                except Exception as e:
+                    logger.error(f"Error loading {df_path}: {e}")
 
     else:
         # Generate samples (n_samples for each dimension)
@@ -207,6 +237,15 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         # If use_sensitivity and there are few cases, get cases from parent
         # (sensitivity needs several cases to work)
         if use_sensitivity:
+            # df_op will be used by sensitivity if the execution is "datagen"
+            # Otherwise, it will only use cases_df and dims_df
+            df_op = pd.DataFrame()
+            use_all_vars = True
+            # If not datagen, -100 cases, it won't get df_op (controlled by
+            # get_filtered_df_op)
+            # If not datagen, +100 cases, df_op empty
+            # If datagen, -100 cases, get_filtered_df_op
+            # If datagen, +100 cases, elif
             if total_cases < 100:
                 cell = Cell(dimensions)
                 cases_heritage_df, dims_heritage_df = get_parent_samples(
@@ -216,12 +255,14 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                     cases_heritage_df, cell, dims_heritage_df)
                 cases_df = pd.concat([cases_df, cases_heritage_df],
                                      ignore_index=True)
+                df_op = get_filtered_df_op(cases_df, dst_dir, cell_name)
 
-            # Compute sensitivity analysis
-            dimensions = sensitivity(cases_df, dimensions, sensitivity_divs,
-                                     generator)
+            elif "df_op" in total_dataframes.keys():
+                df_op = total_dataframes["df_op"]
+                use_all_vars = False
 
-        # Create dimensions for children cells
+            dimensions = sensitivity(cases_df, df_op, dimensions, sensitivity_divs,
+                                     generator, use_all_vars=use_all_vars)
         children_grid = gen_grid(dimensions)
 
         if ax is not None and len(dimensions) == 2:
@@ -314,6 +355,76 @@ def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
         children_info_all[i] = compss_wait_on(result)
 
     return children_info_all
+
+
+def get_filtered_df_op(cases_df, dst_dir, cell_name):
+    """
+    Loads, filters, and concatenates the 'df_op' files for the current cell
+    and all its parent cells (e.g., 0.1.2, 0.1, 0).
+    It filters rows based on 'cell_id' matching a 'case_id' in cases_df.
+
+    :param cases_df: The DataFrame containing the valid cases (must have 'case_id').
+    :param dst_dir: The destination directory where the output files are stored.
+    :param cell_name: The name of the current cell (e.g., '0.1.2').
+    :return: A single DataFrame containing all filtered 'df_op' rows, or an empty DataFrame.
+    """
+    if cases_df.empty or 'case_id' not in cases_df.columns:
+        logger.warning(
+            "cases_df is empty or missing 'case_id'. Cannot filter output files.")
+        return pd.DataFrame()
+
+    # List to collect all 'df_op' parts from the current cell and its parents
+    df_op_parts = []
+
+    valid_ids = set(cases_df['case_id'].unique())
+    df_name_to_load = 'df_op'
+
+    # Generate list of current and parent cell_names
+    # Example: '0.1.2' -> ['0', '0.1', '0.1.2']
+    parts = cell_name.split(".")
+    cell_names_to_load = [".".join(parts[:i + 1]) for i in range(len(parts))]
+
+    # Iterate over current and parent cases
+    for current_cell_name in cell_names_to_load:
+        logger.info(
+            f"Searching for '{df_name_to_load}' in cell: {current_cell_name}")
+
+        # Construct the specific file path: df_op_{cell_name}.csv
+        df_path = os.path.join(dst_dir,
+                               f"{df_name_to_load}_{current_cell_name}.csv")
+
+        if os.path.exists(df_path):
+            try:
+                df_op_original = pd.read_csv(df_path)
+
+                # Check for valid cases in df_op (by case_id)
+                if not df_op_original.empty:
+                    df_op_filtered = df_op_original[
+                        df_op_original['case_id'].isin(valid_ids)
+                    ]
+
+                    # Append the filtered result
+                    if not df_op_filtered.empty:
+                        df_op_parts.append(df_op_filtered)
+                        logger.info(
+                            f"Found and filtered '{df_name_to_load}' for parent {current_cell_name}. Rows added: {len(df_op_filtered)}")
+
+                elif not df_op_original.empty:
+                    logger.warning(
+                        f"Output DF '{df_name_to_load}' for cell {current_cell_name} found but missing 'cell_id' column. Skipped.")
+
+            except Exception as e:
+                logger.error(f"Error processing {df_path}: {e}")
+        else:
+            logger.debug(f"File not found: {df_path}")
+
+    # Concatenate all collected parts
+    if df_op_parts:
+        # Concatenate all DataFrames in the list into one
+        return pd.concat(df_op_parts, ignore_index=True)
+    else:
+        # Return an empty DataFrame if no matching rows were found
+        return pd.DataFrame()
 
 
 def get_children_samples(cases_heritage_df, cell, dims_heritage_df):

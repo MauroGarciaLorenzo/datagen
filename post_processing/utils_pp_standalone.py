@@ -1,14 +1,21 @@
 import pandas as pd
 import os
 
-def open_csv(path_results, csv_files=None):
+def open_csv(path_results, csv_files=None, results_dataframes=None):
     if csv_files == None:
         csv_files = [file for file in os.listdir(path_results) if file.endswith('.csv')]
 
-    results_dataframes=dict()
+    if results_dataframes == None:
+        results_dataframes=dict()
     for file in csv_files:
-        results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop(['Unnamed: 0'],axis=1).drop_duplicates(keep='first').reset_index(drop=True)
-    
+        try:
+            results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop(['Unnamed: 0'],axis=1).drop_duplicates(keep='first').reset_index(drop=True)
+        except:
+            results_dataframes[file.replace('.csv','')]=pd.read_csv(path_results+'/'+file,sep=',').drop_duplicates(keep='first').reset_index(drop=True)
+        try:
+            results_dataframes[file.replace('.csv','')]['cell_name'] = ['0' if name == 0.0 or name == '0.0' else str(name) for name in results_dataframes[file.replace('.csv','')]['cell_name']]
+        except:
+            continue
     return results_dataframes, csv_files 
 
 def perc_stability(df,dir_name):
@@ -53,7 +60,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
-def plot_mesh(mesh_df, ax = None):
+def plot_mesh(mesh_df, dimx, dimy, labelx, labely, ax = None):
     # Group by each block based on entropy, delta_entropy, and depth
     grouped = mesh_df.groupby('block_id')
 
@@ -64,25 +71,25 @@ def plot_mesh(mesh_df, ax = None):
     for i, group in grouped:
         #group = block_id_group[1]
         try:
-            p_cig_row = group[group["dimension"] == "p_cig"].iloc[0]
-            p_sg_row = group[group["dimension"] == "p_sg"].iloc[0]
+            p_cig_row = group[group["dimension"] == dimx].iloc[0]
+            p_sg_row = group[group["dimension"] == dimy].iloc[0]
     
             x0, x1 = p_cig_row["lower"], p_cig_row["upper"]
             y0, y1 = p_sg_row["lower"], p_sg_row["upper"]
     
             rect = patches.Rectangle((x0, y0), x1 - x0, y1 - y0,
-                                     linewidth=1, edgecolor='blue', facecolor='lightblue', alpha=0.4)
+                                     linewidth=1, edgecolor='blue', facecolor='none', alpha=0.3)
             ax.add_patch(rect)
         except IndexError:
             # Skip blocks that are missing either p_cig or p_sg
             continue
     
-    ax.set_xlabel("Total $P_{IBR}$ [MW]")
-    ax.set_ylabel("Total $P_{SG}$ [MW]")
+    ax.set_xlabel(labelx)#"Total $P_{IBR}$ [MW]")
+    ax.set_ylabel(labely)#"Total $P_{SG}$ [MW]")
     #ax.set_title("2D Mesh of p_cig vs p_sg")
     plt.grid(True)
-    ax.set_xlim(0.9*mesh_df.query('dimension == "p_cig"')['lower'].min(),1.1* mesh_df.query('dimension == "p_cig"')['upper'].max())    # Example range for p_cig
-    ax.set_ylim(0.9*mesh_df.query('dimension == "p_sg"')['lower'].min(), 1.1*mesh_df.query('dimension == "p_sg"')['upper'].max())   # Example range for p_sg
+    ax.set_xlim(0.9*mesh_df.query('dimension == @dimx')['lower'].min(),1.1* mesh_df.query('dimension == @dimx')['upper'].max())    # Example range for p_cig
+    ax.set_ylim(0.9*mesh_df.query('dimension == @dimy')['lower'].min(), 1.1*mesh_df.query('dimension == @dimy')['upper'].max())   # Example range for p_sg
     plt.tight_layout()
 
     return ax

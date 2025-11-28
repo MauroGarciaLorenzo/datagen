@@ -41,7 +41,10 @@ class Logger:
 def setup_logger(logging_level, dst_dir):
     global logger
     os.makedirs(dst_dir, exist_ok=True)
+    logger.level = logger.LEVELS.get(logging_level.upper(), 20)
+    logger.dst_dir = dst_dir
 
-    logger = Logger(level=logging_level, dst_dir=dst_dir)
+    os.makedirs(dst_dir, exist_ok=True)
+    logger.log_file = open(os.path.join(dst_dir, f"log.txt"), "a")
 
 logger = Logger()
