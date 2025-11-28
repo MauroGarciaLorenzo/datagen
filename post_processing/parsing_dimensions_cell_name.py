@@ -27,7 +27,7 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 # ncig_list=['10','11','12']
 path = '../results/'
 
-dir_name=[dir_name for dir_name in os.listdir(path) if '_4909' in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+dir_name=[dir_name for dir_name in os.listdir(path) if '_2732' in dir_name and 'zip' not in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 print(dir_name)
 # dir_names = [
 #     #'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664']
