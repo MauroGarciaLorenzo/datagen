@@ -6,7 +6,7 @@ module load hdf5
 module load sqlite3
 module load python/3.12.1
 module use /apps/GPP/modulefiles/applications/COMPSs/.custom
-module load TrunkMauro
+module load COMPSs/Trunk
 
 #
 # Define the cases to run as a 2D array

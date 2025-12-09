@@ -1,7 +1,7 @@
 module load hdf5
 module load python/3.12.0
 module use /apps/modules/modulefiles/tools/COMPSs/.custom
-module load TrunkMauroNord4
+module load COMPSs/Trunk
 
 # Parse username splitting the string by delimiter "/"
 IFS='/' read -ra parts <<< "$HOME"

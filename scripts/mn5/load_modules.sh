@@ -10,7 +10,7 @@ module load hdf5
 module load sqlite3
 module load python/3.12.1
 module use /apps/GPP/modulefiles/applications/COMPSs/.custom
-module load TrunkMauro
+module load COMPSs/Trunk
 
 export PYTHONPATH="${PATH_DATAGEN}/packages/:${PYTHONPATH}:${PATH_DATAGEN}"
 
