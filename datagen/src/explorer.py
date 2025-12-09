@@ -237,15 +237,15 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         # If use_sensitivity and there are few cases, get cases from parent
         # (sensitivity needs several cases to work)
         if use_sensitivity:
-            # df_op will be used by sensitivity if the execution is "datagen"
+            # df_op will be used by sensitivity if the execution is ACOPF
             # Otherwise, it will only use cases_df and dims_df
             df_op = pd.DataFrame()
             use_all_vars = True
-            # If not datagen, -100 cases, it won't get df_op (controlled by
+            # If not ACOPF, -100 cases, it won't get df_op (controlled by
             # get_filtered_df_op)
-            # If not datagen, +100 cases, df_op empty
-            # If datagen, -100 cases, get_filtered_df_op
-            # If datagen, +100 cases, elif
+            # If not ACOPF, +100 cases, df_op empty
+            # If ACOPF, -100 cases, get_filtered_df_op
+            # If ACOPF, +100 cases, elif
             if total_cases < 100:
                 cell = Cell(dimensions)
                 cases_heritage_df, dims_heritage_df = get_parent_samples(
