@@ -10,7 +10,7 @@ import glob
 try:
     from datagen.src.constants import NAN_COLUMN_NAME
 except ImportError:
-    NAN_COLUMN_NAME = "undefined"
+    NAN_COLUMN_NAME = "undefined" # For imports outside the datagen package
 
 
 def write_dataframes_to_excel(df_dict, path, filename):
