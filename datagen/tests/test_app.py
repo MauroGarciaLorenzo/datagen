@@ -337,6 +337,83 @@ class Test(unittest.TestCase):
         self.assertTrue(passed, f"Failures for depths: {failed}")
 
 
+    def test_checkpointing(self):
+        """
+        Run 'run_dummy.py' with a previously explored execution to test
+        checkpointing.
+        """
+        print("RUNNING TEST CHECKPOINTING")
+        import shutil
+
+        datagen_root = os.path.join(os.path.dirname(__file__), "..", "..")
+        inputs_path = os.path.join(datagen_root, "datagen", "tests", "inputs",
+                                   "test_checkpointing")
+        outputs_path = os.path.join(datagen_root, "datagen", "tests", "outputs",
+                                   "test_checkpointing")
+        yaml_path = os.path.join(inputs_path, "setup.yaml")
+        provisional_path = os.path.join(inputs_path, "..",
+                                        "test_checkpointing_provisional")
+
+        if os.path.exists(provisional_path):
+            shutil.rmtree(provisional_path)
+
+        os.makedirs(provisional_path)
+
+        for filename in os.listdir(inputs_path):
+            if filename.endswith(".csv"):
+                source_file = os.path.join(inputs_path, filename)
+                shutil.copy(source_file, provisional_path)
+
+        # Import target function
+        sys.path.append('../../')
+        from run_dummy import main
+
+        passed = True
+        errors_failed = []
+
+        try:
+            print(f"\n=== Running test_checkpoiting ===\n",
+                  flush=True)
+            path_results = main(setup_path=yaml_path)
+            print(f"\n=== test_checkpoiting success ===\n",
+                  flush=True)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            passed = False
+            print(
+                f"\n=== test_checkpoiting failed ===\nException: {e}",
+                flush=True)
+            errors_failed.append(e)
+
+        if passed:
+            cases_df = pd.read_csv(os.path.join(path_results, "cases_df.csv"))
+            dims_df = pd.read_csv(os.path.join(path_results, "dims_df.csv"))
+
+            # Run checks
+            expected_cases_path = os.path.join(outputs_path, "cases_df.csv")
+            expected_dims_path = os.path.join(outputs_path, "dims_df.csv")
+            expected_cases_df = pd.read_csv(expected_cases_path)
+            expected_dims_df = pd.read_csv(expected_dims_path)
+
+            expected_cases_df = expected_cases_df.drop(columns="case_id")
+            expected_dims_df = expected_dims_df.drop(columns="case_id")
+            cases_df = cases_df.drop(columns="case_id")
+            dims_df = dims_df.drop(columns="case_id")
+
+            pd.testing.assert_frame_equal(cases_df, expected_cases_df)
+            pd.testing.assert_frame_equal(dims_df, expected_dims_df)
+
+        # Final check
+        else:
+            for e in errors_failed:
+                print(f"Error: {e}")
+
+        os.rmdir(provisional_path)
+
+        self.assertTrue(passed, f"Failed test_checkpointing")
+
+
     def check_output_files(self, case_dir, expected_files):
         files_in_dir = set(os.listdir(case_dir))
         missing_files = expected_files - files_in_dir

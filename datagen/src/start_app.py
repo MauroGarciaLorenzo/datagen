@@ -125,6 +125,9 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         clean_incomplete_cells(dst_dir)
         print(f"Using existing results directory: {os.path.abspath(dst_dir)}")
 
+    if not os.path.abspath(dst_dir):
+        datagen_root = os.path.join(os.path.dirname(__file__), "..", "..")
+        dst_dir = os.path.join(datagen_root, dst_dir)
 
     # Set up the logging level for the execution
     setup_logger(logging_level, dst_dir)

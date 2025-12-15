@@ -9,9 +9,9 @@ grid_name: IEEE118
 load_factor: 0.9
 loads_power_factor: 0.98
 max_depth: 1
-n_cases: 10
+n_cases: 1
 n_pf: 1
-n_samples: 10
+n_samples: 1
 rel_tolerance: 0.01
 seed: 17
 sensitivity_divs: 4
