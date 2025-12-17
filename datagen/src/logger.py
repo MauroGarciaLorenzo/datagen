@@ -1,6 +1,9 @@
 import os
 from datetime import datetime
 
+from datagen.src.file_io import get_logging_level_yaml
+
+
 class Logger:
     LEVELS = {
         "DEBUG": 10,
@@ -38,9 +41,13 @@ class Logger:
                 return name
         return "UNKNOWN"
 
-def setup_logger(logging_level, dst_dir):
+    def get_log_file(self):
+        return self.log_file
+
+def setup_logger(dst_dir):
     global logger
     os.makedirs(dst_dir, exist_ok=True)
+    logging_level = get_logging_level_yaml(dst_dir)
     logger.level = logger.LEVELS.get(logging_level.upper(), 20)
     logger.dst_dir = dst_dir
 

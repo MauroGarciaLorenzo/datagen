@@ -4,9 +4,9 @@ import re
 import sys
 from datetime import datetime
 import pandas as pd
-from datagen.src.logger import logger
 import csv
 import glob
+import yaml
 try:
     from datagen.src.constants import NAN_COLUMN_NAME
 except ImportError:
@@ -14,6 +14,7 @@ except ImportError:
 
 
 def write_dataframes_to_excel(df_dict, path, filename):
+    from datagen.src.logger import logger
     excel_file_path = os.path.join(path, filename)
     # Create a Pandas Excel writer using xlsxwriter as the engine
     with pd.ExcelWriter(excel_file_path, engine='xlsxwriter') as writer:
@@ -245,12 +246,63 @@ def join_and_cleanup_csvs(dst_dir):
 
         print(f"Saved: {out_path}")
 
-        if logger.get_logging_level() != "DEBUG":
+        if get_logging_level_yaml(dst_dir) != "DEBUG":
             for f in files:
-                #os.remove(f)
+                os.remove(f)
                 print(f"Deleted: {f}")
         else:
             print("Logging level is DEBUG; keeping partial files")
+
+
+def find_first_yaml_path(dst_dir):
+    """
+    Searches the directory and returns the full path of the first .yaml file found.
+    Returns None if the directory is invalid or no file is found.
+    """
+    try:
+        if not os.path.isdir(dst_dir):
+            print(f"Error: '{dst_dir}' is not a valid directory.")
+            return None
+
+        # List all files and find the first one ending in .yaml
+        files = os.listdir(dst_dir)
+        first_yaml = next((f for f in files if f.endswith('.yaml')), None)
+
+        if first_yaml:
+            return os.path.join(dst_dir, first_yaml)
+
+        return None
+
+    except Exception as e:
+        print(f"Error scanning directory: {e}")
+        return None
+
+
+def get_logging_level_yaml(dst_dir):
+    """
+    Locates the first YAML file in dst_dir and returns the 'logging_level'.
+    Defaults to 'INFO' if the file is missing, empty, or the key doesn't exist.
+    """
+    file_path = find_first_yaml_path(dst_dir)
+
+    if not file_path:
+        print(f"No .yaml file found in {dst_dir}. Defaulting to INFO.")
+        return "INFO"
+
+    try:
+        print(f"Reading config from: {file_path}")
+        with open(file_path, 'r') as f:
+            data = yaml.safe_load(f)
+
+            # Handle empty files or missing keys gracefully
+            if not data:
+                return "INFO"
+
+            return data.get('logging_level', 'INFO')
+
+    except Exception as e:
+        print(f"Failed to read YAML file: {e}. Defaulting to INFO.")
+        return "INFO"
 
 
 if __name__ == "__main__":

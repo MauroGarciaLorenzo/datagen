@@ -20,7 +20,7 @@ exploration.
 """
 import os
 import uuid
-
+import yaml
 import pandas as pd
 
 
@@ -86,3 +86,26 @@ def generate_unique_id(n):
     """ Return a column dataframe with n unique ids."""
     id_list = [str(uuid.uuid4()) for _ in range(n)]
     return pd.DataFrame(id_list, columns=["case_id"])
+
+
+def write_yaml(yaml_path, dst_dir, logging_level):
+    if yaml_path is not None:
+        try:
+            filename = os.path.basename(yaml_path)
+            dest_path = os.path.join(dst_dir, filename)
+
+            with open(yaml_path, 'r') as f:
+                # safe_load returns None for empty files, so we default to {}
+                data = yaml.safe_load(f) or {}
+
+            data['logging_level'] = str(logging_level)
+            data['dst_dir'] = os.path.abspath(dst_dir)
+
+            with open(dest_path, 'w') as f:
+                # default_flow_style=False keeps it in readable block format (lists/dicts)
+                yaml.dump(data, f, default_flow_style=False)
+
+            print(f"Saved modified YAML to: {dest_path}")
+
+        except Exception as e:
+            print(f"Error processing YAML: {e}")

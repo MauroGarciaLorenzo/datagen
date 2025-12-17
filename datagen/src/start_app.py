@@ -18,19 +18,13 @@ produce both a record of execution logs and a DataFrame containing specific
 cases and their associated stability."""
 import os
 import random
-import shutil
 import traceback
-
-from datagen.src.logger import setup_logger, logger
 
 import numpy as np
 import pandas as pd
 import time
 
-from .explorer import explore_cell
-from .viz import print_results, boxplot
-from .file_io import save_results, init_dst_dir, join_and_cleanup_csvs, \
-    clean_incomplete_cells
+from datagen.src.utils import write_yaml
 
 try:
     from pycompss.api.task import task
@@ -115,6 +109,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     if dst_dir is None:
         calling_module = get_calling_module()
         n_cases = dimensions[0].n_cases
+        from .file_io import init_dst_dir
         dst_dir = init_dst_dir(calling_module, seed, n_cases, n_samples,
                                max_depth, working_dir, ax, dimensions)
 
@@ -122,6 +117,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         os.makedirs(dst_dir)
         print(f"Created results directory: {os.path.abspath(dst_dir)}")
     else:
+        from .file_io import clean_incomplete_cells
         clean_incomplete_cells(dst_dir)
         print(f"Using existing results directory: {os.path.abspath(dst_dir)}")
 
@@ -129,15 +125,15 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         datagen_root = os.path.join(os.path.dirname(__file__), "..", "..")
         dst_dir = os.path.join(datagen_root, dst_dir)
 
-    # Set up the logging level for the execution
-    setup_logger(logging_level, dst_dir)
+    write_yaml(yaml_path, dst_dir, logging_level)
+
+    from datagen.src.logger import setup_logger, logger
+
+    # Set up the logging level and dst_dir for the execution
+    setup_logger(dst_dir)
 
     # Load imports in every executor before execution
     logger.info(f"DESTINATION DIR: {dst_dir}")
-
-    #Write yaml_path
-    if yaml_path is not None:
-        shutil.copy(yaml_path, dst_dir)
 
     logging_level = logger.get_logging_level()
     print(f"Current logging level: {logging_level}")
@@ -170,6 +166,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         seed = random.randint(1,100)
 
     generator = np.random.default_rng(seed)
+    from .explorer import explore_cell
     execution_logs = (
         explore_cell(func=func, n_samples=n_samples, parent_entropy=None,
                      depth=0, ax=ax, dimensions=dimensions,
@@ -186,11 +183,15 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     if not isinstance(execution_logs, list):
         execution_logs = [execution_logs]
 
+    from .viz import print_results
+    from .file_io import save_results, join_and_cleanup_csvs
+
     print_results(execution_logs)
     save_results(execution_logs, dst_dir, time.time()-t0)
     join_and_cleanup_csvs(dst_dir)
 
     if plot_boxplot:
+        from .viz import boxplot
         cases_df = pd.read_csv(f"{dst_dir}/cases_df_join.csv")
         boxplot(cases_df, dst_dir)
 

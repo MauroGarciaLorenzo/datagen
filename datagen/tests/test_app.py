@@ -409,7 +409,7 @@ class Test(unittest.TestCase):
             for e in errors_failed:
                 print(f"Error: {e}")
 
-        os.rmdir(provisional_path)
+        shutil.rmtree(provisional_path)
 
         self.assertTrue(passed, f"Failed test_checkpointing")
 
