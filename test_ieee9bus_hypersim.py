@@ -35,6 +35,7 @@ def main(working_dir='', path_data='', setup_path=''):
     setup = parse_setup_file(setup_path)
 
     n_samples = setup["n_samples"]
+    cleanup_dir = setup["cleanup_dir"]
     n_cases = setup["n_cases"]
     max_depth = setup["max_depth"]
     seed = setup["seed"]

@@ -34,6 +34,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     loads_power_factor = setup["loads_power_factor"]
     generators_power_factor = setup["generators_power_factor"]
     n_samples = setup["n_samples"]
+    cleanup_dir = setup["cleanup_dir"]
     n_cases = setup["n_cases"]
     rel_tolerance = setup["rel_tolerance"]
     max_depth = setup["max_depth"]
@@ -206,7 +207,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         entropy_threshold=entropy_threshold, chunk_length=chunk_length,
         delta_entropy_threshold=delta_entropy_threshold, yaml_path=setup_path,
         use_sensitivity=use_sensitivity, sensitivity_divs=sensitivity_divs,
-        load_factor=load_factor
+        load_factor=load_factor, cleanup_dir=cleanup_dir
     )
 
     stability_array = compss_wait_on(stability_array)

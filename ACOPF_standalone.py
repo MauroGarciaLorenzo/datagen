@@ -68,6 +68,7 @@ def main(working_dir='', path_data='', setup_path=''):
     loads_power_factor = setup["loads_power_factor"]
     generators_power_factor = setup["generators_power_factor"]
     n_samples = setup["n_samples"]
+    cleanup_dir = setup["cleanup_dir"]
     n_cases = setup["n_cases"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]

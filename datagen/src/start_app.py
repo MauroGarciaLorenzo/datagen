@@ -45,7 +45,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, sensitivity_divs=2, plot_boxplot=False,
           feasible_rate=0, func_params = {}, warmup=False, logging_level="INFO",
           working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
-          chunk_length=5000, yaml_path=None, load_factor=0.9):
+          chunk_length=5000, yaml_path=None, load_factor=0.9, cleanup_dir=True):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -188,7 +188,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
 
     print_results(execution_logs)
     save_results(execution_logs, dst_dir, time.time()-t0)
-    join_and_cleanup_csvs(dst_dir)
+    join_and_cleanup_csvs(dst_dir, cleanup_dir)
 
     if plot_boxplot:
         cases_df = pd.read_csv(f"{dst_dir}/cases_df_join.csv")

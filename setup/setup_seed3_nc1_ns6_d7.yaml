@@ -6,6 +6,7 @@ loads_power_factor: 0.98
 generators_power_factor: 0.98
 n_samples: 6
 n_cases: 1
+cleanup_dir: true
 rel_tolerance: 0.00000001
 max_depth: 7
 seed: 3

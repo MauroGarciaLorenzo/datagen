@@ -9,6 +9,7 @@ n_cases: 1
 rel_tolerance: 0.000001
 max_depth: 5
 seed: 3
+cleanup_dir: true
 entropy_threshold: 0.2
 delta_entropy_threshold: 0.0
 feasible_rate: 0.1

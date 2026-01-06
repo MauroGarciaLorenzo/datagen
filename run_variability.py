@@ -53,6 +53,7 @@ def main(setup_path="setup/default_setup.yaml"):
     """
     setup = parse_setup_file(setup_path)
     n_samples = setup["n_samples"]
+    cleanup_dir = setup["cleanup_dir"]
     n_cases = setup["n_cases"]
     rel_tolerance = setup["rel_tolerance"]
     max_depth = setup["max_depth"]
@@ -115,7 +116,8 @@ def main(setup_path="setup/default_setup.yaml"):
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold,
-              yaml_path=setup_path, load_factor=load_factor
+              yaml_path=setup_path, load_factor=load_factor,
+              cleanup_dir=cleanup_dir
               )
     return dst_dir
 

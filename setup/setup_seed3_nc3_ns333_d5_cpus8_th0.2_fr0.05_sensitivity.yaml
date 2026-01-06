@@ -9,6 +9,7 @@ n_samples: 333
 n_cases: 3
 rel_tolerance: 0.000001
 max_depth: 5
+cleanup_dir: true
 seed: 3
 entropy_threshold: 0.2
 delta_entropy_threshold: 0.0

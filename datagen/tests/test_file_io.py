@@ -2,6 +2,8 @@ import os
 import unittest
 
 import pandas as pd
+from pandas.core.computation.parsing import clean_column_name
+
 
 class Test(unittest.TestCase):
     def test_join_and_cleanup_csvs(self):
@@ -19,6 +21,7 @@ class Test(unittest.TestCase):
                                     "test_join_and_cleanup_csvs")
         provisional_path = os.path.join(inputs_path, "..",
                                         "test_join_and_cleanup_csvs_provisional")
+        cleanup_dir = True
 
         if os.path.exists(provisional_path):
             shutil.rmtree(provisional_path)
@@ -39,7 +42,7 @@ class Test(unittest.TestCase):
         try:
             print(f"\n=== Running test_join_and_cleanup_csvs ===\n",
                   flush=True)
-            join_and_cleanup_csvs(provisional_path)
+            join_and_cleanup_csvs(provisional_path, cleanup_dir=cleanup_dir)
             print(f"\n=== test_join_and_cleanup_csvs success ===\n",
                   flush=True)
         except Exception as e:

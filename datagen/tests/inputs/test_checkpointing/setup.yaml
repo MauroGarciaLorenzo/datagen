@@ -11,5 +11,6 @@ use_sensitivity: false
 sensitivity_divs: 2
 dst_dir: datagen/tests/inputs/test_checkpointing_provisional
 load_factor: 0.9
+cleanup_dir: True
 environment:
   COMPUTING_UNITS: 10

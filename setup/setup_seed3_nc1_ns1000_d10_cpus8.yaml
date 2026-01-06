@@ -9,6 +9,7 @@ n_cases: 1
 rel_tolerance: 0.000001
 max_depth: 10
 seed: 3
+cleanup_dir: true
 grid_name: IEEE118
 environment:
   COMPUTING_UNITS: 8

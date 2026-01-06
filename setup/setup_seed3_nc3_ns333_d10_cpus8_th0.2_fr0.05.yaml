@@ -8,6 +8,7 @@ generators_power_factor: 0.98
 n_samples: 333
 n_cases: 3
 rel_tolerance: 0.000001
+cleanup_dir: true
 max_depth: 5
 seed: 3
 entropy_threshold: 0.2

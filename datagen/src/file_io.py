@@ -182,7 +182,7 @@ def clean_incomplete_cells(dst_dir):
 
 
 
-def join_and_cleanup_csvs(dst_dir):
+def join_and_cleanup_csvs(dst_dir, cleanup_dir):
     """
     Joins all {var_name}_{cell_name}.csv files in dst_dir into one {var_name}.csv.
     Detects var_name correctly even if it contains underscores.
@@ -245,37 +245,64 @@ def join_and_cleanup_csvs(dst_dir):
 
         print(f"Saved: {out_path}")
 
-        if logger.get_logging_level() != "DEBUG":
+        if cleanup_dir:
             for f in files:
-                #os.remove(f)
+                os.remove(f)
                 print(f"Deleted: {f}")
         else:
-            print("Logging level is DEBUG; keeping partial files")
+            print("cleanup_dir is false; keeping partial files")
 
 
 if __name__ == "__main__":
-    args = sys.argv
+    import argparse
 
-    if len(args) >= 2 and args[1] == "--merge-results":
-        if len(args) == 3:
-            # User provided results_dir
-            dst_dir = args[2]
-        else:
-            # No results_dir given, use last directory in ../../results
+    parser = argparse.ArgumentParser(
+        description="Merge and cleanup result CSVs.")
+
+    # 1. Operation Flag
+    parser.add_argument("--merge-results", action="store_true",
+                        help="Run the merge operation.")
+
+    # 2. Optional Directory Flag
+    parser.add_argument("--results_dir", type=str, default=None,
+                        help="Path to results directory (defaults to most recent in ../../results).")
+
+    # 3. Cleanup Flag
+    parser.add_argument("--cleanup", action="store_true",
+                        help="Remove original partial CSVs after merging.")
+
+    args = parser.parse_args()
+
+    if args.merge_results:
+        dst_dir = args.results_dir
+
+        # Logic to find the directory if not provided
+        if not dst_dir:
+            # Construct default path assuming this file is in datagen/src/
             results_root = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), "..", "..", "results")
             )
-            subdirs = [
-                os.path.join(results_root, d)
-                for d in os.listdir(results_root)
-                if os.path.isdir(os.path.join(results_root, d))
-            ]
-            if not subdirs:
-                print("No results directories found.")
+
+            if os.path.exists(results_root):
+                subdirs = [
+                    os.path.join(results_root, d)
+                    for d in os.listdir(results_root)
+                    if os.path.isdir(os.path.join(results_root, d))
+                ]
+                if not subdirs:
+                    print(f"No subdirectories found in {results_root}")
+                    sys.exit(1)
+
+                # Pick the most recently modified directory
+                dst_dir = max(subdirs, key=os.path.getmtime)
+            else:
+                print(f"Results root directory not found at: {results_root}")
                 sys.exit(1)
-            dst_dir = max(subdirs, key=os.path.getmtime)  # most recent dir
-        print("Using destination_dir: ", dst_dir)
-        join_and_cleanup_csvs(dst_dir=dst_dir)
+
+        print(f"Using destination_dir: {dst_dir}")
+        print(f"Cleanup enabled: {args.cleanup}")
+
+        join_and_cleanup_csvs(dst_dir=dst_dir, cleanup_dir=args.cleanup)
 
     else:
-        print("Usage: python file_io.py --merge-results [results_dir]")
+        parser.print_help()
