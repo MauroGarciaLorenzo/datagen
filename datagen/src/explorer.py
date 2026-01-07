@@ -1,7 +1,6 @@
 import os
 
 import pandas as pd
-from datagen.src.logger import logger
 
 from datagen.src.dimensions import Cell
 from datagen.src.file_io import log_cell_info, save_df, save_execution_logs
@@ -54,7 +53,6 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     :param sensitivity_divs: Variable containing the number of divisions for
     each cell at sensitivity analysis
     :param generator: Numpy generator for random values
-    :param cell_name: Name of the current cell for logging purposes
     :return children_total: List of children dimensions, entropy,
     delta_entropy and depth
     :param func_params: Func params to pass to the objective function
@@ -72,7 +70,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
     if not cell_name:
         cell_name = "0"
-    logger.info(f"Entering cell {cell_name}")
+    print(f"Entering cell {cell_name}")
     stabilities = []
     feasible_cases = 0
     total_dataframes = {}
@@ -81,7 +79,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     if (os.path.exists(dst_dir) and
             any(cell_name in f for f in os.listdir(dst_dir))):
         message = f"Skipping cell {cell_name}"
-        logger.info(message)
+        print(message)
         print(message, flush=True)
 
         # Load mandatory dataframes
@@ -119,7 +117,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
                     total_dataframes[df_name] = pd.read_csv(df_path)
                     pass
                 except Exception as e:
-                    logger.error(f"Error loading {df_path}: {e}")
+                    print(f"Error loading {df_path}: {e}")
 
     else:
         # Generate samples (n_samples for each dimension)
@@ -208,7 +206,7 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
     log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_cases / total_cases,
                   1, dst_dir)
-    logger.info(message)
+    print(message)
 
     # Save execution logs on disk
     children_info = [(dimensions, parent_entropy, delta_entropy, depth)]
@@ -223,10 +221,10 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
             dimensions) or depth >= max_depth or
             feasible_cases / total_cases < feasible_rate):
 
-        logger.info("Stopped cell:")
-        logger.info(f"    Entropy: {parent_entropy}")
-        logger.info(f"    Delta entropy: {delta_entropy}")
-        logger.info(f"    Depth: {depth}")
+        print("Stopped cell:")
+        print(f"    Entropy: {parent_entropy}")
+        print(f"    Delta entropy: {delta_entropy}")
+        print(f"    Depth: {depth}")
 
         log_cell_info(cell_name, depth, parent_entropy, delta_entropy,
                       feasible_cases / total_cases,
@@ -369,7 +367,7 @@ def get_filtered_df_op(cases_df, dst_dir, cell_name):
     :return: A single DataFrame containing all filtered 'df_op' rows, or an empty DataFrame.
     """
     if cases_df.empty or 'case_id' not in cases_df.columns:
-        logger.warning(
+        print(
             "cases_df is empty or missing 'case_id'. Cannot filter output files.")
         return pd.DataFrame()
 
@@ -386,7 +384,7 @@ def get_filtered_df_op(cases_df, dst_dir, cell_name):
 
     # Iterate over current and parent cases
     for current_cell_name in cell_names_to_load:
-        logger.info(
+        print(
             f"Searching for '{df_name_to_load}' in cell: {current_cell_name}")
 
         # Construct the specific file path: df_op_{cell_name}.csv
@@ -406,17 +404,17 @@ def get_filtered_df_op(cases_df, dst_dir, cell_name):
                     # Append the filtered result
                     if not df_op_filtered.empty:
                         df_op_parts.append(df_op_filtered)
-                        logger.info(
+                        print(
                             f"Found and filtered '{df_name_to_load}' for parent {current_cell_name}. Rows added: {len(df_op_filtered)}")
 
                 elif not df_op_original.empty:
-                    logger.warning(
+                    print(
                         f"Output DF '{df_name_to_load}' for cell {current_cell_name} found but missing 'cell_id' column. Skipped.")
 
             except Exception as e:
-                logger.error(f"Error processing {df_path}: {e}")
+                print(f"Error processing {df_path}: {e}")
         else:
-            logger.debug(f"File not found: {df_path}")
+            print(f"File not found: {df_path}")
 
     # Concatenate all collected parts
     if df_op_parts:
@@ -436,7 +434,7 @@ def get_children_samples(cases_heritage_df, cell, dims_heritage_df):
         if 'p_g_for' in row.index and 'p_g_fol' in row.index:
             if not isinstance(row, pd.Series):
                 message = "Row is not a pd.Series object"
-                logger.error(message)
+                print(message)
                 raise TypeError(message)
             columns_to_drop = ['p_g_for', 'p_g_fol', 'p_load']
             q_columns = row.filter(regex=r'^q_')

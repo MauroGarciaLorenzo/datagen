@@ -25,7 +25,6 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt, patches
-from datagen.src.logger import logger
 
 
 def plot_importances_and_divisions(dimensions, importances):
@@ -116,20 +115,20 @@ def print_results(execution_logs):
     pd.set_option('display.max_columns', 20)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
-    logger.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-    logger.debug("")
-    logger.debug("")
-    logger.debug(f"number of cells: {len(execution_logs)}" )
-    logger.debug("")
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+    print("")
+    print("")
+    print(f"number of cells: {len(execution_logs)}" )
+    print("")
 
     for r in execution_logs:
-        logger.debug(f"Dimensions: {r[0]}")
-        logger.debug(f"Entropy: {r[1]}")
-        logger.debug(f"Delta entropy: {r[2]}")
-        logger.debug(f"Depth: {r[3]}")
-        logger.debug("")
-        logger.debug("")
-    logger.debug("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        print(f"Dimensions: {r[0]}")
+        print(f"Entropy: {r[1]}")
+        print(f"Delta entropy: {r[2]}")
+        print(f"Depth: {r[3]}")
+        print("")
+        print("")
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 
 
 def plot_sample(ax, x, y, z):

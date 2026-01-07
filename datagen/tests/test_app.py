@@ -11,6 +11,8 @@ import re
 import sys
 import unittest
 import yaml
+import io
+import contextlib
 
 
 class Test(unittest.TestCase):
@@ -59,11 +61,15 @@ class Test(unittest.TestCase):
                   f'\n{"=" * 60}\n', flush=True)
 
             # Get logger output
-            path_results = main(setup_path=yaml_path, working_dir=self.working_dir)
-            log_file = os.path.join(path_results, "log.txt")
+            f_buffer = io.StringIO()
 
-            with open(log_file, 'r') as f:
-                log_output = f.read()
+            # Redirect stdout (print statements) to the buffer while running main()
+            with contextlib.redirect_stdout(f_buffer):
+                path_results = main(setup_path=yaml_path,
+                                    working_dir=self.working_dir)
+
+            # Get the content as a string
+            log_output = f_buffer.getvalue()
 
             # Parse log output for dimension divisions
             dim_divisions = {}

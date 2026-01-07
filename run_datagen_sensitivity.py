@@ -21,7 +21,6 @@ warnings.filterwarnings("ignore")
 
 @task(on_failure='FAIL')
 def main(working_dir=None, setup_path="setup/default_setup.yaml"):
-    logging_level = "INFO"
     fig, ax = plt.subplots(figsize=(6.4, 4.8))
     setup = parse_setup_file(setup_path)
 
@@ -62,7 +61,7 @@ def main(working_dir=None, setup_path="setup/default_setup.yaml"):
               max_depth=max_depth, dst_dir=dst_dir,
               use_sensitivity=use_sensitivity,
               sensitivity_divs=sensitivity_divs, plot_boxplot=False, seed=seed,
-              logging_level=logging_level, feasible_rate=feasible_rate,
+              feasible_rate=feasible_rate,
               entropy_threshold=entropy_threshold, chunk_length=chunk_length,
               delta_entropy_threshold=delta_entropy_threshold,
               load_factor=load_factor, cleanup_dir=cleanup_dir

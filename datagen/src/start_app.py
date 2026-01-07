@@ -21,11 +21,11 @@ import random
 import shutil
 import traceback
 
-from datagen.src.logger import setup_logger, logger
-
 import numpy as np
 import pandas as pd
 import time
+import sys
+sys.stdout.reconfigure(line_buffering=True)
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
@@ -43,7 +43,7 @@ except ImportError:
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
           seed=1, use_sensitivity=False, ax=None, sensitivity_divs=2, plot_boxplot=False,
-          feasible_rate=0, func_params = {}, warmup=False, logging_level="INFO",
+          feasible_rate=0, func_params = {}, warmup=False,
           working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
           chunk_length=5000, yaml_path=None, load_factor=0.9, cleanup_dir=True):
     """In this method we work with dimensions (main axes), which represent a
@@ -78,9 +78,6 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     :param warmup: Boolean specifying if the node warmup has to be performed
     This will call a task for every accessible computing node and make the
     appropriate imports
-    :param logging_level: Desired logging level.
-    Possible values [logging.INFO|logging.WARNING|logging.ERROR],
-    default [logging.ERROR]
     :param working_dir: Path where to take the data files. If not specified, it
     is set to datagen root directory.
     :param entropy_threshold: Minimum entropy to keep exploring the cell
@@ -129,18 +126,13 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         datagen_root = os.path.join(os.path.dirname(__file__), "..", "..")
         dst_dir = os.path.join(datagen_root, dst_dir)
 
-    # Set up the logging level for the execution
-    setup_logger(logging_level, dst_dir)
-
     # Load imports in every executor before execution
-    logger.info(f"DESTINATION DIR: {dst_dir}")
+    print(f"DESTINATION DIR: {dst_dir}")
 
     #Write yaml_path
     if yaml_path is not None:
         shutil.copy(yaml_path, dst_dir)
 
-    logging_level = logger.get_logging_level()
-    print(f"Current logging level: {logging_level}")
 
     if warmup:
         for _ in range(200):
@@ -153,7 +145,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     for dim in dimensions:
         if dim.label in dim_labels:
             message = f"The label {dim.label} is already in use"
-            logger.error(message)
+            print(message)
             raise Exception(message)
 
         dim_labels.add(dim.label)

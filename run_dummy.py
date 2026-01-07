@@ -66,7 +66,6 @@ def main(setup_path="setup/default_setup.yaml"):
     use_sensitivity = setup.get("use_sensitivity", None)
     sensitivity_divs = setup.get("sensitivity_divs")
 
-    logging_level = "INFO"
     #fig, ax = plt.subplots()
     dimensions = [
         Dimension(variable_borders=variables_d0, n_cases=n_cases, divs=2,
@@ -80,7 +79,7 @@ def main(setup_path="setup/default_setup.yaml"):
         start(dimensions, n_samples, rel_tolerance, func=dummy,
               max_depth=max_depth, use_sensitivity=use_sensitivity, ax=None,
               sensitivity_divs=sensitivity_divs, plot_boxplot=False, seed=seed,
-              dst_dir=dst_dir, logging_level=logging_level,
+              dst_dir=dst_dir,
               feasible_rate=feasible_rate, chunk_length=chunk_length,
               entropy_threshold=entropy_threshold,
               delta_entropy_threshold=delta_entropy_threshold,

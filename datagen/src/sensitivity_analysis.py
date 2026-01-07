@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from datagen.src.logger import logger
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
@@ -112,11 +111,11 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_v
     for d in dimensions:
         if d.divs > 1:
             success = True
-            logger.info(f"Selected dimension: {d.label}, divisions: {d.divs}")
+            print(f"Selected dimension: {d.label}, divisions: {d.divs}")
     if not success:
-        logger.warning("Could not split based on sensitivity. Only one "
+        print("Could not split based on sensitivity. Only one "
                     "cell will appear at the next level of depth")
-    logger.debug("=== FINISHED SENSITIVITY ANALYSIS ===")
+    print("=== FINISHED SENSITIVITY ANALYSIS ===")
     return dimensions
 
 

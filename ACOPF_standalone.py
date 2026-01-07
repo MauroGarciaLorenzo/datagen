@@ -75,7 +75,7 @@ def main(working_dir='', path_data='', setup_path=''):
     load_factor = 0.9
 
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-    print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
+    print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"), flush=True)
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     cu = os.environ.get("COMPUTING_UNITS")
 
@@ -305,7 +305,7 @@ def main(working_dir='', path_data='', setup_path=''):
                 if isinstance(v, pd.DataFrame):
                     value.to_csv(os.path.join(path_results, f"case_{k}.csv"))
                 else:
-                    print(f"Invalid nested format for output '{k}'")
+                    print(f"Invalid nested format for output '{k}'", flush=True)
 
 
             

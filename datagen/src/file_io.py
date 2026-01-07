@@ -4,7 +4,6 @@ import re
 import sys
 from datetime import datetime
 import pandas as pd
-from datagen.src.logger import logger
 import csv
 import glob
 try:
@@ -25,7 +24,7 @@ def write_dataframes_to_excel(df_dict, path, filename):
             if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
             else:
-                logger.warning("Not writing %s. Not a DataFrame or Series",
+                print("Not writing %s. Not a DataFrame or Series",
                                sheet_name)
 
 
