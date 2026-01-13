@@ -22,7 +22,7 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator):
     """
     print("=== STARTING SENSITIVITY ANALYSIS ===")
     # Extract labels for dimensions that are marked as independent
-    labels = [dim.label for dim in dimensions if dim.independent_dimension]
+    #labels = [dim.label for dim in dimensions if dim.independent_dimension]
 
     df_op_feas = df_op.query('Stability >=0')
     cases_df_feas = cases_df.query('Stability >=0')
@@ -69,6 +69,7 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator):
 
     # Get feature importances (sensitivity indicators)
     importances = model.feature_importances_
+    labels = dims_df_feas.columns
     print(f"IMPORTANCES: {importances}")
 
     # Reset all dimension divisions to 1 (baseline state)
