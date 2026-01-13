@@ -22,24 +22,20 @@ plt.rcParams.update({"figure.figsize": [8, 4],
                      'legend.loc': 'upper right'})
 
 # %%
-# ncig_list=['10','11','12']
-path = '../results/MareNostrum'
+path = 'D:/'
+dir_name=[dir_name for dir_name in os.listdir(path) if '_5933' in dir_name and 'zip' not in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+print(dir_name)
 
-# dir_names=[dir_name for dir_name in os.listdir(path) if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+#%%
+#for dir_name in dir_names:
+path_results = os.path.join(path, dir_name)
+df_op='df_op'#'case_df_op'
+results_dataframes, csv_files = open_csv(
+    path_results, ['cases_df.csv', df_op+'.csv'])
 
-dir_names = [
-    #'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664']
-    'datagen_ACOPF_slurm25105245_cu8_nodes32_LF09_seed3_nc3_ns500_d7_20250731_132256_7665']
+perc_stability(results_dataframes[df_op], dir_name)
 
-for dir_name in dir_names:
-    path_results = os.path.join(path, dir_name)
-
-    results_dataframes, csv_files = open_csv(
-        path_results, ['cases_df.csv', 'case_df_op.csv'])
-
-    perc_stability(results_dataframes['cases_df'], dir_name)
-    
-    dataset_ID = dir_name[-5:]
+dataset_ID = dir_name[-5:]
 
 for key, item in results_dataframes.items():
     print(key+': '+str(len(item)))
@@ -49,11 +45,11 @@ for key, item in results_dataframes.items():
 
 # %% ---- FILL NAN VALUES WITH NULL ---
 
-results_dataframes['case_df_op'] = results_dataframes['case_df_op'].fillna(0)
+results_dataframes[df_op] = results_dataframes[df_op].fillna(0)
 
 # %% ---- SELECT ONLY FEASIBLE CASES ----
 
-results_dataframes['case_df_op_feasible'] = results_dataframes['case_df_op'].query(
+results_dataframes['case_df_op_feasible'] = results_dataframes[df_op].query(
     'Stability >= 0')
 
 case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
@@ -72,9 +68,9 @@ results_dataframes['case_df_op_feasible_X'] = results_dataframes['case_df_op_fea
        
 # %% ---- SELECT ONLY UNFEASIBLE CASES ----
 
-results_dataframes['case_df_op_unfeasible'] = results_dataframes['case_df_op'].query('Stability < 0')
-results_dataframes['case_df_op_unfeasible_1'] = results_dataframes['case_df_op'].query('Stability == -1')
-results_dataframes['case_df_op_unfeasible_2'] = results_dataframes['case_df_op'].query('Stability == -2')
+results_dataframes['case_df_op_unfeasible'] = results_dataframes[df_op].query('Stability < 0')
+results_dataframes['case_df_op_unfeasible_1'] = results_dataframes[df_op].query('Stability == -1')
+results_dataframes['case_df_op_unfeasible_2'] = results_dataframes[df_op].query('Stability == -2')
 
 case_id_Unfeasible = list(results_dataframes['case_df_op_unfeasible']['case_id'])
 case_id_Unfeasible1 = list(results_dataframes['case_df_op_unfeasible_1']['case_id'])

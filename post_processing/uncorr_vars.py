@@ -308,6 +308,7 @@ descr= results_dataframes['raw_data'].describe()
 # fig =  plt.figure()
 # ax = df_taus_fixed.query('Stability == 1 and tau_droop_u_gfol_32 !=0')[['tau_droop_u_gfol_32']].boxplot(figsize=(15, 6))
 
+
 # %% ---- Check correlated variables Option #1 ----
 def get_correlated_columns(df, c_threshold=0.95, method='pearson'):
     uncorrelated = []
@@ -424,6 +425,7 @@ for keep in ['keep_var1','keep_var2']:
 # print(corr_df.head(10))
 
 
+
 #%%
 results_dataframes['case_df_op_feasible_uncorr_X'] = pd.concat([results_dataframes['case_df_op_feasible_X'][keep_var].reset_index(drop=True), df_taus_fixed],axis=1)
 results_dataframes['case_df_op_feasible_uncorr'] = results_dataframes['case_df_op_feasible_uncorr_X']
@@ -517,3 +519,5 @@ cm = confusion_matrix(y_test, y_pred)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm)
 disp.plot(cmap='Blues')
 plt.title(keep)
+=======
+results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv(path+dir_name+'DataSet_training_uncorr_var_HierCl'+dataset_ID.replace('ivity','Sensitivity')+'.csv')

@@ -124,6 +124,7 @@ taus_var = [var for var in results_dataframes['dims_df'].columns if var.startswi
 dimensions_caseid_feasible_sampled = create_dimensions_caseid_df(results_dataframes, 'cases_df_feasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
 dimensions_caseid_feasible_sampled['perc_g_for']=results_dataframes['dims_df'].loc[dimensions_caseid_feasible_sampled.index,'perc_g_for']
 dimensions_caseid_unfeasible = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
+
 dimensions_caseid_unfeasible['perc_g_for']=results_dataframes['dims_df'].loc[dimensions_caseid_unfeasible.index,'perc_g_for']
 dimensions_caseid_unfeasible[taus_var] = results_dataframes['dims_df'].query('case_id == @case_id_Unfeasible')[taus_var]
 
@@ -239,6 +240,7 @@ print(df.head())
 
 #%% -- SI NO HAY EXECUTION LOG
 results_dataframes['cell_info'].rename(columns={'Cell Name': 'CellName'}, inplace=True)
+
 
 #%%
 all_data = []
@@ -580,6 +582,35 @@ plt.show()
 fig.savefig(path+dir_name+'/plt_mesh_'+x_dim+'_vars.png', bbox_inches='tight')
 fig.savefig(path+dir_name+'/plt_mesh_'+x_dim+'_vars.pdf', format='pdf', bbox_inches='tight')
 
+=======
+dim_divided=[]
+for dim in df['dimension'].unique():
+    if len(df.query('dimension == @dim')['lower'].unique())==1:
+        continue
+    else:
+        print(dim)
+        dim_divided.append(dim)
+
+#%%
+
+dim_combs=[(dim,'p_sg') for dim in dim_divided if dim!='p_sg']
+
+for dims in dim_combs:
+    # Filter for only p_cig and p_sg
+    mesh_df = df[df["dimension"].isin([dims[0], "p_sg"])]
+    
+    # fig, ax = plt.subplots()
+    # ax.scatter(dimensions_caseid_unfeasible[dims[0]], dimensions_caseid_unfeasible['p_sg'],color='silver', label='Unfeasable OP')
+    # ax.scatter(dimensions_caseid_feasible.query('Stability ==0')[dims[0]], dimensions_caseid_feasible.query('Stability ==0')['p_sg'], color='r',label='Unstable PF')
+    # ax.scatter(dimensions_caseid_feasible.query('Stability ==1')[dims[0]], dimensions_caseid_feasible.query('Stability ==1')['p_sg'], color='g', label='Stable PF')
+    # ax.set_xlabel(dims[0])
+    # ax.set_ylabel('$P_{SG}$ [MW]')
+    # fig.tight_layout()
+    # plt.legend()
+    
+    # plot_mesh(mesh_df,dims[0], 'p_sg', dims[0], '$P_{SG}$ [MW]',ax)
+
+    pd.DataFrame.to_excel(mesh_df,path+dir_name+'/mesh'+dataset_ID.replace('ivity','Sensitivity')+'_'+dims[0]+'_p_sg.xlsx', index=False)
 
 
 #%%
@@ -708,5 +739,6 @@ for idx, cellname in enumerate(results_dataframes['cases_df']['cell_name'].uniqu
     
     df_entropy_cell.loc[idx,'CellName']=cellname
     df_entropy_cell.loc[idx,'Entropy']=entropy
+
 
 pd.DataFrame.to_excel(df_entropy_cell, path+dir_name+'/df_entropy_cell'+dataset_ID.replace('ivity','Sensitivity')+'.xlsx')

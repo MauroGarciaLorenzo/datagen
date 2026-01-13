@@ -97,6 +97,7 @@ for idx, dir_name in enumerate(dir_names):
 # # - max_depth = 7
 # # 
 
+
 # In[8]:
 
 
@@ -332,6 +333,7 @@ fig.tight_layout(rect=[0, 0.15, 1, 1])  # Leave space at bottom for legend
 plt.show()
 plt.savefig('figures_paper/feasible_infeasible_points'+dataset_ID_list[0]+dataset_ID_list[1]+'.pdf', format='pdf')
 plt.savefig('figures_paper/feasible_infeasible_points'+dataset_ID_list[0]+dataset_ID_list[1]+'.png',dpi=320)#, format='pdf')
+
 
     
 # In[15]:
@@ -599,6 +601,7 @@ import matplotlib.pyplot as plt
 cls = ['gray', 'black', 'blue']
 
 # Create 1 row, 2 columns of subplots, sharing the Y axis
+
 fig, axes = plt.subplots(1, 2, sharey=True, figsize=(5*num_datasets, 5))
 dataset_ID_title_list = ['TEST \#1','TEST \#2']
 
@@ -730,7 +733,7 @@ for idx, dataset_ID in enumerate(dataset_ID_list):
     )
     
     ax.set_xlabel('Depth')
-    ax.set_title(dataset_ID_title_list[idx])#['Sensitivity' if dataset_ID == 'ivity' else dataset_ID][0])
+    ax.set_title(['Sensitivity' if dataset_ID == 'ivity' else dataset_ID][0])
     ax.grid(True)
 
 # Shared Y label

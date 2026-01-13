@@ -31,57 +31,60 @@ plt.rcParams.update({"figure.figsize": [8, 4],
                      'legend.handlelength': 2,
                      'legend.loc': 'upper right'})
 
+
 # %%
-path = '../results/'
+path = 'D:/'
+dir_name=[dir_name for dir_name in os.listdir(path) if '_5933' in dir_name and 'zip' not in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+print(dir_name)
 
-dir_names=[dir_name for dir_name in os.listdir(path)]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+#%%
+#for dir_name in dir_names:
+path_results = os.path.join(path, dir_name)
+df_op='df_op'#'case_df_op'
+results_dataframes, csv_files = open_csv(
+    path_results, ['cases_df.csv', df_op+'.csv'])
 
-# dir_names = [
-#     #'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664']
-#     'datagen_ACOPF_slurm25105245_cu8_nodes32_LF09_seed3_nc3_ns500_d7_20250731_132256_7665']
+perc_stability(results_dataframes[df_op], dir_name)
 
-for dir_name in dir_names[1:]:
-    path_results = os.path.join(path, dir_name)
+dataset_ID = dir_name[-5:]
 
-    results_dataframes, csv_files = open_csv(
-        path_results, ['cases_df.csv', 'case_df_op.csv'])
-
-    perc_stability(results_dataframes['case_df_op'], dir_name)
-    
-    dataset_ID = dir_name[-5:]
+for key, item in results_dataframes.items():
+    print(key+': '+str(len(item)))
+    #results_dataframes[key+'_drop_duplicates']= item.drop(['case_id'],axis=1).drop_duplicates(keep='first')
+    print(key+'_drop_duplicates'+': '+str(len(item.drop_duplicates(keep='first'))))
 
 # %% ---- FILL NAN VALUES WITH NULL ---
 
-results_dataframes['case_df_op'] = results_dataframes['case_df_op'].fillna(0)
+results_dataframes[df_op] = results_dataframes[df_op].fillna(0)
 
 # %% ---- FIX VALUES ----
 
-Sn_cols = [col for col in results_dataframes['case_df_op']
+Sn_cols = [col for col in results_dataframes[df_op]
            if col.startswith('Sn')]
-results_dataframes['case_df_op'][Sn_cols] = results_dataframes['case_df_op'][Sn_cols]/100
+results_dataframes[df_op][Sn_cols] = results_dataframes[df_op][Sn_cols]/100
 
-theta_cols = [col for col in results_dataframes['case_df_op']
-              if col.startswith('theta')]
-# Adjust angles greater than 180°
-results_dataframes['case_df_op'][theta_cols] = results_dataframes['case_df_op'][theta_cols] - \
-    (results_dataframes['case_df_op'][theta_cols] > 180) * 360
+# theta_cols = [col for col in results_dataframes[df_op]
+#               if col.startswith('theta')]
+# # Adjust angles greater than 180°
+# results_dataframes[df_op][theta_cols] = results_dataframes[df_op][theta_cols] - \
+#     (results_dataframes[df_op][theta_cols] > 180) * 360
 
-results_dataframes['case_df_op'][theta_cols] = results_dataframes['case_df_op'][theta_cols] * np.pi/180
+# results_dataframes['case_df_op'][theta_cols] = results_dataframes['case_df_op'][theta_cols] * np.pi/180
 
 # add total demand variables
 PL_cols = [
-    col for col in results_dataframes['case_df_op'].columns if col.startswith('PL')]
-results_dataframes['case_df_op']['PD'] = results_dataframes['case_df_op'][PL_cols].sum(
+    col for col in results_dataframes[df_op].columns if col.startswith('PL')]
+results_dataframes[df_op]['PD'] = results_dataframes[df_op][PL_cols].sum(
     axis=1)
 
 QL_cols = [
-    col for col in results_dataframes['case_df_op'].columns if col.startswith('QL')]
-results_dataframes['case_df_op']['QD'] = results_dataframes['case_df_op'][QL_cols].sum(
+    col for col in results_dataframes[df_op].columns if col.startswith('QL')]
+results_dataframes[df_op]['QD'] = results_dataframes[df_op][QL_cols].sum(
     axis=1)
 
 # %% ---- SELECT ONLY FEASIBLE CASES ----
 
-results_dataframes['case_df_op_feasible'] = results_dataframes['case_df_op'].query(
+results_dataframes['case_df_op_feasible'] = results_dataframes['df_op'].query(
     'Stability >= 0')
 
 case_id_feasible = list(results_dataframes['case_df_op_feasible']['case_id'])
@@ -104,11 +107,11 @@ print(len(results_dataframes['cases_df_feasible']['case_id']))
 n_feas_cases = len(case_id_feasible)
 
 results_dataframes['case_df_op_feasible_X'] = results_dataframes['case_df_op_feasible'].drop([
-                                                                                             'case_id', 'Stability'], axis=1)
+                                                                                             'case_id', 'Stability','cell_name'], axis=1)
 
 # %% ---- SELECT ONLY UNFEASIBLE CASES ----
 
-results_dataframes['case_df_op_unfeasible'] = results_dataframes['case_df_op'].query(
+results_dataframes['case_df_op_unfeasible'] = results_dataframes[df_op].query(
     'Stability < 0')
 
 # %%
@@ -130,6 +133,24 @@ results_dataframes['case_df_op_feasible'] = results_dataframes['case_df_op_feasi
 results_dataframes['case_df_op_feasible_X'] = results_dataframes['case_df_op_feasible_X'].drop(
     columns_with_single_values, axis=1)
 
+# %% ----  Check if there are extra taus ----
+
+df_taus = results_dataframes['case_df_op_feasible'][['case_id']].merge(results_dataframes['cases_df_feasible'][[
+                                                                       col for col in columns_in_df['cases_df_feasible'] if col.startswith('tau_droop')]+['case_id']], on='case_id', how='left').drop(['case_id'], axis=1)
+
+df_Sn_GFOL = results_dataframes['case_df_op_feasible'][[col for col in columns_in_df['case_df_op_feasible'] if col.startswith('Sn_GFOL')]]
+df_taus_GFOL_droopf = df_taus[['tau_droop_f_gfol_'+col.split('GFOL')[1] for col in df_Sn_GFOL.columns]]
+df_taus_GFOL_droopu = df_taus[['tau_droop_u_gfol_'+col.split('GFOL')[1] for col in df_Sn_GFOL.columns]]
+df_taus_GFOL_droopf[np.array(df_Sn_GFOL==0)]=0
+df_taus_GFOL_droopu[np.array(df_Sn_GFOL==0)]=0
+
+df_Sn_GFOR = results_dataframes['case_df_op_feasible'][[col for col in columns_in_df['case_df_op_feasible'] if col.startswith('Sn_GFOR')]]
+df_taus_GFOR_droopf = df_taus[['tau_droop_f_gfor_'+col.split('GFOR')[1] for col in df_Sn_GFOR.columns]]
+df_taus_GFOR_droopu = df_taus[['tau_droop_u_gfor_'+col.split('GFOR')[1] for col in df_Sn_GFOR.columns]]
+df_taus_GFOR_droopf[np.array(df_Sn_GFOR==0)]=0
+df_taus_GFOR_droopu[np.array(df_Sn_GFOR==0)]=0
+
+df_taus_fixed = pd.concat([df_taus_GFOL_droopf,df_taus_GFOL_droopu,df_taus_GFOR_droopf,df_taus_GFOR_droopu],axis=1)
 # %% ---- Check correlated variables Option #1 ----
 def get_correlated_columns(df, c_threshold=0.95, method='pearson'):
 
@@ -168,10 +189,8 @@ while not grouped_corr_feat.empty:
     grouped_corr_feat = grouped_corr_feat[~grouped_corr_feat['Feat1'].isin(to_remove)]
     grouped_corr_feat = grouped_corr_feat[~grouped_corr_feat['Feat1'].isin(keep_var)]
 
-df_taus = results_dataframes['case_df_op_feasible'][['case_id']].merge(results_dataframes['cases_df_feasible'][[
-                                                                       col for col in columns_in_df['cases_df_feasible'] if col.startswith('tau_droop')]+['case_id']], on='case_id', how='left').drop(['case_id'], axis=1)
-
-results_dataframes['case_df_op_feasible_uncorr_X'] = pd.concat([results_dataframes['case_df_op_feasible_X'][keep_var].reset_index(drop=True), df_taus],axis=1)
+#%%
+results_dataframes['case_df_op_feasible_uncorr_X'] = pd.concat([results_dataframes['case_df_op_feasible_X'][keep_var].reset_index(drop=True), df_taus_fixed],axis=1)
 results_dataframes['case_df_op_feasible_uncorr'] = results_dataframes['case_df_op_feasible_uncorr_X']
 results_dataframes['case_df_op_feasible_uncorr']['case_id'] = results_dataframes['case_df_op_feasible']['case_id'].reset_index(drop=True)
 results_dataframes['case_df_op_feasible_uncorr']['Stability'] = results_dataframes['case_df_op_feasible']['Stability'].reset_index(drop=True)
@@ -180,7 +199,7 @@ results_dataframes['case_df_op_feasible_uncorr'].to_csv('DataSet_training_uncorr
 
 # %% ---- Check correlated variables Option #2 ----
 
-results = pd.concat([results_dataframes['case_df_op_feasible_X'].reset_index(drop=True), df_taus.reset_index(drop=True)], axis=1).apply(
+results = pd.concat([results_dataframes['case_df_op_feasible_X'].reset_index(drop=True), df_taus_fixed.reset_index(drop=True)], axis=1).apply(
 #results = results_dataframes['case_df_op_feasible_X'].reset_index(drop=True).apply(
      lambda col: pointbiserialr(col, results_dataframes['case_df_op_feasible']['Stability']), result_type='expand').T
 results.columns = ['correlation', 'p_value']
@@ -188,7 +207,7 @@ results['abs_corr'] = abs(results['correlation'])
 
 # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
 X = pd.concat([results_dataframes['case_df_op_feasible_X'].reset_index(
-    drop=True), df_taus.reset_index(drop=True)], axis=1)
+    drop=True), df_taus_fixed.reset_index(drop=True)], axis=1)
 # X = results_dataframes['case_df_op_feasible_X'].reset_index(
 #     drop=True)
 corr = spearmanr(X).correlation

@@ -178,6 +178,7 @@ df_Sn_GFOL['Stability'] = results_dataframes['case_df_op_feasible']['Stability']
 df_Sn_GFOR['Stability'] = results_dataframes['case_df_op_feasible']['Stability'].reset_index(drop=True)
 
 #%%
+<<<<<<< HEAD
 theta_rad_abs = np.abs(results_dataframes['case_df_op_feasible'][theta_cols]*np.pi/180)
 df_slack = pd.DataFrame(columns =['slack_bus','slack_theta'], index = theta_rad_abs.index)
 for ii in theta_rad_abs.index:
@@ -209,7 +210,7 @@ results_dataframes['raw_data']=results_dataframes['case_df_op_feasible'].drop(th
 results_dataframes['raw_data'] = pd.concat([results_dataframes['raw_data'],df_taus_fixed.drop('Stability',axis=1),
                                             theta_rad_slack_26.reset_index(drop=True)],axis=1)
 
-#%%
+
 case_id_slack_26 = slack_case['theta26']
 results_dataframes['raw_data_slack_26'] = results_dataframes['raw_data'].query('case_id == @case_id_slack_26')
 #%%
@@ -293,6 +294,7 @@ def GSkFCV(param_grid, X_train, Y_train, estimator, scorer, n_folds = 5):
 # estimator = Pipeline([('scaler', RobustScaler()), ('xgb', XGBClassifier(eval_metric='aucpr',objective="binary:logistic", random_state=42,
 #                                                                         sample_weight=sw,
 #                                                                         eval_set=[(X_test, y_test)], verbose=False))])#scale_pos_weight=0.3 (len(Y)-Y.sum())/Y.sum()
+
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 model = XGBClassifier()
 for type_corr_analysis in ['']: #_HierCl
