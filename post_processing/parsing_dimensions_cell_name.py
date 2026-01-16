@@ -24,9 +24,9 @@ plt.rcParams.update({"figure.figsize": [8, 4],
                      'legend.loc': 'upper right'})
 
 # %%
-#path = '../results/'
-path = 'D:/'
-dir_name=[dir_name for dir_name in os.listdir(path) if 'test_sensitivity' in dir_name and 'zip' not in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+path = '../results/'
+#path = 'D:/'
+dir_name=[dir_name for dir_name in os.listdir(path) if '_2732' in dir_name and 'zip' not in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 print(dir_name)
 # dir_names = [
 #     #'datagen_ACOPF_slurm23172357_cu10_nodes32_LF09_seed3_nc3_ns500_d7_20250627_214226_7664']
@@ -124,7 +124,7 @@ taus_var = [var for var in results_dataframes['dims_df'].columns if var.startswi
 dimensions_caseid_feasible_sampled = create_dimensions_caseid_df(results_dataframes, 'cases_df_feasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
 dimensions_caseid_feasible_sampled['perc_g_for']=results_dataframes['dims_df'].loc[dimensions_caseid_feasible_sampled.index,'perc_g_for']
 dimensions_caseid_unfeasible = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
-dimensions_caseid_unfeasible['perc_g_for']=results_dataframes['dims_df'].loc[dimensions_caseid_unfeasible.index,'perc_g_for']*100
+dimensions_caseid_unfeasible['perc_g_for']=results_dataframes['dims_df'].loc[dimensions_caseid_unfeasible.index,'perc_g_for']
 dimensions_caseid_unfeasible[taus_var] = results_dataframes['dims_df'].query('case_id == @case_id_Unfeasible')[taus_var]
 
 dimensions_caseid_unfeasible1 = create_dimensions_caseid_df(results_dataframes, 'cases_df_unfeasible_1', p_sg_var, p_cig_var, 'p_sg', 'p_cig')
@@ -245,7 +245,7 @@ all_data = []
 for cell in results_dataframes['cell_info']['CellName'].unique():
     case_id_cell = list(results_dataframes['cases_df'].query('cell_name == @cell')['case_id'])
     cell_describe = results_dataframes['dims_df'].query('case_id == @case_id_cell').describe()
-    dimensions = list (set(results_dataframes['dims_df'].columns)-set(['case_id','p_g_fol','q_sg','q_cig','q_g_fol','p_g_for','q_g_for','q_load']))
+    dimensions = list (set(results_dataframes['dims_df'].columns)-set(['case_id','p_g_fol','q_sg','q_cig','q_g_fol','p_g_for','q_g_for','q_load', 'p_load']))
     for dimension in dimensions:
         all_data.append({
                 "block_id": cell,
@@ -261,40 +261,128 @@ df = pd.DataFrame(all_data)
 df.reset_index(drop=True, inplace=True)
 print(df.head())
 
-mesh_df = df[df["dimension"].isin(["perc_g_for", "p_sg"])]
 df['lower'] = np.round(df['lower'],2)
 df['upper'] = np.round(df['upper'],2)
 
 #%%
+# result container
+df_sensitivity = pd.DataFrame(columns=['cell', 'dim1', 'dim2'])
+i = 0
 
-dim_divided=[]
-for dim in df['dimension'].unique():
-    if len(df.query('dimension == @dim')['lower'].unique())==1:
+# start from root parent
+parents = ['0']       # queue of parents to process
+max_depth = 6        # depth in terms of digits in block_id (after removing '.')
+
+while parents:
+    parent = parents.pop(0)
+
+    # depth of current parent (using your convention)
+    parent_depth = len(parent.replace('.', ''))
+
+    # if this parent is already at max depth, don't split it further
+    if parent_depth >= max_depth:
         continue
-    else:
-        print(dim)
-        dim_divided.append(dim)
+
+    # build its 4 children IDs (0.1 -> 0.1.1..0.1.4, etc.)
+    childs = [f'{parent}.{k}' for k in range(1, 5)]
+
+    # keep only children that actually exist in df
+    existing_childs = [c for c in childs if c in df['block_id'].values]
+    if not existing_childs:
+        continue
+
+    # ---- your original sensitivity logic ----
+    df_parent = (
+        df.query('block_id == @parent')[['dimension', 'lower', 'upper']]
+          .sort_values(by='dimension')
+          .reset_index(drop=True)
+    )
+
+    # use the first child – all four differ only in the two split dims
+    child = existing_childs[0]
+    df_child = (
+        df.query('block_id == @child')[['dimension', 'lower', 'upper']]
+          .sort_values(by='dimension')
+          .reset_index(drop=True)
+    )
+
+    # relative difference
+    df_diff = (df_parent[['lower', 'upper']] - df_child[['lower', 'upper']]) / df_parent[['lower', 'upper']]
+
+    # two dimensions with largest change (using 'upper' like you did)
+    dim_idx = df_diff.sort_values(by='upper', ascending=False).index[0:2]
+
+    df_sensitivity.loc[i, 'cell'] = parent
+    df_sensitivity.loc[i, 'dim1'] = df_parent.loc[dim_idx[0], 'dimension']
+    df_sensitivity.loc[i, 'dim2'] = df_parent.loc[dim_idx[1], 'dimension']
+    i += 1
+    # -----------------------------------------
+
+    # enqueue children as future parents (to go deeper)
+    parents.extend(existing_childs)
+
+# df_sensitivity now has, for each parent cell, the two split dimensions
+pd.DataFrame.to_excel(df_sensitivity,path+dir_name+'/sensitivity_log'+dataset_ID+'.xlsx', index=False)
 
 #%%
+# Crear una columna con el par ordenado alfabéticamente
+df_sensitivity['pair'] = df_sensitivity.apply(
+    lambda row: tuple(sorted([row['dim1'], row['dim2']])),
+    axis=1
+)
 
-dim_combs=[(dim,'p_sg') for dim in dim_divided if dim!='p_sg']
+# Quitar duplicados
+unique_pairs = df_sensitivity['pair'].drop_duplicates()
 
-for dims in dim_combs:
+# Convertir a dataframe si lo quieres en tabla
+df_unique_pairs = unique_pairs.apply(pd.Series)
+df_unique_pairs.columns = ['dim1', 'dim2']
+
+df_unique_pairs
+#%%
+
+# dim_divided=[]
+# for dim in df['dimension'].unique():
+#     if len(df.query('dimension == @dim')['lower'].unique())==1:
+#         continue
+#     else:
+#         print(dim)
+#         dim_divided.append(dim)
+
+# #%%
+
+# dim_combs=[(dim,'p_sg') for dim in dim_divided if dim!='p_sg']
+
+# for dims in dim_combs:
+
+#%%
+for i in df_unique_pairs.index:
     # Filter for only p_cig and p_sg
-    mesh_df = df[df["dimension"].isin([dims[0], "p_sg"])]
+    #mesh_df = df[df["dimension"].isin([dims[0], "p_sg"])]
+    dim1=df_unique_pairs.loc[i,'dim1']
+    dim2= df_unique_pairs.loc[i,'dim2']
+    mesh_df = df[df["dimension"].isin([dim1,dim2])]
     
-    # fig, ax = plt.subplots()
-    # ax.scatter(dimensions_caseid_unfeasible[dims[0]], dimensions_caseid_unfeasible['p_sg'],color='silver', label='Unfeasable OP')
-    # ax.scatter(dimensions_caseid_feasible.query('Stability ==0')[dims[0]], dimensions_caseid_feasible.query('Stability ==0')['p_sg'], color='r',label='Unstable PF')
-    # ax.scatter(dimensions_caseid_feasible.query('Stability ==1')[dims[0]], dimensions_caseid_feasible.query('Stability ==1')['p_sg'], color='g', label='Stable PF')
-    # ax.set_xlabel(dims[0])
-    # ax.set_ylabel('$P_{SG}$ [MW]')
-    # fig.tight_layout()
-    # plt.legend()
+    fig, ax = plt.subplots()
+    ax.scatter(dimensions_caseid_unfeasible[dim1], dimensions_caseid_unfeasible[dim2],color='silver', label='Unfeasable OP')
+    ax.scatter(dimensions_caseid_feasible.query('Stability ==0')[dim1], dimensions_caseid_feasible.query('Stability ==0')[dim2], color='r',label='Unstable PF')
+    ax.scatter(dimensions_caseid_feasible.query('Stability ==1')[dim1], dimensions_caseid_feasible.query('Stability ==1')[dim2], color='g', label='Stable PF')
+    try:
+        ax.set_xlabel('$'+dim1.replace('perc','\%').replace('p','P').replace('g_for','{GFOR}').replace('sg','{SG} [MW]').replace('cig','{IBR} [MW]')+'$')
+    except:
+        ax.set_xlabel(dim1)
+    try:
+        ax.set_ylabel('$'+dim2.replace('perc','\%').replace('p','P').replace('g_for','{GFOR}').replace('sg','{SG} [MW]').replace('cig','{IBR} [MW]')+'$')#'$P_{SG}$ [MW]')
+    except:
+        ax.set_ylabel(dim2)
+        
+    fig.tight_layout()
+    plt.legend()
     
-    # plot_mesh(mesh_df,dims[0], 'p_sg', dims[0], '$P_{SG}$ [MW]',ax)
+    #plot_mesh(mesh_df,dims[0], 'p_sg', dims[0], '$P_{SG}$ [MW]',ax)
+    #plot_mesh(mesh_df,dim1, dim2, dim1, dim2,ax)
+    #pd.DataFrame.to_excel(mesh_df,path+dir_name+'/mesh'+dataset_ID.replace('ivity','Sensitivity')+'_'+dims[0]+'_p_sg.xlsx', index=False)
 
-    pd.DataFrame.to_excel(mesh_df,path+dir_name+'/mesh'+dataset_ID.replace('ivity','Sensitivity')+'_'+dims[0]+'_p_sg.xlsx', index=False)
 
 
 #%%
@@ -424,4 +512,4 @@ for idx, cellname in enumerate(results_dataframes['cases_df']['cell_name'].uniqu
     df_entropy_cell.loc[idx,'CellName']=cellname
     df_entropy_cell.loc[idx,'Entropy']=entropy
 
-pd.DataFrame.to_excel(df_entropy_cell, path+dir_name+'df_entropy_cell'+dataset_ID.replace('ivity','Sensitivity')+'.xlsx')
+pd.DataFrame.to_excel(df_entropy_cell, path+dir_name+'/df_entropy_cell'+dataset_ID.replace('ivity','Sensitivity')+'.xlsx')

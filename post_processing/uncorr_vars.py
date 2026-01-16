@@ -18,7 +18,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import GroupKFold, KFold
 from sklearn.model_selection import cross_val_score
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, fbeta_score
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import copy
@@ -41,8 +41,10 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 
 
 # %%
-path = 'D:/'
-dir_name=[dir_name for dir_name in os.listdir(path) if '_2862' in dir_name and 'zip' not in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+path = '../results/'
+#path = 'D:/'
+
+dir_name=[dir_name for dir_name in os.listdir(path) if '_2732' in dir_name and 'zip' not in dir_name][0]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 print(dir_name)
 
 #%%
@@ -194,12 +196,13 @@ for sl_bus in df_slack['slack_bus'].unique():
     slack_case[sl_bus] = list(results_dataframes['case_df_op_feasible'].query('slack_bus == @sl_bus')['case_id'])
 
 #%%
+import copy
 theta_rad = results_dataframes['case_df_op_feasible'][theta_cols]*np.pi/180
 theta_rad_slack_26 = copy.copy(theta_rad)
 df_slack['delta_slack'] = 0
 
 print(df_slack.groupby('slack_bus').count())
-
+#%%
 for ii in df_slack.query('slack_bus != "theta26"').index:
     slack_bus = df_slack.loc[ii,'slack_bus']
     delta_slack = theta_rad.loc[ii,'theta26'] - theta_rad.loc[ii,slack_bus]
@@ -212,7 +215,7 @@ results_dataframes['raw_data'] = pd.concat([results_dataframes['raw_data'],df_ta
                                             theta_rad_slack_26.reset_index(drop=True)],axis=1)
 
 #%%
-model = XGBClassifier(n_estimators=350)
+model = XGBClassifier(n_estimators=600)
 estimator = Pipeline([('scaler', RobustScaler()),('xgb',XGBClassifier(n_estimators=350))])
 df = results_dataframes['raw_data']
  
@@ -238,74 +241,74 @@ disp.plot(cmap='Blues')
 
 descr= results_dataframes['raw_data'].describe()
 
+# #%%
+# #estimator = Pipeline([('scaler', RobustScaler()), ('xgb', XGBClassifier())])
+# model = XGBClassifier()
+# param_grid = {'learning_rate':[0.1,0.2,0.25, 0.3],#, 0.35], #np.arange(0.1,0.7,0.2),
+#               'max_depth':[4,3,5,6,7],#7,8,9],#[5,6,7],
+#               'subsample':[0.5,0.8,1],
+#               'n_estimators':[300,350]
+#     }
+
+# best_params_grid=dict()
+# scores_depth = dict()
+# best_model, best_params, means, stds, params = GSkFCV(param_grid, X_train, y_train, model, 'accuracy', n_folds=3)
+
+
+# best_params_grid[type_corr_analysis+dataset_ID]={'learning_rate': best_params['xgb__eta'],
+#           'max_depth': best_params['xgb__max_depth'],
+#           'subsample': best_params['xgb__subsample'], 'n_estimators': best_params['xgb__n_estimators']}
+
+
+# scores_depth[type_corr_analysis+dataset_ID] = kfold_cv_depth(df_dict, type_corr_analysis, dataset_ID, cases_id_depth_feas, plot_depth_exploration=False, n_fold=5, params=best_params_grid[type_corr_analysis+dataset_ID])
+
 #%%
-#estimator = Pipeline([('scaler', RobustScaler()), ('xgb', XGBClassifier())])
-model = XGBClassifier()
-param_grid = {'learning_rate':[0.1,0.2,0.25, 0.3],#, 0.35], #np.arange(0.1,0.7,0.2),
-              'max_depth':[4,3,5,6,7],#7,8,9],#[5,6,7],
-              'subsample':[0.5,0.8,1],
-              'n_estimators':[300,350]
-    }
 
-best_params_grid=dict()
-scores_depth = dict()
-best_model, best_params, means, stds, params = GSkFCV(param_grid, X_train, y_train, model, 'accuracy', n_folds=3)
-
-
-best_params_grid[type_corr_analysis+dataset_ID]={'learning_rate': best_params['xgb__eta'],
-          'max_depth': best_params['xgb__max_depth'],
-          'subsample': best_params['xgb__subsample'], 'n_estimators': best_params['xgb__n_estimators']}
-
-
-scores_depth[type_corr_analysis+dataset_ID] = kfold_cv_depth(df_dict, type_corr_analysis, dataset_ID, cases_id_depth_feas, plot_depth_exploration=False, n_fold=5, params=best_params_grid[type_corr_analysis+dataset_ID])
-
-#%%
-
-def boxplot_stability(df, stability,columns, ax=None):
-    if ax == None:
-        fig =  plt.figure()
-    ax = df.query('Stability == @stability')[[col for col in df.columns if col.startswith(columns)]].boxplot(figsize=(10, 6))
-    ax.set_title(columns+ [' Unstable Cases' if stability==0 else ' Stable Cases'][0])
-    ax.set_xticklabels([col.split('_')[-1] for col in df.columns if col.startswith(columns)], rotation=45)
-    return ax
-#%%
-ax = boxplot_stability(df_Sn_GFOL, 0,'Sn_GFOL')
-boxplot_stability(df_Sn_GFOL, 1,'Sn_GFOL', ax)
+# def boxplot_stability(df, stability,columns, ax=None):
+#     if ax == None:
+#         fig =  plt.figure()
+#     ax = df.query('Stability == @stability')[[col for col in df.columns if col.startswith(columns)]].boxplot(figsize=(10, 6))
+#     ax.set_title(columns+ [' Unstable Cases' if stability==0 else ' Stable Cases'][0])
+#     ax.set_xticklabels([col.split('_')[-1] for col in df.columns if col.startswith(columns)], rotation=45)
+#     return ax
+# #%%
+# ax = boxplot_stability(df_Sn_GFOL, 0,'Sn_GFOL')
+# boxplot_stability(df_Sn_GFOL, 1,'Sn_GFOL', ax)
     
-#%%
-fig =  plt.figure()
-ax = df_taus_fixed.query('Stability == 0')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfor')]].boxplot(figsize=(10, 6))
-ax.set_title('tau_droop_f_gfor Unstable Cases')
-ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfor')])
+# #%%
+# fig =  plt.figure()
+# ax = df_taus_fixed.query('Stability == 0')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfor')]].boxplot(figsize=(10, 6))
+# ax.set_title('tau_droop_f_gfor Unstable Cases')
+# ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfor')])
     
-fig =  plt.figure()
-ax = df_taus_fixed.query('Stability == 1')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfor')]].boxplot(figsize=(15, 6))
-ax.set_title('tau_droop_f_gfor Stable Cases')
-ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfor')])
+# fig =  plt.figure()
+# ax = df_taus_fixed.query('Stability == 1')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfor')]].boxplot(figsize=(15, 6))
+# ax.set_title('tau_droop_f_gfor Stable Cases')
+# ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfor')])
 
-fig =  plt.figure()
-ax = df_taus_fixed.query('Stability == 0')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfol')]].boxplot(figsize=(10, 6))
-ax.set_title('tau_droop_f_gfol Unstable Cases')
-ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfol')])
+# fig =  plt.figure()
+# ax = df_taus_fixed.query('Stability == 0')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfol')]].boxplot(figsize=(10, 6))
+# ax.set_title('tau_droop_f_gfol Unstable Cases')
+# ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfol')])
 
-fig =  plt.figure()
-ax = df_taus_fixed.query('Stability == 1')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfol')]].boxplot(figsize=(15, 6))
-ax.set_title('tau_droop_f_gfol Stable Cases')
-ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfol')])
+# fig =  plt.figure()
+# ax = df_taus_fixed.query('Stability == 1')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfol')]].boxplot(figsize=(15, 6))
+# ax.set_title('tau_droop_f_gfol Stable Cases')
+# ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_f_gfol')])
 
-fig =  plt.figure()
-ax = df_taus_fixed.query('Stability == 0')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_u_gfol')]].boxplot(figsize=(10, 6))
-ax.set_title('tau_droop_u_gfol Unstable Cases')
-ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_u_gfol')])
+# fig =  plt.figure()
+# ax = df_taus_fixed.query('Stability == 0')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_u_gfol')]].boxplot(figsize=(10, 6))
+# ax.set_title('tau_droop_u_gfol Unstable Cases')
+# ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_u_gfol')])
 
-fig =  plt.figure()
-ax = df_taus_fixed.query('Stability == 1')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_u_gfol')]].boxplot(figsize=(15, 6))
-ax.set_title('tau_droop_u_gfol Stable Cases')
-ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_u_gfol')])
+# fig =  plt.figure()
+# ax = df_taus_fixed.query('Stability == 1')[[col for col in df_taus_fixed.columns if col.startswith('tau_droop_u_gfol')]].boxplot(figsize=(15, 6))
+# ax.set_title('tau_droop_u_gfol Stable Cases')
+# ax.set_xticklabels([col.split('_')[-1] for col in df_taus_fixed.columns if col.startswith('tau_droop_u_gfol')])
 
 
-fig =  plt.figure()
-ax = df_taus_fixed.query('Stability == 1 and tau_droop_u_gfol_32 !=0')[['tau_droop_u_gfol_32']].boxplot(figsize=(15, 6))
+# fig =  plt.figure()
+# ax = df_taus_fixed.query('Stability == 1 and tau_droop_u_gfol_32 !=0')[['tau_droop_u_gfol_32']].boxplot(figsize=(15, 6))
 
 # %% ---- Check correlated variables Option #1 ----
 def get_correlated_columns(df, c_threshold=0.95, method='pearson'):
@@ -378,48 +381,49 @@ while not grouped_corr_feat.empty:
 results_dataframes['keep_var1'] = results_dataframes['raw_data'][uncorrelated_features + keep_var + ['Stability']]
 results_dataframes['keep_var2'] = results_dataframes['raw_data'][uncorrelated_features + keep_var_2 + ['Stability']]
 
-model = XGBClassifier()
+#%%
+model = XGBClassifier(n_estimators=500)
 #estimator = Pipeline([('scaler', RobustScaler()),('xgb',XGBClassifier())])
-df = results_dataframes['keep_var2']
- 
-X = df.drop(['Stability'],axis=1).reset_index(drop=True)
-Y = df[['Stability']].reset_index(drop=True).values.astype(int).ravel()
-
-X_train, X_test, y_train, y_test = train_test_split(X, Y , train_size=0.8, shuffle=True, random_state=42)
-# w_neg, w_pos = 10.0, 1.0  # tune
-# sw = np.where(y_train == 0, w_neg, w_pos)
-
-#model=estimator.fit(X_train, y_train)
-model.fit(X_train, y_train)
-#model =DecisionTreeClassifier().fit(X_train,y_train)
-# proba = model.predict_proba(X_test)[:,1]
-
-y_pred = model.predict(X_test)
-score = accuracy_score(y_test, y_pred)
-print(score)
-
-cm = confusion_matrix(y_test, y_pred)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-disp.plot(cmap='Blues')
-
+for keep in ['keep_var1']:#,'keep_var2']:
+    df = results_dataframes[keep]
+     
+    X = df.drop(['Stability'],axis=1).reset_index(drop=True)
+    Y = df[['Stability']].reset_index(drop=True).values.astype(int).ravel()
+    
+    X_train, X_test, y_train, y_test = train_test_split(X, Y , train_size=0.8, shuffle=True, random_state=42)
+    # w_neg, w_pos = 10.0, 1.0  # tune
+    # sw = np.where(y_train == 0, w_neg, w_pos)
+    
+    #model=estimator.fit(X_train, y_train)
+    model.fit(X_train, y_train)
+    #model =DecisionTreeClassifier().fit(X_train,y_train)
+    # proba = model.predict_proba(X_test)[:,1]
+    
+    y_pred = model.predict(X_test)
+    score = accuracy_score(y_test, y_pred)
+    print('score '+keep+': ',score)
+    
+    cm = confusion_matrix(y_test, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    disp.plot(cmap='Blues')
+    #plt.title(keep)
+    plt.tight_layout()
 #%%
 
-#%%
+# from scipy.stats import pointbiserialr
 
-from scipy.stats import pointbiserialr
+# # Assume df is your DataFrame and 'target' is binary (0/1)
+# target = 'Stability'
+# numeric_cols = results_dataframes['raw_data'].drop(['cell_name','case_id','slack_bus'],axis=1).columns.drop(target)
 
-# Assume df is your DataFrame and 'target' is binary (0/1)
-target = 'Stability'
-numeric_cols = results_dataframes['raw_data'].drop(['cell_name','case_id','slack_bus'],axis=1).columns.drop(target)
+# corrs = []
+# for col in numeric_cols:
+#     corr, p_value = pointbiserialr(df[target], df[col])
+#     corrs.append((col, corr, p_value))
 
-corrs = []
-for col in numeric_cols:
-    corr, p_value = pointbiserialr(df[target], df[col])
-    corrs.append((col, corr, p_value))
-
-corr_df = pd.DataFrame(corrs, columns=['feature', 'correlation', 'p_value'])
-corr_df = corr_df.sort_values(by='correlation', key=abs, ascending=False)
-print(corr_df.head(10))
+# corr_df = pd.DataFrame(corrs, columns=['feature', 'correlation', 'p_value'])
+# corr_df = corr_df.sort_values(by='correlation', key=abs, ascending=False)
+# print(corr_df.head(10))
 
 
 #%%
@@ -428,19 +432,18 @@ results_dataframes['case_df_op_feasible_uncorr'] = results_dataframes['case_df_o
 results_dataframes['case_df_op_feasible_uncorr']['case_id'] = results_dataframes['case_df_op_feasible']['case_id'].reset_index(drop=True)
 results_dataframes['case_df_op_feasible_uncorr']['Stability'] = results_dataframes['case_df_op_feasible']['Stability'].reset_index(drop=True)
 
-results_dataframes['case_df_op_feasible_uncorr'].to_csv(path+dir_name+'DataSet_training_uncorr_var'+dataset_ID.replace('ivity','Sensitivity')+'.csv')
+results_dataframes['case_df_op_feasible_uncorr'].to_csv(path+dir_name+'/DataSet_training_uncorr_var'+dataset_ID.replace('ivity','Sensitivity')+'.csv')
 
 # %% ---- Check correlated variables Option #2 ----
 
-results = pd.concat([results_dataframes['case_df_op_feasible_X'].reset_index(drop=True), df_taus_fixed.reset_index(drop=True)], axis=1).apply(
+results = pd.concat([results_dataframes['case_df_op_feasible_X'].drop('cell_name',axis=1).reset_index(drop=True), df_taus_fixed.drop('Stability',axis=1).reset_index(drop=True)], axis=1).apply(
 #results = results_dataframes['case_df_op_feasible_X'].reset_index(drop=True).apply(
      lambda col: pointbiserialr(col, results_dataframes['case_df_op_feasible']['Stability']), result_type='expand').T
 results.columns = ['correlation', 'p_value']
 results['abs_corr'] = abs(results['correlation'])
 
 # fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 8))
-X = pd.concat([results_dataframes['case_df_op_feasible_X'].reset_index(
-    drop=True), df_taus_fixed.reset_index(drop=True)], axis=1)
+X = pd.concat([results_dataframes['case_df_op_feasible_X'].drop('cell_name',axis=1).reset_index(drop=True), df_taus_fixed.drop('Stability',axis=1).reset_index(drop=True)], axis=1)
 # X = results_dataframes['case_df_op_feasible_X'].reset_index(
 #     drop=True)
 corr = spearmanr(X).correlation
@@ -488,4 +491,31 @@ for i, selected_features in selected_features_names_dict.items():
 results_dataframes['case_df_op_feasible_uncorr_HierCl_X'] = X[keep_var]
 results_dataframes['case_df_op_feasible_uncorr_HierCl'] = pd.concat([X[keep_var], results_dataframes['case_df_op_feasible'][['case_id', 'Stability']].reset_index(drop=True)],axis=1)
 
-results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv(path+dir_name+'DataSet_training_uncorr_var_HierCl'+dataset_ID.replace('ivity','Sensitivity')+'.csv')
+results_dataframes['case_df_op_feasible_uncorr_HierCl'].to_csv(path+dir_name+'/DataSet_training_uncorr_var_HierCl'+dataset_ID.replace('ivity','Sensitivity')+'.csv')
+
+#%%
+#estimator = Pipeline([('scaler', RobustScaler()),('xgb',XGBClassifier())])
+model = XGBClassifier(n_estimators=500)
+
+df = results_dataframes['case_df_op_feasible_uncorr_HierCl']
+ 
+X = df.drop(['case_id','Stability'],axis=1).reset_index(drop=True)
+Y = df[['Stability']].reset_index(drop=True).values.astype(int).ravel()
+
+X_train, X_test, y_train, y_test = train_test_split(X, Y , train_size=0.8, shuffle=True, random_state=42)
+# w_neg, w_pos = 10.0, 1.0  # tune
+# sw = np.where(y_train == 0, w_neg, w_pos)
+
+#model=estimator.fit(X_train, y_train)
+model.fit(X_train, y_train)
+#model =DecisionTreeClassifier().fit(X_train,y_train)
+# proba = model.predict_proba(X_test)[:,1]
+
+y_pred = model.predict(X_test)
+score = accuracy_score(y_test, y_pred)
+print('score '+keep+': ',score)
+
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot(cmap='Blues')
+plt.title(keep)
