@@ -83,9 +83,16 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # d_raw_data, slack_bus_num = choose_slack_bus(d_raw_data)
     # i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
 
-    # Set a slack bus
-    slack_bus_num=1
-    d_raw_data['data_global'].loc[0,'ref_element']='GFOR'
+    ## Set a slack bus
+    ## for grid IEEE 9bus
+    # slack_bus_num=1
+    # d_raw_data['data_global'].loc[0,'ref_element']='GFOR'
+
+    
+    ## for grid IEEE 118bus
+    slack_bus_num=26
+    d_raw_data['data_global'].loc[0,'ref_element']='SG'
+    
     d_raw_data['data_global'].loc[0,'ref_bus'] = slack_bus
     i_slack = 0
     
@@ -144,8 +151,16 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     
     nc.generator_data.cost_0[:] = 0
     nc.generator_data.cost_1 [:] = 0 # np.array([0, 1, 0])
-    nc.generator_data.cost_2 = np.array([1, 10, 1])/(nc.generator_data.installed_p**2)
-   #voltage_profile_list_complex = np.array([complex(v,0) for v in voltage_profile_list])
+    
+    ## generators cost for IEEE 9 bus
+    #nc.generator_data.cost_2 = np.array([1, 10, 1])/(nc.generator_data.installed_p**2)
+  
+    ## generators cost for IEEE 118 bus
+    nc.generator_data.cost_2 = np.ones([nc.ngen])/(nc.generator_data.installed_p**2)
+    
+    
+  
+    #voltage_profile_list_complex = np.array([complex(v,0) for v in voltage_profile_list])
     #nc.bus_data.Vbus = voltage_profile_list_complex
     
     pf_options = gce.PowerFlowOptions(solver_type=gce.SolverType.NR, verbose=1, tolerance=1e-8, control_q=ReactivePowerControlMode.NoControl)#, max_iter=100)
@@ -486,9 +501,16 @@ def optimal_power_flow_scipy(case, **kwargs):
     # d_raw_data, slack_bus_num = choose_slack_bus(d_raw_data)
     # i_slack=int(d_raw_data['generator'].query('I == @slack_bus_num').index[0])
 
-    # Set a slack bus
-    slack_bus_num=1
-    d_raw_data['data_global'].loc[0,'ref_element']='GFOR'
+    ## Set a slack bus
+    ## for grid IEEE 9bus
+    # slack_bus_num=1
+    # d_raw_data['data_global'].loc[0,'ref_element']='GFOR'
+
+    
+    ## for grid IEEE 118bus
+    slack_bus_num=26
+    d_raw_data['data_global'].loc[0,'ref_element']='SG'
+
     d_raw_data['data_global'].loc[0,'ref_bus'] = slack_bus
     i_slack = 0
     
@@ -518,6 +540,8 @@ def optimal_power_flow_scipy(case, **kwargs):
 
     assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
+    
+    ## scipy opf for IEEE 9bus
     u_dict = {'p':[1,2], 'v':[0,1,2]}
     y_dict = {'p':[0,1], 'v_m':[0,1,2,3,4,5,6,7,8], 'v_a':[0]}
     OPF_prms = {'alpha':1e-4, 'beta':0, 'gamma':100, 'tol':1e-8, 'u':u_dict, 'y':y_dict, 'theta':1}
