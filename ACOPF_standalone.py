@@ -169,10 +169,24 @@ def main(working_dir='', path_data='', setup_path=''):
             trafo.rate = lines_ratings.loc[
                 lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                     0], 'Max Flow (MW)']
+        
+        # -1: SG, 0: GFL, 1: GF;
+        fix_conf_gfor_gfol = [-1, -1, -1, -1, -1, 0,  1,  0,  1,
+                              -1, -1,  0,  1,  0,
+                              -1, -1, -1, -1, -1,
+                              -1,  0,  1,
+                              -1, -1, -1, -1, -1, -1,0,-1, -1, -1,  1,
+                              -1, -1,  0, -1, -1, -1, -1, -1,
+                              1, -1,  0, -1,  1,  0,-1,  1, -1, 0, -1, -1]
+
     if grid_name == 'IEEE9':
         gridCal_grid.fBase=60
         for trafo in gridCal_grid.transformers2w:
             trafo.rate = 500
+    
+        # -1: SG, 0: GFL, 1: GF;
+        fix_conf_gfor_gfol = [1,-1,0]
+            
         # for idx_gen,gen in enumerate(gridCal_grid.get_generators()):
         #     gen.Pf=0.95 
 
@@ -219,7 +233,7 @@ def main(working_dir='', path_data='', setup_path=''):
                   independent_dimension=True,
                   cosphi=generators_power_factor),
         Dimension(label="perc_g_for", variable_borders=[(0, 1)],
-                  n_cases=n_cases, divs=1, borders=(0, 1), values=[1,-1,0],
+                  n_cases=n_cases, divs=1, borders=(0, 1), values= fix_conf_gfor_gfol,
                   independent_dimension=True, cosphi=None),
         Dimension(label="p_load", values=p_loads,
                   n_cases=n_cases, divs=1,
@@ -273,7 +287,7 @@ def main(working_dir='', path_data='', setup_path=''):
 #        if _ == 5:
         stability, output_dataframes = eval_stability(
             case=case,
-            f=optimal_power_flow_scipy,
+            f= feasible_power_flow_ACOPF, #optimal_power_flow_scipy,
             func_params=func_params,
             generator=generator)
         stability_array.append(stability)
@@ -327,7 +341,7 @@ if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
 #        setup_path = "./setup/default_setup_9buses.yaml"
-        setup_path = "./setup/setup_vset_seed16_nc1_ns100_d5.yaml"
+        setup_path = "./setup/setup_test_118_fix_control.yaml"
     else:
         setup_path = args[1]
     main(setup_path=setup_path)
