@@ -287,6 +287,7 @@ def main(working_dir='', path_data='', setup_path=''):
 #        if _ == 5:
         stability, output_dataframes = eval_stability(
             case=case,
+            dimensions = dimensions,
             f= feasible_power_flow_ACOPF, #optimal_power_flow_scipy,
             func_params=func_params,
             generator=generator)

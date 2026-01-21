@@ -13,7 +13,7 @@ except ImportError:
 
 @constraint(computing_units=os.environ.get('COMPUTING_UNITS', '1'))
 @task(returns=2, on_failure='FAIL')
-def eval_stability(case, f, func_params, **kwargs):
+def eval_stability(case, dimensions, f, func_params, **kwargs):
     """Call objective function and return its result.
 
     :param case: Involved cases
@@ -21,7 +21,7 @@ def eval_stability(case, f, func_params, **kwargs):
     :param kwargs: Additional keyword arguments
     :return: Result of the evaluation
     """
-    return f(case=case, func_params=func_params, **kwargs)
+    return f(case=case, dimensions=dimensions, func_params=func_params, **kwargs)
 
 
 def calculate_entropy(freqs):
