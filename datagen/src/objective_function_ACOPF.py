@@ -157,8 +157,10 @@ def feasible_power_flow_ACOPF(case, **kwargs):
   
     ## generators cost for IEEE 118 bus
     nc.generator_data.cost_2 = np.ones([nc.ngen])/(nc.generator_data.installed_p**2)
-    
-    
+    fix_conf_gfm_gfl= selected_module = next((d for d in dimensions if d.label == 'perc_g_for'), None ).values # returned if not found)
+    for idx in range(nc.ngen):
+        if fix_conf_gfm_gfl[idx]==-1 and nc.generator_data.installed_p[idx]>=1e3:
+            nc.generator_data.cost_2[idx]*=10
   
     #voltage_profile_list_complex = np.array([complex(v,0) for v in voltage_profile_list])
     #nc.bus_data.Vbus = voltage_profile_list_complex
