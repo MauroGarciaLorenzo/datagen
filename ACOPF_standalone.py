@@ -214,7 +214,13 @@ def main(working_dir='', path_data='', setup_path=''):
                   independent_dimension=True,
                   cosphi=generators_power_factor),
         Dimension(label="perc_g_for", variable_borders=[(0, 1)],
-                  n_cases=n_cases, divs=1, borders=(0, 1),
+                  n_cases=n_cases, divs=1, borders=(0, 1), values = [-1, -1, -1, -1, -1, 0,  1,  0,  1,
+                                                                    -1, -1,  0,  1,  0,
+                                                                    -1, -1, -1, -1, -1,
+                                                                    -1,  0,  1,
+                                                                    -1, -1, -1, -1, -1, -1,0,-1, -1, -1,  1,
+                                                                    -1, -1,  0, -1, -1, -1, -1, -1,
+                                                                    1, -1,  0, -1,  1,  0,-1,  1, -1, 0, -1, -1],
                   independent_dimension=True, cosphi=None),
         Dimension(label="p_load", values=p_loads,
                   n_cases=n_cases, divs=1,
@@ -226,22 +232,22 @@ def main(working_dir='', path_data='', setup_path=''):
     for d in list(d_op['Generators']['BusNum']):
         dimensions.append(
             Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.05, 0.05),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.07, 0.07),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.05, 0.05),
                       independent_dimension=True,
                       cosphi=None))
         dimensions.append(
             Dimension(label='tau_droop_u_gfol_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
+                      divs=1, borders=(0.07, 0.07),
                       independent_dimension=True,
                       cosphi=None))
 
