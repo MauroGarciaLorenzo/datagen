@@ -17,4 +17,7 @@ xlsxwriter
 PyYAML
 SciencePlots
 # Older pandas version for issues detected in Windows users
-# pandas==1.5.3
+pandas==1.5.3
+GridCalEngine
+control
+stability_analysis
