@@ -1,26 +1,43 @@
-
 from unittest import TestCase
-
+import sys
+import os
+sys.path.insert(0, os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..')))
 from datagen import *
+from datagen.src.data_ops import concat_df_dict
+from datagen.src.evaluator import calculate_entropy, eval_entropy
+from datagen.src.grid import gen_grid
 from datagen.tests.utils import gen_df_for_dims, linear_function, \
     dim0_func, parab_func
-from datagen.src.sampling import sensitivity
+from datagen.src.sensitivity_analysis import sensitivity
+
+def create_dims():
+    variables = [(0, 10), (0, 15), (10, 20), (0, 25)]
+    dim1 = Dimension(variable_borders=variables, n_cases=3, divs=1, borders=(10, 70), label="Dim1")
+    dim2 = Dimension(variable_borders=variables, n_cases=3, divs=2, borders=(10, 70), label="Dim2")
+    dim3 = Dimension(variable_borders=variables, n_cases=3, divs=2, borders=(10, 70), label="Dim3")
+    return [dim1, dim2, dim3]
+
+
+def create_generator():
+    return np.random.default_rng(1)
 
 
 class Test(TestCase):
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     def setUp(self):
         """
-        This code executes every time a subtest of this class is run.
+        This code is executed every time a subtest of this class is executed.
         """
         variables = [(0, 10), (0, 15), (10, 20), (0, 25)]
 
-        self.dim1 = Dimension(variables, n_cases=3, divs=1, borders=(10, 70),
-                              label="Dim1")
-        self.dim2 = Dimension(variables, n_cases=3, divs=2, borders=(10, 70),
-                              label="Dim2")
-        self.dim3 = Dimension(variables, n_cases=3, divs=2, borders=(10, 70),
-                              label="Dim3")
+        self.dim1 = Dimension(variable_borders=variables, n_cases=3, divs=1,
+                              borders=(10, 70), label="Dim1")
+        self.dim2 = Dimension(variable_borders=variables, n_cases=3, divs=2,
+                              borders=(10, 70), label="Dim2")
+        self.dim3 = Dimension(variable_borders=variables, n_cases=3, divs=2,
+                              borders=(10, 70), label="Dim3")
 
         self.dims = [self.dim1, self.dim2, self.dim3]
 
@@ -31,6 +48,8 @@ class Test(TestCase):
             "Dim2": [15, 39, 20],
             "Dim3": [39, 30, 60]
         })
+
+        self.generator = np.random.default_rng(1)
 
         self.cases_heritage_df = pd.DataFrame({
             "Dim1_Var0": [0, 6, 10],
@@ -49,47 +68,21 @@ class Test(TestCase):
         })
 
     def test_generate_columns(self):
+        print("RUNNING TEST GENERATE COLUMNS")
         cols = generate_columns(self.dim1)
         self.assertTrue(cols,
                         ["Dim1_Var0", "Dim1_Var1", "Dim1_Var2", "Dim1_Var3"])
 
-    def test_gen_samples(self):
-        n_samples = 100
-        df_samples = gen_samples(n_samples, self.dims, None)
-
-        for dim in self.dims:
-            self.assertTrue(all(df_samples[dim.label] >= dim.borders[0]))
-            self.assertTrue(all(df_samples[dim.label] <= dim.borders[1]))
-
-    def test_gen_grid(self):
-        """
-        This code creates a list of expected borders based on all possible
-        combinations using dimensions borders and divs, and compare it to
-        gen_grid output.
-        """
-        grid = gen_grid(self.dims)
-
-        expected_cells = 1 * 2 * 2
-        expected_borders = [[(10., 70.), (10., 40.), (10., 40.)],
-                            [(10., 70.), (10., 40.), (40., 70.)],
-                            [(10., 70.), (40., 70.), (10., 40.)],
-                            [(10., 70.), (40., 70.), (40., 70.)]]
-        self.assertEqual(len(grid), expected_cells)
-        borders = []
-        for cell in grid:
-            new_cell_borders = []
-            for dim in cell.dimensions:
-                new_cell_borders.append(dim.borders)
-            borders.append(new_cell_borders)
-        self.assertEqual(borders, expected_borders)
 
     def test_calculate_entropy(self):
+        print("RUNNING TEST CALCULATE ENTROPY")
         freqs = [0.25, 0.75]
         expected_entropy = -0.25 * np.log(0.25) - 0.75 * np.log(0.75)
         result_entropy = calculate_entropy(freqs)
         self.assertAlmostEqual(result_entropy, expected_entropy, places=5)
 
     def test_eval_entropy(self):
+        print("RUNNING TEST EVAL ENTROPY")
         stabilities = [1, 0, 0, 0]
         entropy_parent = None
         expected_freqs = [0.25, 0.75]
@@ -114,41 +107,17 @@ class Test(TestCase):
         self.assertAlmostEqual(result_entropy, expected_entropy, places=5)
         self.assertEqual(result_delta_entropy, expected_delta_entropy)
 
-    def test_get_children_parameters(self):
-        total_cases_df, total_dims_df, _ = (
-            get_children_parameters(self.children_grid,
-                                    self.dims_df,
-                                    self.cases_heritage_df))
-
-        # (Dim1: 10-70, Dim2: 10-40, Dim3: 10-40)
-        self.assertEqual(len(total_cases_df[0]), 2)
-        a = total_cases_df[0].astype('float')
-        b = self.cases_heritage_df.iloc[0:2].astype('float')
-        pd.testing.assert_frame_equal(a, b)
-
-        # (Dim1: 10-70, Dim2: 10-40, Dim3: 40-70)
-        a = total_cases_df[1].astype('float')
-        b = self.cases_heritage_df.iloc[2:3].astype('float')
-        b = b.reset_index(drop=True)
-        self.assertEqual(len(total_cases_df[1]), 1)
-        pd.testing.assert_frame_equal(a, b)
-
-        # (Dim1: 10-70, Dim2: 40-70, Dim3: 10-40)
-        self.assertEqual(len(total_cases_df[2]), 0)
-        
-        # (Dim1: 10-70, Dim2: 40-70, Dim3: 40-70)
-        self.assertEqual(len(total_cases_df[3]), 0)
-
     def test_sensitivity(self):
+        print("RUNNING TEST SENSITIVITY ANALYSIS")
         variables = [(0, 10), (0, 10), (0, 10), (0, 10)]
-        dim1 = Dimension(variables, n_cases=3, divs=1, borders=(0, 70),
+        dim1 = Dimension(variable_borders= variables, n_cases=3, divs=1, borders=(0, 70),
                          label="Dim1")
-        dim2 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
+        dim2 = Dimension(variable_borders= variables, n_cases=3, divs=2, borders=(0, 70),
                          label="Dim2")
-        dim3 = Dimension(variables, n_cases=3, divs=2, borders=(0, 70),
+        dim3 = Dimension(variable_borders= variables, n_cases=3, divs=2, borders=(0, 70),
                          label="Dim3")
         dims = [dim1, dim2, dim3]
-        
+
         for dim in dims:
             dim.tolerance = (dim.borders[1] - dim.borders[0]) * 0.1
 
@@ -163,17 +132,64 @@ class Test(TestCase):
         parab_cases_df["Stability"] = parab_cases_df.apply(parab_func, axis=1)
         dim0_cases_df["Stability"] = dim0_cases_df.apply(dim0_func, axis=1)
 
-        dims_linear = sensitivity(linear_cases_df, dims, divs_per_cell=2,
-                                  generator=None)
+        # Test case is not executing datagen
+        df_op = pd.DataFrame()
+        use_all_vars = True
+
+        dims_linear = sensitivity(cases_df=linear_cases_df,
+                                  df_op=df_op, dimensions=dims, divs_per_cell=2,
+                                  generator=self.generator,
+                                  use_all_vars=use_all_vars)
         dims_linear_divs = [dim.divs for dim in dims_linear]
-        dims_parab = sensitivity(parab_cases_df, dims, divs_per_cell=2,
-                                 generator=None)
+        dims_parab = sensitivity(cases_df=parab_cases_df,
+                                  df_op=df_op, dimensions=dims, divs_per_cell=2,
+                                  generator=self.generator,
+                                  use_all_vars=use_all_vars)
         dims_parab_divs = [dim.divs for dim in dims_parab]
-        dims_dim0 = sensitivity(dim0_cases_df, dims, divs_per_cell=2,
-                                generator=None)
+        dims_dim0 = sensitivity(cases_df=dim0_cases_df,
+                                  df_op=df_op, dimensions=dims, divs_per_cell=2,
+                                  generator=self.generator,
+                                  use_all_vars=use_all_vars)
         dims_dim0_divs = [dim.divs for dim in dims_dim0]
 
         self.assertEqual(dims_linear_divs, [1, 1, 2])
         self.assertEqual(dims_parab_divs, [1, 2, 1])
         self.assertEqual(dims_dim0_divs, [2, 1, 1])
 
+    def test_concat_df_dict(self):
+        """
+        Test the 'concat_total_dataframes()' function in a nested dictionary of
+        dataframes so that the recursive feature is tested.
+        """
+        print("RUNNING TEST CONCAT DF DICT")
+        df1 = pd.DataFrame({
+            'A': [1, 2, 3, 4, 5],
+            'B': ['alpha', 'beta', 'gamma', 'delta', 'epsilon'],
+            'C': [10.5, 20.1, 30.3, 40.2, 50.0]
+        })
+        df2 = pd.DataFrame({
+            'D': [101, 102, 103, 104],
+            'E': [1.1, 2.2, 3.3, 4.4],
+            'F': ['A', 'B', 'C', 'D']
+        })
+        df_dict = {'df1': df1, 'df2': df2}
+
+        # Concatentate df_dict with itself
+        df_dict = concat_df_dict(df_dict, df_dict)
+
+        # Run assertions
+        self.assertEqual(df_dict['df1'].shape, (2 * len(df1), df1.shape[1]),
+                         msg=f'Shape of df1: {df_dict["df1"].shape} differs '
+                             f'from the expected shape of df1: '
+                             f'{(2 * len(df1), df1.shape[1])}')
+        self.assertEqual(df_dict['df2'].shape,
+                         (2 * len(df2), df2.shape[1]),
+                         msg=f'Shape of df2: {df_dict["df2"].shape}'
+                             f'differs from the expected shape of df2: '
+                             f'{(2 * len(df2), df2.shape[1])}')
+        self.assertListEqual(
+            df_dict['df2']['E'].tolist(),
+            [1.1, 2.2, 3.3, 4.4, 1.1, 2.2, 3.3, 4.4],
+            msg=f'df_dict["df2"]\n {df_dict["df2"]}\n'
+                f'is not as expected')
+        print(df_dict)

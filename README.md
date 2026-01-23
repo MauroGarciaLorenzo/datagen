@@ -1,10 +1,35 @@
-# Data Sets Generator Tool for Data-Driven Stability Studies of Large-Scale Power Systems
-This repository contains the code for the data generator tool proposed in [1]
+# Data generator
 
-## Installation
+#### Guide to set up datagen on HPC
 
-## Acknowledgment
-This work has been carried out within the project TED2021-130351B-C21 (HP2C-DT), funded by MICIU/AEI/10.13039/501100011033 and by the European Union NextGenerationEU/PRTR.
+Clone stability analysis repository, custom GridCal repository and datagen
+```bash
+git clone https://github.com/iraola/stability-analysis stability_analysis
+git clone https://github.com/iraola/new-GridCal.git GridCal
+git clone https://github.com/MauroGarciaLorenzo/hp2c-dt/ datagen
+```
 
-## References
-[1] 
+Move into datagen and checkout to the necessary branch and create "packages" dir
+```bash
+cd datagen
+git checkout 54...
+mkdir packages
+```
+
+Load python
+```bash
+module load python/3.12.1
+```
+
+Install packages separatelly into the "packages" directory to make sure we get the library versions we want instead of the ones imposed by GridCal
+```bash
+pip install -r requirements.txt --target=packages/
+pip install -e ../GridCal/src/GridCalEngine
+pip install -e ../stability_analysis
+```
+
+#### Preferred configuration for distributed performance
+
+- Use `@constraint(local=True)` for the main agent task
+- Tipology `tree` instead of `plain`
+- Use scheduler `orderstrict.FIFOts`

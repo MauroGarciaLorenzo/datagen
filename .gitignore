@@ -76,7 +76,7 @@ docs/_build/
 target/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+#.ipynb_checkpoints
 
 # IPython
 profile_default/
@@ -165,7 +165,19 @@ logs/
 *.jpg
 *.png
 *.csv
+results/
+!results.csv
 *.txt
 *.out
 *.err
 .enqueue_compss
+*.code-workspace
+**/results_*/*
+packages/
+**/tmp/*
+setup/tmp/*
+**/.DS_Store
+
+# Exceptions
+!figures/**/*.png
+!figures/**/*.csv

@@ -1,0 +1,524 @@
+import os
+
+import pandas as pd
+
+from datagen.src.dimensions import Cell
+from datagen.src.file_io import log_cell_info, save_df, save_execution_logs
+
+try:
+    from pycompss.api.task import task
+    from pycompss.api.api import compss_wait_on
+    from pycompss.api.constraint import constraint
+except ImportError:
+    from datagen.dummies.task import task
+    from datagen.dummies.api import compss_wait_on
+    from datagen.dummies.constraint import constraint
+
+from datagen.src.utils import check_dims
+from datagen.src.data_ops import flatten_list, concat_df_dict
+from datagen.src.viz import plot_stabilities, plot_divs
+from datagen.src.grid import gen_grid
+from datagen.src.sensitivity_analysis import sensitivity
+from datagen.src.case_generation import gen_samples, gen_cases
+from datagen.src.evaluator import eval_entropy, eval_stability
+
+
+@constraint(is_local=True)
+@task(returns=1, priority=True)
+def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
+                 use_sensitivity, max_depth, sensitivity_divs, generator,
+                 feasible_rate, func_params, entropy_threshold, chunk_length,
+                 load_factor, delta_entropy_threshold, dst_dir=None, cell_name=""
+                 ):
+    """Explore every cell in the algorithm while its delta entropy is positive.
+    It receives a dataframe (cases_df) and an entropy from its parent, and
+    calculates own delta entropy.
+    If delta entropy is positive, the cell will subdivide itself according to
+    the divisions assigned to each dimension.
+    Otherwise, it will return the cases and logs taken until this point.
+
+
+    :param func: Objective function
+    :param n_samples: Number of samples to produce
+    :param parent_entropy: Entropy of the parent calculated from the cases that
+    fits into this cell's space
+    :param depth: Recursivity depth
+    :param ax: Plottable object
+    :param dimensions: Cell dimensions
+    :param use_sensitivity: Boolean indicating whether sensitivity analysis is
+    used or not
+    :param max_depth: Maximum recursivity depth (it won't subdivide itself if
+    exceeded)
+    :param dims_heritage_df: Inherited independent_dims dataframe
+    :param sensitivity_divs: Variable containing the number of divisions for
+    each cell at sensitivity analysis
+    :param generator: Numpy generator for random values
+    :return children_total: List of children dimensions, entropy,
+    delta_entropy and depth
+    :param func_params: Func params to pass to the objective function
+    :param feasible_rate: Minimum rate of feasible cases to continue dividing the cell
+    :param entropy_threshold: Minimum entropy to keep exploring the cell
+    (create new children)
+    :param delta_entropy_threshold: Minimum delta entropy to keep exploring the
+    cell
+    :param chunk_length: Maximum number of calls to eval_stability that will
+    be executed simultaneously. Every chunk tasks, there will be a write to
+    memory of the current cases, dims and dataframes.
+    :param dst_dir: Path where the results will be stored. If the given path
+    already have expored cells, these cells will be skipped.
+    """
+
+    if not cell_name:
+        cell_name = "0"
+    print(f"Entering cell {cell_name}")
+    stabilities = []
+    feasible_cases = 0
+    total_dataframes = {}
+
+    # If cell is already explored, skip computation and get csvs from disk
+    if (os.path.exists(dst_dir) and
+            any(cell_name in f for f in os.listdir(dst_dir))):
+        message = f"Skipping cell {cell_name}"
+        print(message)
+        print(message, flush=True)
+
+        # Load mandatory dataframes
+        cases_df = pd.read_csv(
+            os.path.join(dst_dir, f"cases_df_{cell_name}.csv"))
+        dims_df = pd.read_csv(
+            os.path.join(dst_dir, f"dims_df_{cell_name}.csv"))
+
+        stabilities = cases_df["Stability"]
+        for stability in stabilities:
+            if stability >= 0:
+                feasible_cases += 1
+
+        # Find all files named '{df_name}_{cell_name}.csv' that aren't
+        # cases_df or dims_df.
+        files_in_dir = os.listdir(dst_dir)
+
+        # Define the prefixes to exclude
+        exclude_prefixes = {f"cases_df_{cell_name}.csv",
+                            f"dims_df_{cell_name}.csv"}
+
+        # Iterate over all files in the directory
+        for filename in files_in_dir:
+            # Check if the filename belongs to the current cell and is a CSV file
+            if filename.endswith(
+                    f"_{cell_name}.csv") and filename not in exclude_prefixes:
+
+                df_path = os.path.join(dst_dir, filename)
+
+                # Get the dataframe name (e.g., 'df_op' from 'df_op_0.1.csv')
+                df_name = filename.removesuffix(f"_{cell_name}.csv")
+
+                try:
+                    # Load df into the dictionary
+                    total_dataframes[df_name] = pd.read_csv(df_path)
+                    pass
+                except Exception as e:
+                    print(f"Error loading {df_path}: {e}")
+
+    else:
+        # Generate samples (n_samples for each dimension)
+        samples_df = gen_samples(n_samples, dimensions, generator)
+        # Generate cases (n_cases (attribute of the class Dimension) for each dim)
+        cases_df, dims_df = gen_cases(samples_df, dimensions, generator,
+                                      load_factor)
+
+        cases_df['cell_name'] = cell_name
+        stabilities_chunk = []
+        output_dataframes_chunk = []
+        initial_index = 0
+        index = 0
+
+        # Evaluate stabilities
+        for _, case in cases_df.iterrows():
+            stability, output_dfs = eval_stability(
+                case=case,
+                f=func,
+                func_params=func_params,
+                dimensions=dimensions,
+                generator=generator
+            )
+
+            stabilities_chunk.append(stability)
+            output_dataframes_chunk.append(output_dfs)
+            index += 1
+
+            # Save dataframes on disk every chunk_length
+            if index % chunk_length == 0 or index == len(cases_df):
+                stabilities_chunk = compss_wait_on(stabilities_chunk)
+                stabilities.extend(stabilities_chunk)
+                output_dataframes_chunk = compss_wait_on(output_dataframes_chunk)
+
+                # Update feasible cases
+                for stability in stabilities_chunk:
+                    if stability >= 0:
+                        feasible_cases += 1
+
+                # Assign chunk results back to cases_df
+                cases_df.loc[initial_index:index - 1,
+                "Stability"] = stabilities_chunk
+
+                # Save cases_df incrementally
+                save_df(cases_df.iloc[initial_index:index], dst_dir, cell_name,
+                        "cases_df")
+
+                # Build and save total_dataframes incrementally
+                total_dataframes = None
+                for output_dfs in output_dataframes_chunk:
+                    if total_dataframes:
+                        total_dataframes = concat_df_dict(total_dataframes,
+                                                          output_dfs)
+                    else:
+                        total_dataframes = output_dfs
+
+                # If there are extra dataframes (apart from cases and dims),
+                # concatenate and save on disk
+                if total_dataframes:
+                    labels_to_remove = []
+                    for label, df in total_dataframes.items():
+                        if df is not None and type(df) is not pd.DataFrame:
+                            labels_to_remove.append(label)
+                    for label in labels_to_remove:
+                        total_dataframes.pop(label)
+
+                    for df_name, df in total_dataframes.items():
+                        save_df(df, dst_dir, cell_name, df_name)
+
+                # reset chunk buffers
+                initial_index = index
+                stabilities_chunk = []
+                output_dataframes_chunk = []
+
+        # dims_df is static, save once
+        save_df(dims_df, dst_dir, cell_name, "dims_df")
+
+    # Add rectangle to plot axes representing cell borders
+    if ax is not None and len(dimensions) == 2:
+        plot_stabilities(ax, cases_df, dims_df, dst_dir)
+
+    parent_entropy, delta_entropy = eval_entropy(stabilities, parent_entropy) #(cases_df, cases_heritage_df)
+
+    # Log cell info
+    total_cases = n_samples * dimensions[0].n_cases
+    message = f"Depth={depth}, Entropy={parent_entropy}, Delta_entropy={delta_entropy}"
+    log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_cases / total_cases,
+                  1, dst_dir)
+    print(message)
+
+    # Save execution logs on disk
+    children_info = [(dimensions, parent_entropy, delta_entropy, depth)]
+    save_execution_logs(children_info, dst_dir)
+
+    check_entropy = False
+    if delta_entropy > delta_entropy_threshold or parent_entropy > entropy_threshold:
+        check_entropy = True
+
+    # Finish recursivity if entropy decreases or cell become too small
+    if (not check_entropy or not check_dims(
+            dimensions) or depth >= max_depth or
+            feasible_cases / total_cases < feasible_rate):
+
+        print("Stopped cell:")
+        print(f"    Entropy: {parent_entropy}")
+        print(f"    Delta entropy: {delta_entropy}")
+        print(f"    Depth: {depth}")
+
+        log_cell_info(cell_name, depth, parent_entropy, delta_entropy,
+                      feasible_cases / total_cases,
+                      0, dst_dir)
+
+        return children_info
+    else:
+        # If use_sensitivity and there are few cases, get cases from parent
+        # (sensitivity needs several cases to work)
+        if use_sensitivity:
+            # df_op will be used by sensitivity if the execution is ACOPF
+            # Otherwise, it will only use cases_df and dims_df
+            df_op = pd.DataFrame()
+            use_all_vars = True
+            # If not ACOPF, -100 cases, it won't get df_op (controlled by
+            # get_filtered_df_op)
+            # If not ACOPF, +100 cases, df_op empty
+            # If ACOPF, -100 cases, get_filtered_df_op
+            # If ACOPF, +100 cases, elif
+            if total_cases < 100:
+                cell = Cell(dimensions)
+                cases_heritage_df, dims_heritage_df = get_parent_samples(
+                    dst_dir, cell_name)
+
+                cases_heritage_df, dims_heritage_df = get_children_samples(
+                    cases_heritage_df, cell, dims_heritage_df)
+                cases_df = pd.concat([cases_df, cases_heritage_df],
+                                     ignore_index=True)
+                df_op = get_filtered_df_op(cases_df, dst_dir, cell_name)
+
+            elif "df_op" in total_dataframes.keys():
+                df_op = total_dataframes["df_op"]
+                use_all_vars = False
+
+            dimensions = sensitivity(cases_df, df_op, dimensions, sensitivity_divs,
+                                     generator, use_all_vars=use_all_vars)
+        children_grid = gen_grid(dimensions)
+
+        if ax is not None and len(dimensions) == 2:
+            plot_divs(ax, children_grid, dst_dir)
+
+        # Recursive case returns children info
+        children_info = explore_grid(ax=ax, cases_df=cases_df, grid=children_grid,
+                                     depth=depth, dims_df=dims_df, func=func,
+                                     n_samples=n_samples,
+                                     use_sensitivity=use_sensitivity,
+                                     max_depth=max_depth, divs_per_cell=sensitivity_divs,
+                                     generator=generator, feasible_rate=feasible_rate,
+                                     func_params=func_params,
+                                     parent_entropy=parent_entropy,
+                                     parent_name=cell_name,
+                                     dst_dir=dst_dir, chunk_length=chunk_length,
+                                     entropy_threshold=entropy_threshold,
+                                     delta_entropy_threshold=delta_entropy_threshold,
+                                     load_factor=load_factor
+                                     )
+
+        return children_info
+
+
+def explore_grid(ax, cases_df, grid, depth, dims_df, func, n_samples,
+                 use_sensitivity, max_depth, divs_per_cell, generator,
+                 feasible_rate, func_params, parent_entropy, parent_name,
+                 dst_dir, entropy_threshold, delta_entropy_threshold,
+                 chunk_length, load_factor):
+    """
+    For a given grid (children grid) and cases taken, this function is in
+    charge of distributing those samples among those cells and, finally,
+    retrieving its results.
+
+    :param ax: Plottable object
+    :param cases_df: Concatenation of inherited cases and those produced by
+    the cell
+    :param grid: Children grid
+    :param depth: Recursivity depth
+    :param dims_df: Samples dataframe(one for each case)
+    :param func: Objective function
+    :param n_samples: Number of samples to produce
+    :param use_sensitivity: Boolean indicating whether sensitivity analysis is
+    used or not
+    :param max_depth: Maximum recursivity depth (it won't subdivide itself if
+    exceeded)
+    :param divs_per_cell: Number of resultant cells from each recursive call
+    :param generator: Numpy generator for random values
+    :param parent_entropy: Entropy of the parent cell
+    :param parent_name: Name of the parent cell
+    :return: Children parameters
+    """
+    children_info_all = []
+    i = 0
+
+    for children_cell in grid:
+        i += 1
+        cell_name = f"{parent_name}.{i}"
+
+        # Distribute samples among children
+        cases_children_df, dims_children_df = get_children_samples(
+            cases_df, children_cell, dims_df)
+
+        # Complete "Stability" column for non evaluated cases
+        if not cases_children_df.empty and "Stability" not in cases_children_df.columns:
+            parent_entropy, _ = eval_entropy(cases_children_df["Stability"], None)
+        else:
+            parent_entropy = None
+
+        # Get children_info from child cell
+        children_info = explore_cell(
+            func=func, n_samples=n_samples,
+            parent_entropy=parent_entropy, depth=depth + 1,
+            ax=ax, dimensions=children_cell.dimensions,
+            use_sensitivity=use_sensitivity, max_depth=max_depth,
+            sensitivity_divs=divs_per_cell, generator=generator,
+            feasible_rate=feasible_rate, func_params=func_params,
+            cell_name=cell_name, dst_dir=dst_dir,
+            entropy_threshold=entropy_threshold, chunk_length=chunk_length,
+            delta_entropy_threshold=delta_entropy_threshold,
+            load_factor=load_factor
+        )
+
+        children_info = compss_wait_on(children_info)
+        children_info_all.extend(children_info)
+
+    # Wait for all results
+    for i in range(len(children_info_all)):
+        result = children_info_all[i]
+        children_info_all[i] = compss_wait_on(result)
+
+    return children_info_all
+
+
+def get_filtered_df_op(cases_df, dst_dir, cell_name):
+    """
+    Loads, filters, and concatenates the 'df_op' files for the current cell
+    and all its parent cells (e.g., 0.1.2, 0.1, 0).
+    It filters rows based on 'cell_id' matching a 'case_id' in cases_df.
+
+    :param cases_df: The DataFrame containing the valid cases (must have 'case_id').
+    :param dst_dir: The destination directory where the output files are stored.
+    :param cell_name: The name of the current cell (e.g., '0.1.2').
+    :return: A single DataFrame containing all filtered 'df_op' rows, or an empty DataFrame.
+    """
+    if cases_df.empty or 'case_id' not in cases_df.columns:
+        print(
+            "cases_df is empty or missing 'case_id'. Cannot filter output files.")
+        return pd.DataFrame()
+
+    # List to collect all 'df_op' parts from the current cell and its parents
+    df_op_parts = []
+
+    valid_ids = set(cases_df['case_id'].unique())
+    df_name_to_load = 'df_op'
+
+    # Generate list of current and parent cell_names
+    # Example: '0.1.2' -> ['0', '0.1', '0.1.2']
+    parts = cell_name.split(".")
+    cell_names_to_load = [".".join(parts[:i + 1]) for i in range(len(parts))]
+
+    # Iterate over current and parent cases
+    for current_cell_name in cell_names_to_load:
+        print(
+            f"Searching for '{df_name_to_load}' in cell: {current_cell_name}")
+
+        # Construct the specific file path: df_op_{cell_name}.csv
+        df_path = os.path.join(dst_dir,
+                               f"{df_name_to_load}_{current_cell_name}.csv")
+
+        if os.path.exists(df_path):
+            try:
+                df_op_original = pd.read_csv(df_path)
+
+                # Check for valid cases in df_op (by case_id)
+                if not df_op_original.empty:
+                    df_op_filtered = df_op_original[
+                        df_op_original['case_id'].isin(valid_ids)
+                    ]
+
+                    # Append the filtered result
+                    if not df_op_filtered.empty:
+                        df_op_parts.append(df_op_filtered)
+                        print(
+                            f"Found and filtered '{df_name_to_load}' for parent {current_cell_name}. Rows added: {len(df_op_filtered)}")
+
+                elif not df_op_original.empty:
+                    print(
+                        f"Output DF '{df_name_to_load}' for cell {current_cell_name} found but missing 'cell_id' column. Skipped.")
+
+            except Exception as e:
+                print(f"Error processing {df_path}: {e}")
+        else:
+            print(f"File not found: {df_path}")
+
+    # Concatenate all collected parts
+    if df_op_parts:
+        # Concatenate all DataFrames in the list into one
+        return pd.concat(df_op_parts, ignore_index=True)
+    else:
+        # Return an empty DataFrame if no matching rows were found
+        return pd.DataFrame()
+
+
+def get_children_samples(cases_heritage_df, cell, dims_heritage_df):
+    dims = []
+    cases = []
+    for idx, row in dims_heritage_df.iterrows():
+        case_id = row["case_id"]
+        # Cell dimensions don't include g_for and g_fol, but dims_df do
+        if 'p_g_for' in row.index and 'p_g_fol' in row.index:
+            if not isinstance(row, pd.Series):
+                message = "Row is not a pd.Series object"
+                print(message)
+                raise TypeError(message)
+            columns_to_drop = ['p_g_for', 'p_g_fol', 'p_load']
+            q_columns = row.filter(regex=r'^q_')
+            columns_to_drop.extend(q_columns.index)
+            row = row.drop(labels=columns_to_drop)
+
+        # Check if every dimension in row is within cell borders
+        cell_independent_dims = [dim for dim in cell.dimensions
+                                 if dim.independent_dimension]
+        cell_borders = {
+            cell_independent_dims[t].label: cell_independent_dims[t].borders
+            for t in range(len(cell_independent_dims))
+        }
+        # The case belongs to a cell if every value of the sample matches its
+        # dimension
+        belongs = all(cell_borders[label][0] <= value <= cell_borders[label][1]
+                      for label, value in row.items()
+                      if label in cell_borders)
+
+        # Does not belong if the sample is over the lower boundary if the
+        # sample is the first or the last
+        if all(
+                value == cell_borders[label][0]
+                for label, value in row.items()
+                if label in cell_borders
+        ) and idx != 0:
+            belongs = False
+        if all(
+                value == cell_borders[label][1]
+                for label, value in row.items()
+                if label in cell_borders
+        ) and idx != len(dims_heritage_df) - 1:
+            belongs = False
+
+        # If belongs, append to children cell's dfs
+        if belongs:
+            matching_case = cases_heritage_df[
+                cases_heritage_df["case_id"] == case_id]
+            matching_dim = dims_heritage_df[
+                dims_heritage_df["case_id"] == case_id]
+            cases.append(matching_case)
+            dims.append(matching_dim)
+
+    if cases and dims:
+        cases_df = pd.concat(cases, axis=0, ignore_index=True)
+        dims_df = pd.concat(dims, axis=0, ignore_index=True)
+    else:
+        cases_df = pd.DataFrame()
+        dims_df = pd.DataFrame()
+    return cases_df, dims_df
+
+
+def get_parent_samples(dst_dir, cell_name):
+    """
+    Retrieve parent cases_df and dims_df CSVs for a given cell_name,
+    and return them as concatenated pandas DataFrames. Checks for cell_names
+    matching the prefixes of cell_name.
+
+    Example: if cell_name = "0.1.4.2",
+      -> combines [cases_df_0.1.4.csv, cases_df_0.1.csv, cases_df_0.csv]
+         into one DataFrame
+      -> combines [dims_df_0.1.4.csv, dims_df_0.1.csv, dims_df_0.csv]
+         into another DataFrame
+    """
+    parts = cell_name.split(".")
+    parent_names = [".".join(parts[:i]) for i in range(len(parts)-1, 0, -1)]
+
+    cases_dfs, dims_dfs = [], []
+
+    for parent in parent_names:
+        cases_path = os.path.join(dst_dir, f"cases_df_{parent}.csv")
+        dims_path  = os.path.join(dst_dir, f"dims_df_{parent}.csv")
+
+        if os.path.exists(cases_path):
+            cases_dfs.append(pd.read_csv(cases_path))
+        else:
+            print(f"Missing: {cases_path}")
+
+        if os.path.exists(dims_path):
+            dims_dfs.append(pd.read_csv(dims_path))
+        else:
+            print(f"Missing: {dims_path}")
+
+    cases_df = pd.concat(cases_dfs, ignore_index=True) if cases_dfs else pd.DataFrame()
+    dims_df  = pd.concat(dims_dfs, ignore_index=True) if dims_dfs else pd.DataFrame()
+
+    return cases_df, dims_df

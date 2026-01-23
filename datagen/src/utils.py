@@ -19,6 +19,9 @@ list, which is useful for processing the list of logs generated during the
 exploration.
 """
 import os
+import uuid
+
+import pandas as pd
 
 
 def clean_dir(directory):
@@ -32,17 +35,6 @@ def clean_dir(directory):
         os.makedirs(directory, exist_ok=True)
 
 
-def get_dimension(label, dimensions):
-    if label == "g_for" or label == "g_fol":
-        dim = next(
-            (d for d in dimensions
-             if d.label == "p_cig"), None)
-    else:
-        dim = next((d for d in dimensions
-                    if d.label == label), None)
-    return dim
-
-
 def check_dims(dimensions):
     """This method checks if the size of every dimension is smaller than the
     tolerance declared.
@@ -51,39 +43,46 @@ def check_dims(dimensions):
     :return: True if tolerance is bigger than this difference, false otherwise
     """
     for d in dimensions:
-        if (d.borders[1] - d.borders[0]) < d.tolerance:
-            return False
+        if d.independent_dimension:
+            if (d.borders[1] - d.borders[0]) < d.tolerance:
+                return False
     return True
 
 
-def flatten_list(data):
-    """This method extracts the values of the list given, obtaining one element
-     for each cell.
+def get_case_results(T_EIG, d_grid):
+    df_op = pd.DataFrame()
 
-    :param data: list of logs of the children cells
-    :return: flattened list
-    """
-    flattened_list = []
-    for item in data:
-        if isinstance(item, list):
-            flattened_list.extend(flatten_list(item))
-        else:
-            flattened_list.append(item)
-    return flattened_list
+    T_buses = d_grid['T_buses']
+    for i in T_buses.index:
+        bus = T_buses.loc[i, 'bus']
+        df_op.loc[0, 'V' + str(bus)] = T_buses.loc[i, 'Vm']
+        df_op.loc[0, 'theta' + str(bus)] = T_buses.loc[i, 'theta']
+
+    T_gens = d_grid['T_gen']
+    for i in T_gens.index:
+        col_name = T_gens.loc[i, 'element'] + str(T_gens.loc[i, 'bus'])
+        for var in ['P', 'Q', 'Sn']:
+            df_op.loc[0, var + '_' + col_name] = T_gens.loc[i, var]
+
+    T_load = d_grid['T_load']
+    for i in T_load.index:
+        bus = T_load.loc[i, 'bus']
+        df_op.loc[0, 'PL' + str(bus)] = T_load.loc[i, 'P']
+        df_op.loc[0, 'QL' + str(bus)] = T_load.loc[i, 'Q']
+
+    # add control parameters
+
+    T_EIG = T_EIG.set_index('mode')
+    T_EIG = T_EIG.T
+    df_real = T_EIG.loc[['real']].reset_index(drop=True)
+    df_imag = T_EIG.loc[['imag']].reset_index(drop=True)
+    df_freq = T_EIG.loc[['freq']].reset_index(drop=True)
+    df_damp = T_EIG.loc[['damp']].reset_index(drop=True)
+
+    return df_op, df_real, df_imag, df_freq, df_damp
 
 
-def save_results(cases_df, dims_df, execution_logs):
-    result_dir = "results"
-    cases_df.to_csv(os.path.join(result_dir, "cases_df.csv"), index=False)
-
-    dims_df.to_csv(os.path.join(result_dir, "dims_df.csv"), index=False)
-
-    with open(os.path.join(result_dir, "execution_logs.txt"), "w") as log_file:
-        for log_entry in execution_logs:
-            log_file.write("Dimensions:\n")
-            for dim in log_entry[0]:
-                log_file.write(f"{dim}\n")
-            log_file.write(f"Entropy: {log_entry[1]}\n")
-            log_file.write(f"Delta Entropy: {log_entry[2]}\n")
-            log_file.write(f"Depth: {log_entry[3]}\n")
-            log_file.write("\n")
+def generate_unique_id(n):
+    """ Return a column dataframe with n unique ids."""
+    id_list = [str(uuid.uuid4()) for _ in range(n)]
+    return pd.DataFrame(id_list, columns=["case_id"])

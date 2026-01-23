@@ -22,6 +22,8 @@ function to plot sample data.
 import os
 import time
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
 from matplotlib import pyplot as plt, patches
 
 
@@ -47,19 +49,22 @@ def plot_importances_and_divisions(dimensions, importances):
     plt.show()
 
 
-def plot_stabilities(ax, cases_df, dims_df):
+def plot_stabilities(ax, cases_df, dims_df, dst_dir):
     time.sleep(1)
     for idx, dim_row in dims_df.iterrows():
         color = 'green' if cases_df.loc[idx, 'Stability'] == 1 else 'red'
-        ax.scatter(dim_row[0], dim_row[1], color=color)
+        ax.scatter(dim_row.iloc[0], dim_row.iloc[1], s=1.5, color=color,
+                   linewidth=0.5, edgecolors='black')
 
-    dir_path = "results/figures"
+    dir_path = os.path.join(dst_dir, "figures")
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path)
     file_name = format(time.time(), '.0f') + ".png"
     path = os.path.join(dir_path, file_name)
     ax.figure.savefig(fname=path, dpi=300)
 
 
-def plot_divs(ax, children_grid):
+def plot_divs(ax, children_grid, dst_dir):
     time.sleep(1)
     for cell in children_grid:
         dim0 = (cell.dimensions[0].borders[0], cell.dimensions[0].borders[1])
@@ -68,16 +73,19 @@ def plot_divs(ax, children_grid):
                                  dim1[1] - dim1[0], linewidth=1,
                                  edgecolor='black', facecolor='none')
         ax.add_patch(cell)
-    dir_path = "results/figures"
+    dir_path = os.path.join(dst_dir, "figures")
+    if not os.path.isdir(dir_path):
+        os.makedirs(dir_path)
     file_name = format(time.time(), '.0f') + ".png"
     path = os.path.join(dir_path, file_name)
     ax.figure.savefig(fname=path, dpi=300)
 
 
-def boxplot(cases_df):
+def boxplot(cases_df, dst_dir):
     labels = list(set(
         col.rsplit('_Var')[0] for col in cases_df.columns if '_Var' in col))
     dims = {}
+    dir_path = os.path.join(dst_dir, "figures")
 
     for label in labels:
         matching_columns = cases_df.filter(regex=f'^{label}_', axis=1)
@@ -90,58 +98,40 @@ def boxplot(cases_df):
         ax.set_title(dim)
         labels = [str(i) for i in range(variables.shape[1])]
         ax.set_xticklabels(labels)
-        dir_path = "results/figures"
+
         file_name = "boxplot_" + dim + ".png"
         path = os.path.join(dir_path, file_name)
         plt.savefig(fname=path, dpi=300)
 
 
-def print_grid(grid):
-    """Shows each cell's dimensions
-
-    :param grid: list of cells
-    """
-    print("")
-    for i in range(len(grid)):
-        print("------", "casilla", i, "------")
-        print("samples casilla", grid[i].n_samples)
-        for j in grid[i].dimensions:
-            print("        variables:", j.variables)
-            print("        cases", j.n_cases)
-            print("        divisiones", j.divs)
-            print("        limites", j.borders)
-            print("")
-        print("")
-        print("")
-
-
-def print_results(execution_logs, cases_df):
+def print_results(execution_logs):
     """Shows the dataframe obtained by the application and the logs for each
     cell: dimensions, entropy, delta entropy and depth
 
     :param execution_logs: dimensions, entropy, delta entropy and depth of each
                         cell.
-    :param cases_df: dataframe containing every case evaluated by the program
-                and each evaluation (stability)
     """
     pd.set_option('display.max_rows', 50)
     pd.set_option('display.max_columns', 20)
     pd.set_option('display.width', None)
     pd.set_option('display.max_colwidth', None)
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
     print("")
     print("")
-    print("samples-stability:")
-    print(cases_df)
+    print(f"number of cells: {len(execution_logs)}" )
     print("")
-    print("number of cells: ", len(execution_logs))
+
     for r in execution_logs:
-        #print("dimensions: ", r[0])
-        print("entropy: ", r[1])
-        print("delta entropy: ", r[2])
-        print("depth: ", r[3])
+        print(f"Dimensions: {r[0]}")
+        print(f"Entropy: {r[1]}")
+        print(f"Delta entropy: {r[2]}")
+        print(f"Depth: {r[3]}")
         print("")
         print("")
+    print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
 
 
 def plot_sample(ax, x, y, z):
     ax.scatter(x, y, z)
+
+
