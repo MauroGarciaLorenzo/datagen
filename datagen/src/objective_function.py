@@ -11,7 +11,7 @@ from .utils import get_case_results
 from stability_analysis.operating_point_from_datagenerator import datagen_OP
 from stability_analysis.modify_GridCal_grid import assign_Generators_to_grid,assign_PQ_Loads_to_grid, assign_SlackBus_to_grid
 from stability_analysis.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
-from stability_analysis.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
+from stability_analysis.preprocess import parameters
 from stability_analysis.state_space import generate_NET, build_ss, generate_elements
 from stability_analysis.analysis import small_signal
 
@@ -45,13 +45,6 @@ def complex_2d_shape(x, y):
     z = (np.sin(x * np.pi) * np.cos(y * np.pi)
          + np.sin(3 * x) + np.cos(2 * y) + np.sin(x * y))
     return z
-
-from stability_analysis.operating_point_from_datagenerator import datagen_OP
-from stability_analysis.modify_GridCal_grid import assign_StaticGen_to_grid,assign_PQ_Loads_to_grid
-from stability_analysis.powerflow import GridCal_powerflow, process_powerflow, slack_bus, fill_d_grid_after_powerflow
-from stability_analysis.preprocess import preprocess_data, read_data, process_raw, parameters,read_op_data_excel, admittance_matrix
-from stability_analysis.state_space import generate_NET, build_ss, generate_elements
-from stability_analysis.analysis import small_signal
 
 # file where objective function is declared (dummy test)
 def dummy(case, **kwargs):

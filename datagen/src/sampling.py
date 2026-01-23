@@ -33,7 +33,7 @@ except ImportError:
 
 
 
-def generate_columns(label,dim):
+def generate_columns(dim):
     """Assigns names for every variable in a dimension.
 
     :param dim: Involved dimension
