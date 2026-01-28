@@ -29,6 +29,7 @@ pip install -r requirements.txt --target=packages/
 pip install -e ../GridCal/src/GridCalEngine
 pip install -e ../stability_analysis
 ```
+Run the code run_datagen_ACOPF.py importing the .yaml file with the desired setup.
 
 #### Preferred configuration for distributed performance on HPC
 
