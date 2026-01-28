@@ -2,7 +2,7 @@
 
 This repository provides tools to generate datasets for small-signal stability analysis using the method proposed in [1]. 
 
-## Guide to set up the data generation tool on HPC
+## Guide to set up the data generation tool
 
 Clone stability analysis repository, custom GridCal repository and datagen
 ```bash
@@ -14,7 +14,7 @@ git clone https://github.com/MauroGarciaLorenzo/datagen
 Move into datagen and checkout to the necessary branch and create "packages" dir
 ```bash
 cd datagen
-git checkout 54...
+git checkout store-dataframes-on-disk
 mkdir packages
 ```
 
@@ -23,14 +23,14 @@ Load python
 module load python/3.12.1
 ```
 
-Install packages separatelly into the "packages" directory to make sure we get the library versions we want instead of the ones imposed by GridCal
+Install packages separately into the "packages" directory to make sure we get the library versions we want instead of the ones imposed by GridCal
 ```bash
 pip install -r requirements.txt --target=packages/
 pip install -e ../GridCal/src/GridCalEngine
 pip install -e ../stability_analysis
 ```
 
-#### Preferred configuration for distributed performance
+#### Preferred configuration for distributed performance on HPC
 
 - Use `@constraint(local=True)` for the main agent task
 - Tipology `tree` instead of `plain`
