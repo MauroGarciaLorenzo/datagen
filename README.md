@@ -8,7 +8,7 @@ Clone stability analysis repository, custom GridCal repository and datagen
 ```bash
 git clone https://github.com/iraola/stability-analysis stability_analysis
 git clone https://github.com/iraola/new-GridCal.git GridCal
-git clone https://github.com/MauroGarciaLorenzo/hp2c-dt/ datagen
+git clone https://github.com/MauroGarciaLorenzo/datagen
 ```
 
 Move into datagen and checkout to the necessary branch and create "packages" dir
