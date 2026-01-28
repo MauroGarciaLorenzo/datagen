@@ -28,12 +28,11 @@ pip install -e ../GridCal/src/GridCalEngine
 pip install -e ../stability_analysis
 ```
 
-## Acknowledgment
-This work has been carried out within the project TED2021-130351B-C21 (HP2C-DT), funded by MICIU/AEI/10.13039/501100011033 and by the European Union NextGenerationEU/PRTR.
-
-
 #### Preferred configuration for distributed performance
 
 - Use `@constraint(local=True)` for the main agent task
 - Tipology `tree` instead of `plain`
 - Use scheduler `orderstrict.FIFOts`
+
+## Acknowledgment
+This work has been carried out within the project TED2021-130351B-C21 (HP2C-DT), funded by MICIU/AEI/10.13039/501100011033 and by the European Union NextGenerationEU/PRTR.
