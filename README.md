@@ -1,6 +1,8 @@
-# Data generator
+# Data Generation for Stability Studies of Power Systems with High Penetration of Inverter-Based Resources
 
-#### Guide to set up datagen on HPC
+This repository provides tools to generate datasets for small-signal stability analysis using the method proposed in [1]. 
+
+## Guide to set up the data generation tool on HPC
 
 Clone stability analysis repository, custom GridCal repository and datagen
 ```bash
@@ -36,3 +38,6 @@ pip install -e ../stability_analysis
 
 ## Acknowledgment
 This work has been carried out within the project TED2021-130351B-C21 (HP2C-DT), funded by MICIU/AEI/10.13039/501100011033 and by the European Union NextGenerationEU/PRTR.
+
+## References
+[1] Rossi, F., Lorenzo, M. G., de Acevedo, E. I., Barriendos, E. M., Lacerda, V. A., Lordan-Gomis, F., Badia, Rosa & Prieto-Araujo, E. (2025). Data Generation for Stability Studies of Power Systems with High Penetration of Inverter-Based Resources. arXiv preprint arXiv:2512.06369.
