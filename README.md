@@ -7,7 +7,6 @@ This repository provides tools to generate datasets for small-signal stability a
 Clone stability analysis repository, custom GridCal repository and datagen
 ```bash
 git clone https://github.com/iraola/stability-analysis stability_analysis
-git clone https://github.com/iraola/new-GridCal.git GridCal
 git clone https://github.com/MauroGarciaLorenzo/datagen
 ```
 
