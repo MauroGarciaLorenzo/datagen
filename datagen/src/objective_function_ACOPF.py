@@ -541,16 +541,39 @@ def optimal_power_flow_scipy(case, **kwargs):
             bus.Va0 = 0
 
     assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
+    
+    for idx, load in enumerate(gridCal_grid.loads):  
+        gridCal_grid.buses[int(load.bus.code)-1].loads = load
 
     
-    ## scipy opf for IEEE 9bus
-    u_dict = {'p':[1,2], 'v':[0,1,2]}
-    y_dict = {'p':[0,1], 'v_m':[0,1,2,3,4,5,6,7,8], 'v_a':[0]}
-    OPF_prms = {'alpha':1e-4, 'beta':0, 'gamma':100, 'tol':1e-8, 'u':u_dict, 'y':y_dict, 'theta':1}
+
+    ## generators cost for IEEE 9 bus
+    #generator_cost_2 = np.array([1, 10, 1])/(nc.generator_data.installed_p**2)
     
+    # ## scipy opf for IEEE 9bus
+    # u_dict = {'p':[1,2], 'v':[0,1,2]}
+    # y_dict = {'p':[0,1], 'v_m':[0,1,2,3,4,5,6,7,8], 'v_a':[0]}
+    # OPF_prms = {'alpha':1e-4, 'beta':0, 'gamma':100, 'tol':1e-8, 'u':u_dict, 'y':y_dict, 'theta':1}
+    
+    
+    ## generators cost for IEEE 118 bus
+    generator_cost_2 = np.ones([len(gridCal_grid.generators)])/(np.array([gen.Snom for gen in gridCal_grid.generators])**2)
+    fix_conf_gfm_gfl= selected_module = next((d for d in dimensions if d.label == 'perc_g_for'), None ).values # returned if not found)
+    for idx in range(len(gridCal_grid.generators)):
+        if fix_conf_gfm_gfl[idx]==-1 and gridCal_grid.generators[idx].Snom>=1e3:
+            generator_cost_2[idx]*=10
+
+    u_dict = {'p':list(d_op['Generators'].query('BusNum != @slack_bus_num').index), 'v':list(np.arange(0,len(gridCal_grid.generators)))}
+    y_dict = {'p':list(d_op['Generators']['BusNum'].values-1), 'v_m':list(np.arange(0,len(gridCal_grid.buses))), 'v_a':list(np.arange(0,len(gridCal_grid.buses)))}
+    OPF_prms = {'alpha':1e-4, 'beta':0, 'gamma':1e5, 'tol':1e-6, 'u':u_dict, 'y':y_dict,
+                'theta':1, 'add constraint':False,
+                'b': [0.95, -0.2]*(len(y_dict['p'])) + [1.1, -0.9]*(len(y_dict['v_m']))+[0.95, -0.2]*(len(y_dict['p'])-1)  + [1.1, -0.9]*(len(u_dict['v'])),
+                'slack_gen_position': d_op['Generators'].query('BusNum == @slack_bus_num').index[0],
+                'generator_cost_2':generator_cost_2}               
+
     start = time.perf_counter()
     
-    opf_res, opf_sol_completa, opf, convergence = execute_opf(copy.deepcopy(gridCal_grid), OPF_prms)
+    opf_res, opf_sol_completa, opf, convergence, opf_n_iter = execute_opf(copy.deepcopy(gridCal_grid), OPF_prms)
     
     end = time.perf_counter()
     computing_times['time_powerflow'] = end - start

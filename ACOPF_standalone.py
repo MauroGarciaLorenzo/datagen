@@ -284,11 +284,11 @@ def main(working_dir='', path_data='', setup_path=''):
     stability_array = []
     output_dataframes_array = []
     for _, case in cases_df.iterrows():
-#        if _ == 5:
+        # if _ == 0:
         stability, output_dataframes = eval_stability(
             case=case,
             dimensions = dimensions,
-            f= feasible_power_flow_ACOPF, #optimal_power_flow_scipy,
+            f= optimal_power_flow_scipy, #feasible_power_flow_ACOPF, #
             func_params=func_params,
             generator=generator)
         stability_array.append(stability)
