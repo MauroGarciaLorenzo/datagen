@@ -4,10 +4,12 @@ import re
 import sys
 from datetime import datetime
 import pandas as pd
-import logging
 import csv
 import glob
-logger = logging.getLogger(__name__)
+try:
+    from datagen.src.constants import NAN_COLUMN_NAME
+except ImportError:
+    NAN_COLUMN_NAME = "undefined" # For imports outside the datagen package
 
 
 def write_dataframes_to_excel(df_dict, path, filename):
@@ -22,7 +24,7 @@ def write_dataframes_to_excel(df_dict, path, filename):
             if isinstance(df, pd.DataFrame) or isinstance(df, pd.Series):
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
             else:
-                logger.warning("Not writing %s. Not a DataFrame or Series",
+                print("Not writing %s. Not a DataFrame or Series",
                                sheet_name)
 
 
@@ -49,12 +51,17 @@ def save_df(dataframe, dst_dir, cell_name, var_name):
     """Append cases_df to dst_dir."""
     os.makedirs(dst_dir, exist_ok=True)
     csv_path = os.path.join(dst_dir, f"{var_name}_{cell_name}.csv")
-    dataframe.to_csv(
-        csv_path,
-        mode="a",  # append if file exists
-        header=not os.path.exists(csv_path),  # write header only if new file
-        index=False
-    )
+    file_exists = os.path.exists(csv_path)
+    with open(csv_path, "a", newline="", encoding="utf-8") as csvfile:
+        writer = csv.writer(csvfile)
+
+        # Write header only if file does not exist
+        if not file_exists:
+            writer.writerow(dataframe.columns)
+
+        # Write rows
+        for row in dataframe.itertuples(index=False, name=None):
+            writer.writerow(row)
 
 
 def save_results(execution_logs, dst_dir, execution_time):
@@ -72,16 +79,20 @@ def save_results(execution_logs, dst_dir, execution_time):
 
     execution_time_df.to_csv((os.path.join(dst_dir, "execution_time.csv")), index=False)
 
-    if execution_logs!=None:
-        with open(os.path.join(dst_dir, "execution_logs.txt"), "w") as log_file:
-            for log_entry in execution_logs:
-                log_file.write("Dimensions:\n")
-                for dim in log_entry[0]:
-                    log_file.write(f"{dim}\n")
-                log_file.write(f"Entropy: {log_entry[1]}\n")
-                log_file.write(f"Delta Entropy: {log_entry[2]}\n")
-                log_file.write(f"Depth: {log_entry[3]}\n")
-                log_file.write("\n")
+
+def save_execution_logs(children_info, dst_dir):
+    log_path = os.path.join(dst_dir, "execution_logs.txt")
+
+    with open(log_path, "a") as log_file:
+        for log_entry in children_info:
+            log_file.write("Dimensions:\n")
+            for dim in log_entry[0]:
+                log_file.write(f"{dim}\n")
+            log_file.write(f"Entropy: {log_entry[1]}\n")
+            log_file.write(f"Delta Entropy: {log_entry[2]}\n")
+            log_file.write(f"Depth: {log_entry[3]}\n")
+            log_file.write("\n")
+
 
 def init_dst_dir(calling_module, seed, n_cases, n_samples, max_depth,
                  working_dir, ax, dimensions):
@@ -133,12 +144,51 @@ def log_cell_info(cell_name, depth, parent_entropy, delta_entropy, feasible_rati
         writer.writerow([cell_name, depth, parent_entropy, delta_entropy, feasible_ratio, status])
 
 
-def join_and_cleanup_csvs(dst_dir):
+def clean_incomplete_cells(dst_dir):
+    """
+    Removes all CSVs for cells that do not have every required df_name.
+    Example filenames: cases_df_0.1.2.csv, samples_df_0.1.2.csv, ...
+    """
+    pattern = re.compile(r"(.+)_([0-9.]+)\.csv$")
+    csv_files = glob.glob(os.path.join(dst_dir, "*.csv"))
+
+    cell_to_dfs = {}   # {cell_name: set of df_names}
+    all_df_names = set()
+
+    for f in csv_files:
+        fname = os.path.basename(f)
+        m = pattern.match(fname)
+        if not m:
+            continue
+        df_name, cell_name = m.groups()
+        all_df_names.add(df_name)
+        cell_to_dfs.setdefault(cell_name, set()).add(df_name)
+
+    # Find incomplete cells
+    incomplete_cells = [cell for cell, dfs in cell_to_dfs.items()
+                        if dfs != all_df_names]
+
+    if len(cell_to_dfs.items()) == 1 and "0" in cell_to_dfs.keys():
+        incomplete_cells = ["0"]
+
+    # Delete their CSVs
+    for cell_name in incomplete_cells:
+        for df_name in all_df_names:
+            file_path = os.path.join(dst_dir, f"{df_name}_{cell_name}.csv")
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                print(f"[CLEAN] Deleted incomplete file: {file_path}", flush=True)
+
+
+
+def join_and_cleanup_csvs(dst_dir, cleanup_dir):
     """
     Joins all {var_name}_{cell_name}.csv files in dst_dir into one {var_name}.csv.
     Detects var_name correctly even if it contains underscores.
     Deletes the partial CSV files after joining.
     Adds a continuous line index to the final CSV.
+    Prefers a first CSV whose header does not contain 'undefined' or NAN_COLUMN_NAME.
+    Falls back to alphabetical order if none qualify.
     """
     all_csvs = glob.glob(os.path.join(dst_dir, "*.csv"))
 
@@ -148,65 +198,110 @@ def join_and_cleanup_csvs(dst_dir):
         if not fname.endswith(".csv"):
             continue
 
-        # Match pattern: {var_name}_{cell_name}.csv, where cell_name = numbers + dots
         m = re.match(r"(.+)_([0-9.]+)\.csv$", fname)
         if m:
             var_name = m.group(1)
             var_files.setdefault(var_name, []).append(f)
 
-    # Process each var_name group
     for var_name, files in var_files.items():
         print(f"Joining {len(files)} CSVs for {var_name}...")
 
+        sorted_files = sorted(files)
+        valid_first_file = None
+
+        # Prefer first file whose header has no undefined or NAN_COLUMN_NAME
+        for f in sorted_files:
+            try:
+                header = pd.read_csv(f, nrows=0).columns.tolist()
+                if not any(h in ("undefined", NAN_COLUMN_NAME) for h in header):
+                    valid_first_file = f
+                    break
+            except Exception:
+                continue
+
+        if valid_first_file:
+            sorted_files.remove(valid_first_file)
+            sorted_files.insert(0, valid_first_file)
+
         out_path = os.path.join(dst_dir, f"{var_name}.csv")
-        with open(out_path, "w", encoding="utf-8") as out:
-            first_file = True
-            for f in sorted(files):
-                with open(f, "r", encoding="utf-8") as infile:
-                    for i, line in enumerate(infile):
-                        # Write header only for the first file
-                        if i == 0 and not first_file:
-                            continue
-                        out.write(line)
-                first_file = False
+
+        with open(out_path, "w", newline="", encoding="utf-8") as out:
+            writer = None
+            reference_header = None
+
+            for idx, f in enumerate(sorted_files):
+                with open(f, "r", newline="", encoding="utf-8") as infile:
+                    reader = csv.DictReader(infile)
+
+                    if idx == 0:
+                        reference_header = reader.fieldnames
+                        writer = csv.DictWriter(out, fieldnames=reference_header)
+                        writer.writeheader()
+
+                    for row in reader:
+                        aligned_row = {col: row.get(col, "") for col in reference_header}
+                        writer.writerow(aligned_row)
 
         print(f"Saved: {out_path}")
 
-        # Delete partial CSVs
-        logger = logging.getLogger(__name__)
-        level = logger.getEffectiveLevel()
-        level_name = logging.getLevelName(level)
-        if level_name != "DEBUG":
+        if cleanup_dir:
             for f in files:
                 os.remove(f)
                 print(f"Deleted: {f}")
         else:
-            print("Logging level is DEBUG; keeping partial files")
+            print("cleanup_dir is false; keeping partial files")
 
 
 if __name__ == "__main__":
-    args = sys.argv
+    import argparse
 
-    if len(args) >= 2 and args[1] == "--merge-results":
-        if len(args) == 3:
-            # User provided results_dir
-            dst_dir = args[2]
-        else:
-            # No results_dir given, use last directory in ../../results
+    parser = argparse.ArgumentParser(
+        description="Merge and cleanup result CSVs.")
+
+    # 1. Operation Flag
+    parser.add_argument("--merge-results", action="store_true",
+                        help="Run the merge operation.")
+
+    # 2. Optional Directory Flag
+    parser.add_argument("--results_dir", type=str, default=None,
+                        help="Path to results directory (defaults to most recent in ../../results).")
+
+    # 3. Cleanup Flag
+    parser.add_argument("--cleanup", action="store_true",
+                        help="Remove original partial CSVs after merging.")
+
+    args = parser.parse_args()
+
+    if args.merge_results:
+        dst_dir = args.results_dir
+
+        # Logic to find the directory if not provided
+        if not dst_dir:
+            # Construct default path assuming this file is in datagen/src/
             results_root = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), "..", "..", "results")
             )
-            subdirs = [
-                os.path.join(results_root, d)
-                for d in os.listdir(results_root)
-                if os.path.isdir(os.path.join(results_root, d))
-            ]
-            if not subdirs:
-                print("No results directories found.")
+
+            if os.path.exists(results_root):
+                subdirs = [
+                    os.path.join(results_root, d)
+                    for d in os.listdir(results_root)
+                    if os.path.isdir(os.path.join(results_root, d))
+                ]
+                if not subdirs:
+                    print(f"No subdirectories found in {results_root}")
+                    sys.exit(1)
+
+                # Pick the most recently modified directory
+                dst_dir = max(subdirs, key=os.path.getmtime)
+            else:
+                print(f"Results root directory not found at: {results_root}")
                 sys.exit(1)
-            dst_dir = max(subdirs, key=os.path.getmtime)  # most recent dir
-        print("Using destination_dir: ", dst_dir)
-        join_and_cleanup_csvs(dst_dir=dst_dir)
+
+        print(f"Using destination_dir: {dst_dir}")
+        print(f"Cleanup enabled: {args.cleanup}")
+
+        join_and_cleanup_csvs(dst_dir=dst_dir, cleanup_dir=args.cleanup)
 
     else:
-        print("Usage: python file_io.py --merge-results [results_dir]")
+        parser.print_help()

@@ -1,7 +1,5 @@
 import os
 import sys
-import logging
-logger = logging.getLogger(__name__)
 import yaml
 from stability_analysis.data import get_data_path
 
@@ -12,12 +10,12 @@ def parse_setup_file(setup_path):
         current_directory = os.path.dirname(__file__)
         setup_path = os.path.join(current_directory,
                                   "../../setup/default_setup.yaml")
-        logger.warning(f"Setup file not specified. Using default setup file: "
+        print(f"Setup file not specified. Using default setup file: "
                 f"{setup_path}")
     else:
-        logger.info(f"Setup file: {setup_path}")
+        print(f"Setup file: {setup_path}")
     if not os.path.exists(setup_path):
-        logging.error(f"Setup file {setup_path} not found")
+        print(f"Setup file {setup_path} not found")
         raise FileNotFoundError(f"Setup file {setup_path} not found")
 
     # Load case parameters
@@ -52,28 +50,28 @@ def parse_args(argv):
                 setup_path = arg
         i += 1
     if not use_flag_args:
-        logger.info("Using arguments without flags")
+        print("Using arguments without flags")
 
     # Check paths
     if not working_dir:
         working_dir = ""
-        logger.warning(f"Working directory not specified. Using current directory: "
+        print(f"Working directory not specified. Using current directory: "
               f"{os.getcwd()}")
     else:
         if not os.path.exists(working_dir):
             message = f"Working directory {working_dir} not found"
-            logger.error(message)
+            print(message)
             raise FileNotFoundError(message)
         else:
-            logger.info("Working directory:", working_dir)
+            print("Working directory:", working_dir)
     if not path_data:
         path_data = get_data_path()
-        logger.warning(f"Path data not specified. Using default path: {path_data}")
+        print(f"Path data not specified. Using default path: {path_data}")
     else:
         if not os.path.exists(path_data):
             raise FileNotFoundError(f"Path data {path_data} not found")
         else:
-            logger.info("Path data:", path_data)
+            print("Path data:", path_data)
 
     return working_dir, path_data, setup_path
 
@@ -89,5 +87,5 @@ def load_yaml(content):
             # If not a file, try to interpret content as a YAML string
             return yaml.safe_load(content)
         except yaml.YAMLError as exc:
-            logger.error(f"Error parsing YAML content: {exc}")
+            print(f"Error parsing YAML content: {exc}")
             sys.exit(1)

@@ -31,7 +31,6 @@ except ImportError:
     from datagen.dummies.api import compss_wait_on
     from datagen.dummies.constraint import constraint
 
-from GridCalEngine.DataStructures.numerical_circuit import compile_numerical_circuit_at
 
 
 def generate_columns(dim):
@@ -52,6 +51,8 @@ def generate_columns(dim):
 
 
 def gen_voltage_profile(vmin,vmax,delta_v,d_raw_data,slack_bus,GridCal_grid,generator):
+    from GridCalEngine.DataStructures.numerical_circuit import \
+        compile_numerical_circuit_at
 
     # Find Index of slack bus
     i_slack_bus= d_raw_data['results_bus'].query('I==@slack_bus').index[0]

@@ -18,20 +18,19 @@ produce both a record of execution logs and a DataFrame containing specific
 cases and their associated stability."""
 import os
 import random
-import logging
-import sys
+import shutil
 import traceback
-
-
-logger = logging.getLogger(__name__)
 
 import numpy as np
 import pandas as pd
 import time
+import sys
+sys.stdout.reconfigure(line_buffering=True)
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
-from .file_io import save_results, init_dst_dir, join_and_cleanup_csvs
+from .file_io import save_results, init_dst_dir, join_and_cleanup_csvs, \
+    clean_incomplete_cells
 
 try:
     from pycompss.api.task import task
@@ -43,10 +42,10 @@ except ImportError:
 
 
 def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
-          seed=1, use_sensitivity=False, ax=None, divs_per_cell=2, plot_boxplot=False,
-          feasible_rate=0, func_params = {}, warmup=False, logging_level=logging.INFO,
-          working_dir=None, entropy_threshold=0.2, delta_entropy_threshold=0,
-          chunk_size=5000, computing_units=10):
+          seed=1, use_sensitivity=False, ax=None, sensitivity_divs=2, plot_boxplot=False,
+          feasible_rate=0, func_params = {}, warmup=False,
+          working_dir=None, entropy_threshold=0.05, delta_entropy_threshold=0,
+          chunk_length=5000, yaml_path=None, load_factor=0.9, cleanup_dir=True):
     """In this method we work with dimensions (main axes), which represent a
     list of variable_borders. For example, the value of each variable of a concrete
     dimension could represent the power supplied by a generator, while the
@@ -58,8 +57,9 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         -cases_df: dataframe containing each case and associated stability
                 taken during the execution.
 
-    :param seed:
-    :param divs_per_cell:
+    :param seed: Seed for creating random numbers (used at explore_cell)
+    :param sensitivity_divs: Variable containing the number of divisions for
+    each cell at sensitivity analysis
     :param dimensions: List of dimensions involved
     :param n_samples: Number of different values for each dimension
     :param rel_tolerance: Fraction of the dimension's range that will be used
@@ -78,13 +78,18 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     :param warmup: Boolean specifying if the node warmup has to be performed
     This will call a task for every accessible computing node and make the
     appropriate imports
-    :param logging_level: Desired logging level.
-    Possible values [logging.INFO|logging.WARNING|logging.ERROR],
-    default [logging.ERROR]
+    :param working_dir: Path where to take the data files. If not specified, it
+    is set to datagen root directory.
+    :param entropy_threshold: Minimum entropy to keep exploring the cell
+    (create new children)
+    :param delta_entropy_threshold: Minimum delta entropy to keep exploring the
+    cell
+    :param chunk_length: Maximum number of calls to eval_stability that will
+    be executed simultaneously. Every chunk tasks, there will be a write to
+    memory of the current cases, dims and dataframes.
+    :param dst_dir: Path where the results will be stored. If the given path
+    already have expored cells, these cells will be skipped.
     """
-
-    # Set up the logging level for the execution
-    setup_logger(logging_level, dst_dir)
 
     print(f"\n{''.join(['='] * 30)}\n"
                 f"Running application with the following parameters:"
@@ -98,12 +103,12 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         if key != "func_params" and key != "args_dict":
             print(f"{key}: {value}", flush=True)
     print(f"{''.join(['='] * 30)}\n", flush=True)
-    os.environ["COMPUTING_UNITS"] = str(computing_units)
 
     # Set working dir to datagen root directory
     if working_dir is None:
         working_dir = os.path.join(os.path.dirname(__file__), "..", "..")
 
+    # if dst_dir is provided, apply checkpointing. Otherwise, init dst_dir
     if dst_dir is None:
         calling_module = get_calling_module()
         n_cases = dimensions[0].n_cases
@@ -112,16 +117,22 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
 
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
-        logger.info(f"Created results directory: {os.path.abspath(dst_dir)}")
+        print(f"Created results directory: {os.path.abspath(dst_dir)}")
     else:
-        logger.info(
-            f"Using existing results directory: {os.path.abspath(dst_dir)}")
+        clean_incomplete_cells(dst_dir)
+        print(f"Using existing results directory: {os.path.abspath(dst_dir)}")
 
+    if not os.path.abspath(dst_dir):
+        datagen_root = os.path.join(os.path.dirname(__file__), "..", "..")
+        dst_dir = os.path.join(datagen_root, dst_dir)
 
     # Load imports in every executor before execution
-    logger.info(f"DESTINATION DIR: {dst_dir}")
+    print(f"DESTINATION DIR: {dst_dir}")
 
-    print(f"Current logging level: {logging.getLevelName(logging.getLogger().getEffectiveLevel())}")
+    #Write yaml_path
+    if yaml_path is not None:
+        shutil.copy(yaml_path, dst_dir)
+
 
     if warmup:
         for _ in range(200):
@@ -134,7 +145,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
     for dim in dimensions:
         if dim.label in dim_labels:
             message = f"The label {dim.label} is already in use"
-            logger.error(message)
+            print(message)
             raise Exception(message)
 
         dim_labels.add(dim.label)
@@ -155,11 +166,12 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         explore_cell(func=func, n_samples=n_samples, parent_entropy=None,
                      depth=0, ax=ax, dimensions=dimensions,
                      use_sensitivity=use_sensitivity, max_depth=max_depth,
-                     divs_per_cell=divs_per_cell, generator=generator,
+                     sensitivity_divs=sensitivity_divs, generator=generator,
                      feasible_rate=feasible_rate, func_params=func_params,
-                     dst_dir=dst_dir, chunk_size=chunk_size,
+                     dst_dir=dst_dir, chunk_length=chunk_length,
                      entropy_threshold=entropy_threshold,
-                     delta_entropy_threshold=delta_entropy_threshold))
+                     delta_entropy_threshold=delta_entropy_threshold,
+                     load_factor=load_factor))
 
     execution_logs = compss_wait_on(execution_logs)
 
@@ -168,35 +180,14 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
 
     print_results(execution_logs)
     save_results(execution_logs, dst_dir, time.time()-t0)
-    join_and_cleanup_csvs(dst_dir)
+    join_and_cleanup_csvs(dst_dir, cleanup_dir)
 
     if plot_boxplot:
         cases_df = pd.read_csv(f"{dst_dir}/cases_df_join.csv")
         boxplot(cases_df, dst_dir)
 
+    return execution_logs, dst_dir
 
-    return execution_logs
-
-
-def setup_logger(logging_level, dst_dir):
-    os.makedirs(dst_dir, exist_ok=True)
-    log_file = os.path.join(dst_dir, "log.txt")
-
-    logger = logging.getLogger()
-    logger.setLevel(logging_level)
-
-    logger.handlers.clear()
-
-    format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    # Stream handler (console)
-    stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setFormatter(logging.Formatter(format))
-    logger.addHandler(stream_handler)
-
-    # File handler
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setFormatter(logging.Formatter(format))
-    logger.addHandler(file_handler)
 
 @task(is_replicated=True)
 def warmup_nodes():
@@ -213,11 +204,3 @@ def get_calling_module():
         return os.path.basename(calling_frame.filename)
     else:
         return "unknown"
-
-def get_log_file_paths(logger=None):
-    logger = logger or logging.getLogger()
-    paths = []
-    for handler in logger.handlers:
-        if isinstance(handler, logging.FileHandler):
-            paths.append(handler.baseFilename)
-    return paths
