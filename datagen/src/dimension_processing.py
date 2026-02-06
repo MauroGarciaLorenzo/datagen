@@ -1,19 +1,17 @@
 import numpy as np
 import pandas as pd
-import logging
-logger = logging.getLogger(__name__)
 
 from datagen.src.sampling import generate_columns
 from datagen.src.dimensions import Dimension
 
-def process_dimension(samples_df, dim, perc_gfor, generator):
+def process_dimension(samples_df, dim, perc_gfor, generator, load_factor):
     if dim.label == "p_cig":
         if perc_gfor.values != None:
             return process_p_cig_dimension_fixed_conf(samples_df, dim, perc_gfor, generator)
         else:
             return process_p_cig_dimension(samples_df, dim, generator)
     elif dim.label == "p_load":
-        return process_p_load_dimension(samples_df, dim)
+        return process_p_load_dimension(samples_df, dim, load_factor)
     elif dim.label.startswith("tau"):
         return process_control_dimension(samples_df, dim)
     else:
@@ -125,7 +123,7 @@ def process_p_cig_dimension(samples_df, p_cig, generator):
     return cases_df, dims_df
 
 
-def process_p_load_dimension(samples_df, dim):
+def process_p_load_dimension(samples_df, dim, load_factor):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():

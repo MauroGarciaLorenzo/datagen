@@ -25,8 +25,6 @@ maintaining the integrity of the sum of variable_borders.
 """
 
 import numpy as np
-import logging
-logger = logging.getLogger(__name__)
 
 
 class Cell:
@@ -112,7 +110,7 @@ class Dimension:
         if not (max_val >= sample >= min_val):
             message = (f"Sample {sample} cannot be reached by dimension {self.label}, "
                        f"with variable borders {self.variable_borders}")
-            logger.error(message)
+            print(message, flush=True)
             raise ValueError(message)
 
         while len(cases) < self.n_cases and iters < iter_limit:
@@ -145,15 +143,16 @@ class Dimension:
             if self.borders[0] <= case_sum <= self.borders[1]:
                 cases.append(case)
             else:
-                logger.warning(
+                print(
                     f"Iteration {iters + 1}: (label {self.label}) Case sum {case_sum} out of dimension "
-                    f"borders {self.borders} in {case} for sample {sample}. Retrying...")
+                    f"borders {self.borders} in {case} for sample {sample}. Retrying...", flush=True)
             iters += 1
-        logger.info(f"Dim {self.label}: get_cases_normal ran {iters} iterations.")
+        print(f"Dim {self.label}: get_cases_normal ran {iters} iterations.", flush=True)
 
         while len(cases) < self.n_cases:
-            logger.warning(
-                f"Dim {self.label} - get_cases_normal exhausted iterations: {iters}. Adding NaN case.")
+            print(
+                f"Dim {self.label} - get_cases_normal exhausted iterations: {iters}. Adding NaN case.",
+                flush=True)
             cases.append([np.nan] * len(self.variable_borders))
 
         return cases
@@ -189,7 +188,7 @@ class Dimension:
         if not (max_val >= sample >= min_val):
             message = (f"Sample {sample} cannot be reached by dimension "
                        f"{self.label}, with variable_borders {self.variable_borders}")
-            logger.error(message)
+            print(message, flush=True)
             raise ValueError(message)
 
 
@@ -214,14 +213,14 @@ class Dimension:
                     case[i] = new_var
                     total_sum = sum(case)
             if iters_variables >= iter_limit_variables:
-                logger.warning(
+                print(
                     f"Sample {sample} couldn't be reached (total sum {total_sum}) in case {case}")
                 continue
             if np.isclose(total_sum, sample):
                 cases.append(case)
 
         if iters_cases >= iter_limit:
-            logger.warning("Extreme case: Iteration limit exceeded. Switching "
+            print("Extreme case: Iteration limit exceeded. Switching "
                            "to normal sampling.")
             return self.get_cases_normal(sample, generator)
 
