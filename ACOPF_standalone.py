@@ -32,7 +32,6 @@ import random
 from datetime import datetime
 import warnings
 
-from datagen import print_dict_as_yaml
 
 warnings.filterwarnings('ignore')
 
@@ -70,18 +69,14 @@ def main(working_dir='', path_data='', setup_path=''):
     loads_power_factor = setup["loads_power_factor"]
     generators_power_factor = setup["generators_power_factor"]
     n_samples = setup["n_samples"]
+    cleanup_dir = setup["cleanup_dir"]
     n_cases = setup["n_cases"]
     seed = setup["seed"]
     grid_name = setup["grid_name"]
-
-    # Print case configuration
-    print(f"\n{''.join(['='] * 30)}\n"
-                f"Running application with the following parameters:"
-                f"\n{''.join(['='] * 30)}")
-    print_dict_as_yaml(setup)
+    load_factor = 0.9
         
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
-    print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"))
+    print("COMPUTING_UNITS: ", os.environ.get("COMPUTING_UNITS"), flush=True)
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
     cu = os.environ.get("COMPUTING_UNITS")
 
@@ -256,7 +251,7 @@ def main(working_dir='', path_data='', setup_path=''):
     generator = np.random.default_rng(seed)
     samples_df = gen_samples(n_samples, dimensions, generator)
     # Generate cases (n_cases (attribute of the class Dimension) for each dim)
-    cases_df, dims_df = gen_cases(samples_df, dimensions, generator)
+    cases_df, dims_df = gen_cases(samples_df, dimensions, generator, load_factor)
 
     # %% RUN OBJECTIVE FUNCTION
     func_params = {"n_pf": n_pf, "d_raw_data": d_raw_data, "d_op": d_op,
@@ -317,8 +312,7 @@ def main(working_dir='', path_data='', setup_path=''):
                 if isinstance(v, pd.DataFrame):
                     value.to_csv(os.path.join(path_results, f"case_{k}.csv"))
                 else:
-                    logger.warning(f"Invalid nested format for output '{k}'")
-
+                    print(f"Invalid nested format for output '{k}'", flush=True)
 
             
 if __name__ == "__main__":
