@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 import time
 import sys
-sys.stdout.reconfigure(line_buffering=True)
+# sys.stdout.reconfigure(line_buffering=True)
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
