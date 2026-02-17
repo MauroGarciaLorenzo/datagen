@@ -49,9 +49,9 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 # In[7]:
 
 
-path = '../results/'
+path = 'D:/'#'../results/'
 
-dir_names=[dir_name for dir_name in os.listdir(path) if '_3663' in dir_name]# or '_3518' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+dir_names=[dir_name for dir_name in os.listdir(path) if '_fix_conf' in dir_name or '_5148' in dir_name] #_3663# or '_3518' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 results_dataframes_datasets=dict()
 dataset_ID_list=[]
 
