@@ -47,8 +47,13 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     # Remove the id and make sure case is fully numeric
     case_id = case["case_id"]
-    cell_name = case["cell_name"]
-    case = case.drop(["case_id","cell_name"])
+    try:
+        cell_name = case["cell_name"]
+        case = case.drop(["case_id","cell_name"])
+    except:
+        case = case.drop(["case_id"])
+        cell_name = None
+ 
     case = case.astype(float)
 
     # Initialize essential output dataframes to None
