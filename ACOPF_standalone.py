@@ -263,7 +263,7 @@ def main(working_dir='', path_data='', setup_path=''):
     stability_array = []
     output_dataframes_array = []
     for _, case in cases_df.iterrows():
-#        if _ == 5:
+        #if _ ==0 or _ == 55:
         stability, output_dataframes = eval_stability(
             case=case,
             f=feasible_power_flow_ACOPF,
@@ -318,7 +318,7 @@ def main(working_dir='', path_data='', setup_path=''):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
-        setup_path = "./setup/default_setup_9buses.yaml"
+        setup_path = "./setup/setup_test_118_fix_control.yaml"
     else:
         setup_path = args[1]
     main(setup_path=setup_path)
