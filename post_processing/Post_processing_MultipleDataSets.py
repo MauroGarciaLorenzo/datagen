@@ -49,13 +49,13 @@ plt.rcParams.update({"figure.figsize": [8, 4],
 # In[7]:
 
 
-path = '../results/'
+path = 'D:/'#'../results/'
 
-dir_names=[dir_name for dir_name in os.listdir(path) if '_4909' in dir_name]# or '_3518' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
+dir_names=[dir_name for dir_name in os.listdir(path) if '_2862' in dir_name]# or '_3518' in dir_name]# if dir_name.startswith('datagen') and 'zip' not in dir_name]#
 results_dataframes_datasets=dict()
 dataset_ID_list=[]
 
-df_op = 'case_df_op' #df_op
+df_op = 'df_op' #'case_df_op' #
 for dir_name in dir_names:
     path_results = os.path.join(path, dir_name)
 
@@ -293,13 +293,13 @@ for dataset_ID in dataset_ID_list:
 for dataset_ID in dataset_ID_list:
 
     fig, ax = plt.subplots()
-    ax.scatter(dimensions_caseid_unfeasible_DS[dataset_ID]['p_cig'], dimensions_caseid_unfeasible_DS[dataset_ID]['p_sg'],color='silver', label='Unfeasable OP')
+    #ax.scatter(dimensions_caseid_unfeasible_DS[dataset_ID]['p_cig'], dimensions_caseid_unfeasible_DS[dataset_ID]['p_sg'],color='silver', label='Unfeasable OP')
     ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_cig'], dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==0')['p_sg'], color='r',label='Unstable PF')
     ax.scatter(dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_cig'], dimensions_caseid_feasible_DS[dataset_ID].query('Stability ==1')['p_sg'], color='g', label='Stable PF')
     ax.set_xlabel('$P_{CIG}$ [MW]')
     ax.set_ylabel('$P_{SG}$ [MW]')
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-    ax.set_title('Data Set'+dataset_ID)
+    #ax.set_title('Data Set'+dataset_ID)
     fig.tight_layout()
 
 #%%
