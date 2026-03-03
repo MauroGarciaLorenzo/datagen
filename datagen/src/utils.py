@@ -86,3 +86,28 @@ def generate_unique_id(n):
     """ Return a column dataframe with n unique ids."""
     id_list = [str(uuid.uuid4()) for _ in range(n)]
     return pd.DataFrame(id_list, columns=["case_id"])
+
+def get_pf_results(d_opf):
+    df_op = pd.DataFrame()
+
+    T_buses = d_opf['pf_bus']
+    for i in T_buses.index:
+        bus = T_buses.loc[i, 'bus']
+        df_op.loc[0, 'V' + str(bus)] = T_buses.loc[i, 'Vm']
+        df_op.loc[0, 'theta' + str(bus)] = T_buses.loc[i, 'theta']
+
+    T_gens = d_opf['pf_gen']
+    for i in T_gens.index:
+        col_name = str(T_gens.loc[i, 'bus'])
+        for var in ['P', 'Q']:
+            df_op.loc[0, var + '_' + col_name] = T_gens.loc[i, var]
+
+    T_load = d_opf['pf_load']
+    for i in T_load.index:
+        bus = T_load.loc[i, 'bus']
+        df_op.loc[0, 'PL' + str(bus)] = T_load.loc[i, 'P']
+        df_op.loc[0, 'QL' + str(bus)] = T_load.loc[i, 'Q']
+        
+    df_op.loc[0,'converged'] = d_opf['info'].loc[0,'convergence']
+
+    return df_op

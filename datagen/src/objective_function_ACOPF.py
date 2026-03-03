@@ -21,6 +21,7 @@ import time
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 
 from .ssscofo import *
+from .utils import *
 
 def feasible_power_flow_ACOPF(case, **kwargs):
     """
@@ -151,16 +152,17 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     
     nc.generator_data.cost_0[:] = 0
     nc.generator_data.cost_1 [:] = 0 # np.array([0, 1, 0])
+    nc.generator_data.cost_2 [:] = 0 
     
     ## generators cost for IEEE 9 bus
     #nc.generator_data.cost_2 = np.array([1, 10, 1])/(nc.generator_data.installed_p**2)
   
     ## generators cost for IEEE 118 bus
-    nc.generator_data.cost_2 = np.ones([nc.ngen])/(nc.generator_data.installed_p**2)
-    fix_conf_gfm_gfl= selected_module = next((d for d in dimensions if d.label == 'perc_g_for'), None ).values # returned if not found)
-    for idx in range(nc.ngen):
-        if fix_conf_gfm_gfl[idx]==-1 and nc.generator_data.installed_p[idx]>=1e3:
-            nc.generator_data.cost_2[idx]*=10
+    # nc.generator_data.cost_2 = np.ones([nc.ngen])/(nc.generator_data.installed_p**2)
+    # fix_conf_gfm_gfl= selected_module = next((d for d in dimensions if d.label == 'perc_g_for'), None ).values # returned if not found)
+    # for idx in range(nc.ngen):
+    #     if fix_conf_gfm_gfl[idx]==-1 and nc.generator_data.installed_p[idx]>=1e3:
+    #         nc.generator_data.cost_2[idx]*=10
   
     #voltage_profile_list_complex = np.array([complex(v,0) for v in voltage_profile_list])
     #nc.bus_data.Vbus = voltage_profile_list_complex
@@ -175,25 +177,73 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
 
     # Update PF results and operation point of generator elements
-    d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
-    d_pf_original['info']=pd.DataFrame()
-    d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
+    # d_pf_original = process_powerflow.update_OP(gridCal_grid, pf_results, d_raw_data)
+    # d_pf_original['info']=pd.DataFrame()
+    # d_pf_original = additional_info_PF_results(d_pf_original, i_slack, pf_results, n_pf)
     
-    print('Converged:', pf_results.converged)
+    # print('Converged:', pf_results.converged)
 
-    if any(np.abs(pf_results.loading)>=1):
-        print('line overload')
-    else:
-        print('No overload')
-    if any(np.abs(pf_results.voltage)>1.1) or any(np.abs(pf_results.voltage)<0.9):
-        print(' over/under Voltage')
-    else:
-        print('No over/under voltage')
-    if any(d_pf_original['pf_gen']['cosphi']<0.95):
-        print('Power factor not fullfill')
-    else:
-        print('Power factor ok')
-     
+    # if any(np.abs(pf_results.loading)>=1):
+    #     print('line overload')
+    # else:
+    #     print('No overload')
+    # if any(np.abs(pf_results.voltage)>1.1) or any(np.abs(pf_results.voltage)<0.9):
+    #     print(' over/under Voltage')
+    # else:
+    #     print('No over/under voltage')
+    # if any(d_pf_original['pf_gen']['cosphi']<0.95):
+    #     print('Power factor not fullfill')
+    # else:
+    #     print('Power factor ok')
+    
+    #%%
+    d_opf_feas_results = ac_optimal_power_flow(nc= nc,
+                                          pf_options= pf_options,
+                                          opf_options= opf_options,
+                                          # debug: bool = False,
+                                          #use_autodiff = True,
+                                          pf_init= False,
+                                          Sbus_pf= pf_results.Sbus,
+                                          voltage_pf= pf_results.voltage,
+                                          plot_error= False,
+                                          min_Pg_dev = True)
+
+
+    end = time.perf_counter()
+    computing_times['time_powerflow'] = end - start
+
+    d_opf_feas = process_optimal_power_flow.update_OP(gridCal_grid, d_opf_feas_results, d_raw_data)
+    d_opf_feas['info']=pd.DataFrame()
+    d_opf_feas = additional_info_OPF_results(d_opf_feas,i_slack, n_pf, d_opf_feas_results)
+    
+    
+#%%
+    if not d_opf_feas_results.converged:
+        # Exit function
+        stability = -1
+        output_dataframes = postprocess_obj_func(
+            output_dataframes, case_id, cell_name, stability,
+            df_computing_times=computing_times)
+        return stability, output_dataframes
+    
+    
+    va_opf_feasible_buses=d_opf_feas['pf_bus']['theta']*np.pi/180
+    voltage_opf_feasible_complex = [complex(a,b) for a,b in zip(np.array(d_opf_feas['pf_bus']['Vm']*np.cos(va_opf_feasible_buses)),np.array(d_opf_feas['pf_bus']['Vm']*np.sin(va_opf_feasible_buses)))]
+    nc.bus_data.Vbus = np.array(voltage_opf_feasible_complex)
+    
+    nc.generator_data.p = np.array(d_opf_feas['pf_gen']['P']*gridCal_grid.Sbase)
+    nc.generator_data.v = np.array(d_opf_feas['pf_gen']['Vm'])
+    
+    pf_results = multi_island_pf_nc(nc=nc, options=pf_options)
+    
+    ## generators cost for IEEE 118 bus
+    nc.generator_data.cost_2 = np.ones([nc.ngen])/(nc.generator_data.installed_p**2)
+    fix_conf_gfm_gfl = next((d for d in dimensions if d.label == 'perc_g_for'), None ).values # returned if not found)
+    for idx in range(nc.ngen):
+        if fix_conf_gfm_gfl[idx]==-1 and nc.generator_data.installed_p[idx]>=1e3:
+            nc.generator_data.cost_2[idx]*=10
+  
+
     d_opf_results = ac_optimal_power_flow(nc= nc,
                                           pf_options= pf_options,
                                           opf_options= opf_options,
@@ -212,7 +262,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     d_opf = process_optimal_power_flow.update_OP(gridCal_grid, d_opf_results, d_raw_data)
     d_opf['info']=pd.DataFrame()
     d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
-#%%
+    
     if not d_opf_results.converged:
         # Exit function
         stability = -1
@@ -356,6 +406,10 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     output_dataframes['df_freq'] = df_freq
     output_dataframes['df_damp'] = df_damp
     output_dataframes['df_computing_times'] = computing_times
+    
+    df_pf_feas = get_pf_results(d_opf_feas)
+    output_dataframes['df_pf_feas'] = df_pf_feas
+
     # Do not include objects that are not dataframes and are not single-row
     # output_dataframes['d_grid'] = d_grid
     # output_dataframes['d_opf'] = d_opf

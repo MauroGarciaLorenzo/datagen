@@ -5,7 +5,8 @@ OUTPUT_DF_NAMES = [
     'df_imag',
     'df_freq',
     'df_damp',
-    'df_computing_times'
+    'df_computing_times',
+    'df_pf_feas'
 ]
 COMPUTING_TIME_NAMES = [
     'time_powerflow',
