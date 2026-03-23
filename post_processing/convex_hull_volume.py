@@ -326,6 +326,10 @@ for dataset_num, dataset_ID in enumerate(['_2862','_2732']):
                                      chv_dims, scaler_all, plot=plot_arg, axes=axes_arg, plot_params=plot_params_feas).volume
     
     
+    hulls_3d.to_excel('./chv_depth'+dataset_ID+'.xlsx')
+    
+    print('increase total space= ', (hulls_3d.loc[df_depth['Depth'].unique().max(), 'All_points']-hulls_3d.loc[0, 'All_points'])/hulls_3d.loc[0, 'All_points']*100)
+    print('increase feasible space= ', (hulls_3d.loc[df_depth['Depth'].unique().max(), 'Only_Feasible']-hulls_3d.loc[0, 'Only_Feasible'])/hulls_3d.loc[0, 'Only_Feasible']*100)
     axes[0].set_xlabel('$P_{SG}$ [p.u.]')
     axes[0].set_ylabel('$P_{IBR}$ [p.u.]')
     axes[1].set_xlabel('$\%P_{GFM}$')
@@ -518,6 +522,14 @@ total_demand['TrainingData_Sampled'] = results_dataframes['dims_df']['p_sg']*0.9
 total_demand['TrainingData'] = results_dataframes['case_df_op_feasible']['PD'].reset_index(drop=True)
 total_demand['YearlyData'] = load_hourly_1_year['PD'].reset_index(drop=True)
 total_demand.describe()
+
+fig, ax = plt.subplots()
+
+ax.boxplot([load_hourly_1_year['PD']/1e3, total_demand['TrainingData_Sampled']/1e3])
+ax.set_xticklabels(['1-year hourly demand', 'Sampled demand'])
+ax.set_ylabel('P [GW]')
+ax.grid()
+fig.tight_layout()
 
 #%%
 
