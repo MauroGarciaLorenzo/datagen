@@ -67,6 +67,9 @@ def plot_mesh(mesh_df, dimx, dimy, labelx, labely, ax = None):
     if ax == None:
         # Create the plot
         fig, ax = plt.subplots()
+        ax.set_xlabel(labelx)#"Total $P_{IBR}$ [MW]")
+        ax.set_ylabel(labely)#"Total $P_{SG}$ [MW]")
+        
     
     for i, group in grouped:
         #group = block_id_group[1]
@@ -78,18 +81,90 @@ def plot_mesh(mesh_df, dimx, dimy, labelx, labely, ax = None):
             y0, y1 = p_sg_row["lower"], p_sg_row["upper"]
     
             rect = patches.Rectangle((x0, y0), x1 - x0, y1 - y0,
-                                     linewidth=1, edgecolor='blue', facecolor='none', alpha=0.3)
+                                     linewidth=1, edgecolor='blue', facecolor='none', alpha=0.5)
             ax.add_patch(rect)
         except IndexError:
             # Skip blocks that are missing either p_cig or p_sg
             continue
     
-    ax.set_xlabel(labelx)#"Total $P_{IBR}$ [MW]")
-    ax.set_ylabel(labely)#"Total $P_{SG}$ [MW]")
     #ax.set_title("2D Mesh of p_cig vs p_sg")
     plt.grid(True)
-    ax.set_xlim(0.9*mesh_df.query('dimension == @dimx')['lower'].min(),1.1* mesh_df.query('dimension == @dimx')['upper'].max())    # Example range for p_cig
-    ax.set_ylim(0.9*mesh_df.query('dimension == @dimy')['lower'].min(), 1.1*mesh_df.query('dimension == @dimy')['upper'].max())   # Example range for p_sg
+    if dimx=='perc_g_for':
+        ax.set_xlim(-10,1.1* mesh_df.query('dimension == @dimx')['upper'].max())    # Example range for p_cig
+        ax.set_ylim(0.9*mesh_df.query('dimension == @dimy')['lower'].min(), 1.1*mesh_df.query('dimension == @dimy')['upper'].max())   # Example range for p_sg
+    elif dimy=='perc_g_for':
+        ax.set_xlim(0.9*mesh_df.query('dimension == @dimx')['lower'].min(),1.1* mesh_df.query('dimension == @dimx')['upper'].max())    # Example range for p_cig
+        ax.set_ylim(-10, 1.1*mesh_df.query('dimension == @dimy')['upper'].max())   # Example range for p_sg
+    else:
+         ax.set_xlim(0.9*mesh_df.query('dimension == @dimx')['lower'].min(),1.1* mesh_df.query('dimension == @dimx')['upper'].max())    # Example range for p_cig
+         ax.set_ylim(0.9*mesh_df.query('dimension == @dimy')['lower'].min(), 1.1*mesh_df.query('dimension == @dimy')['upper'].max())   # Example range for p_sg
+    
+   
     plt.tight_layout()
 
+        
     return ax
+
+from scipy.stats import normaltest
+from scipy.stats import skew, kurtosis
+
+def calculate_skewness(df):
+    skewness = pd.DataFrame(columns=['all_points','stable_points','unstable_points'])
+    skewness['all_points']  = df.drop(['Stability'],axis=1).apply(skew)
+    skewness['stable_points']  = df.query('Stability == 1').drop(['Stability'],axis=1).apply(skew)
+    skewness['unstable_points']  = df.query('Stability == 0').drop(['Stability'],axis=1).apply(skew)
+    return skewness
+
+def calculate_kurt(df):
+    kurtosis_df = pd.DataFrame(columns=['all_points','stable_points','unstable_points'])
+    kurtosis_df['all_points']  = df.drop(['Stability'],axis=1).apply(kurtosis)
+    kurtosis_df['stable_points']  = df.query('Stability == 1').drop(['Stability'],axis=1).apply(kurtosis)
+    kurtosis_df['unstable_points']  = df.query('Stability == 0').drop(['Stability'],axis=1).apply(kurtosis)
+    return kurtosis_df
+
+import numpy as np
+def calculate_pu_skewness_kurt(df, columns_list, series_Sn):
+    # Make sure divisor is float
+    series_Sn = np.asarray(series_Sn, dtype=float)
+
+    # Build a Series indexed by your columns, to align correctly
+    divisor = pd.Series(series_Sn, index=columns_list, dtype=float)
+
+    df_pu = (
+        df[columns_list]
+        .astype(float)
+        .div(divisor, axis=1)
+    )
+
+    
+    df_pu['Stability']=df['Stability']
+    
+    skewness = calculate_skewness(df_pu)
+    kurtosis_df = calculate_kurt(df_pu)
+    return df_pu, skewness, kurtosis_df
+
+def distribution_plots(df, var):
+# Data
+    all_vals = df[var]
+    stable_vals = df.query('Stability == 1')[var]
+    unstable_vals = df.query('Stability == 0')[var]
+
+    plt.figure(figsize=(8,5))
+
+    plt.hist(all_vals, bins=40, alpha=0.5, label='All', density=True)
+    plt.hist(stable_vals, bins=40, alpha=0.5, label='Stability = 1', density=True)
+    plt.hist(unstable_vals, bins=40, alpha=0.5, label='Stability = 0', density=True)
+
+    plt.legend()
+    plt.xlabel(var)
+    plt.ylabel('Density')
+    plt.title('Distributions of '+var)
+    plt.show()
+    
+def plot_distribution_with_changes(skewness_or_kurt,df):
+    mask_sign_change = (skewness_or_kurt['stable_points'] * skewness_or_kurt['unstable_points'] < 0)
+    indices_with_sign_change = skewness_or_kurt.index[mask_sign_change]
+    #if len(indices_with_sign_change)>0:
+    for var in indices_with_sign_change:
+        distribution_plots(df,var)
+        
