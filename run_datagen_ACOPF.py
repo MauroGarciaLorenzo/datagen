@@ -123,6 +123,12 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
             trafo.rate = lines_ratings.loc[
                 lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                     0], 'Max Flow (MW)']
+    elif grid_name == 'IEEE9':
+        gridCal_grid.fBase = 60
+        for trafo in gridCal_grid.transformers2w:
+            #bf = int(trafo.bus_from.code)
+            #bt = int(trafo.bus_to.code)
+            trafo.rate = 500
 
     # %% READ EXCEL FILE
     # Read data of grid elements from Excel file
