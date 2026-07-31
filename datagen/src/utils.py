@@ -49,7 +49,7 @@ def check_dims(dimensions):
     return True
 
 
-def get_case_results(T_EIG, d_grid):
+def get_case_results(d_grid, T_EIG = None):
     df_op = pd.DataFrame()
 
     T_buses = d_grid['T_buses']
@@ -69,17 +69,29 @@ def get_case_results(T_EIG, d_grid):
         bus = T_load.loc[i, 'bus']
         df_op.loc[0, 'PL' + str(bus)] = T_load.loc[i, 'P']
         df_op.loc[0, 'QL' + str(bus)] = T_load.loc[i, 'Q']
+        
+    T_NET = d_grid['T_NET']
+    for i in T_NET.index:
+        bf = T_NET.loc[i, 'bus_from']
+        bt = T_NET.loc[i, 'bus_to']
+        df_op.loc[0, 'R_' + str(bf)+'_'+ str(bt)] = T_NET.loc[i, 'R']
+        df_op.loc[0, 'X_' + str(bf)+'_'+ str(bt)] = T_NET.loc[i, 'X']
+        df_op.loc[0, 'B_' + str(bf)+'_'+ str(bt)] = T_NET.loc[i, 'B']
 
     # add control parameters
 
-    T_EIG = T_EIG.set_index('mode')
-    T_EIG = T_EIG.T
-    df_real = T_EIG.loc[['real']].reset_index(drop=True)
-    df_imag = T_EIG.loc[['imag']].reset_index(drop=True)
-    df_freq = T_EIG.loc[['freq']].reset_index(drop=True)
-    df_damp = T_EIG.loc[['damp']].reset_index(drop=True)
+    if T_EIG is not None:
+        T_EIG = T_EIG.set_index('mode')
+        T_EIG = T_EIG.T
+        df_real = T_EIG.loc[['real']].reset_index(drop=True)
+        df_imag = T_EIG.loc[['imag']].reset_index(drop=True)
+        df_freq = T_EIG.loc[['freq']].reset_index(drop=True)
+        df_damp = T_EIG.loc[['damp']].reset_index(drop=True)
+    
+        return df_op, df_real, df_imag, df_freq, df_damp
+    else:
+        return df_op
 
-    return df_op, df_real, df_imag, df_freq, df_damp
 
 
 def generate_unique_id(n):
