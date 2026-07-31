@@ -61,7 +61,7 @@ def calculate_entropy(freqs):
 #         delta_entropy = entropy - entropy_parent
 #     return entropy, delta_entropy
 
-def eval_entropy(stabilities, entropy_parent):
+def eval_entropy(stabilities, entropy_parent, only_stability = False):
     """Calculate entropy of the cell using its list of stabilities.
 
     :param stabilities: List of stabilities (result of the evaluation of every
@@ -70,19 +70,25 @@ def eval_entropy(stabilities, entropy_parent):
     correspond to the cell)
     :return: Entropy and delta entropy
     """
-
-    stabilities = [x for x in stabilities if x >= 0]
     
+    # TODO: add option to evaluate entropy only for stable cases or for stable and feasible (parameter only_stability)
+    if only_stability:
+        stabilities = [x for x in stabilities if x >= 0]
+        
     if len(stabilities)==0:
             entropy = 0
     else:
         freqs = []
-        counter = 0
-        for stability in stabilities:
-            if stability == 1:
-                counter += 1
-        freqs.append(counter / len(stabilities))
-        freqs.append((len(stabilities) - counter) / len(stabilities))
+        classes = np.unique(stabilities)
+        counter = np.zeros(len(classes))
+        for idx_clas in range(len(classes)):
+            counter[idx_clas] = sum(stabilities==classes[idx_clas])
+        # for stability in stabilities:
+        #     if stability == 1:
+        #         counter += 1
+        #freqs.append(counter / len(stabilities))
+        #freqs.append((len(stabilities) - counter) / len(stabilities))
+        freqs = counter / len(stabilities)
         entropy = calculate_entropy(freqs)
     if entropy_parent is None:
         delta_entropy = 1
