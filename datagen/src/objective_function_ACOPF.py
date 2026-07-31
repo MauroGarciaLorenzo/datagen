@@ -44,7 +44,7 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     voltage_profile = func_params.get("voltage_profile", None)
     v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
     v_set = func_params.get("v_set", None)
-
+    change_admittance = func_params.get("change_admittance", None)
     # Remove the id and make sure case is fully numeric
     case_id = case["case_id"]
     cell_name = case["cell_name"]
@@ -94,6 +94,12 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
+    if change_admittance == True:
+        for line in gridCal_grid.lines:
+            line.R = line.R * (1 + np.random.uniform(-0.05, 0.05))
+            line.X = line.X * (1 + np.random.uniform(-0.05, 0.05))
+            line.B = line.B * (1 + np.random.uniform(-0.05, 0.05))
+        
     # %% Run 1st POWER-FLOW
 
     # Receive system status from OPAL
@@ -165,158 +171,179 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     d_opf['info']=pd.DataFrame()
     d_opf = additional_info_OPF_results(d_opf,i_slack, n_pf, d_opf_results)
 #%%
-    if not d_opf_results.converged:
-        # Exit function
-        stability = -1
-        output_dataframes = postprocess_obj_func(
-            output_dataframes, case_id, cell_name, stability,
-            df_computing_times=computing_times)
-        return stability, output_dataframes
+    if d_opf_results.converged:
+        stability = 1
+    else:
+        stability = 0
+    
+    d_grid, d_opf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
+                                                           gridCal_grid, d_opf,
+                                                           d_raw_data, d_op)
+    # Assign slack bus and slack element
+    d_grid = slack_bus.assign_slack(d_grid)
+
+    # # Compute reference angle (delta_slk)
+    # d_grid, REF_w, num_slk, delta_slk = slack_bus.delta_slk(d_grid)
+
+    for idx, (bf, bt) in enumerate(zip(d_grid['T_NET']['bus_from'], d_grid['T_NET']['bus_to'])):
+        #print(idx)
+        for line in gridCal_grid.lines:       
+            if int(line.bus_from.code)==bf and int(line.bus_to.code)==bt:
+                d_grid['T_NET'].loc[idx,'R']=line.R
+                d_grid['T_NET'].loc[idx,'X']=line.X
+                d_grid['T_NET'].loc[idx,'B']=line.B
+                
+    df_op = (
+         get_case_results(d_grid=d_grid))
+    output_dataframes['df_op'] = df_op
+    output_dataframes = postprocess_obj_func(output_dataframes, case_id, cell_name,
+                                             stability)
+    return stability, output_dataframes
 
     #########################################################################
 
 
-    d_grid, d_opf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
-                                                           gridCal_grid, d_opf,
-                                                           d_raw_data, d_op)
+    # d_grid, d_opf = fill_d_grid_after_powerflow.fill_d_grid(d_grid,
+    #                                                        gridCal_grid, d_opf,
+    #                                                        d_raw_data, d_op)
 
-    p_sg = np.sum(d_grid['T_gen'].query('element == "SG"')['P']) * 100
-    p_cig = np.sum(d_grid['T_gen'].query('element != "SG"')['P']) * 100
-    if p_cig!=0:
-        perc_gfor = np.sum(d_grid['T_gen'].query('element == "GFOR"')['P']) / p_cig*100
-    else:
-        perc_gfor=0
+    # p_sg = np.sum(d_grid['T_gen'].query('element == "SG"')['P']) * 100
+    # p_cig = np.sum(d_grid['T_gen'].query('element != "SG"')['P']) * 100
+    # if p_cig!=0:
+    #     perc_gfor = np.sum(d_grid['T_gen'].query('element == "GFOR"')['P']) / p_cig*100
+    # else:
+    #     perc_gfor=0
         
-    if dimensions:
-        valid_point = True
-        for d in dimensions:
-            if d.label == "p_sg":
-                if p_sg < d.borders[0] or p_sg > d.borders[1]:
-                    valid_point = False
-            if d.label == "p_cig":
-                if p_cig < d.borders[0] or p_cig > d.borders[1]:
-                    valid_point = False
-            if d.label == "perc_g_for":
-                if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
-                    valid_point = False
-        if not valid_point:
-            # Exit function
-            stability = -2
-            output_dataframes = postprocess_obj_func(
-                output_dataframes,case_id, cell_name, stability,
-                df_computing_times=computing_times)
-            return stability, output_dataframes
+    # if dimensions:
+    #     valid_point = True
+    #     for d in dimensions:
+    #         if d.label == "p_sg":
+    #             if p_sg < d.borders[0] or p_sg > d.borders[1]:
+    #                 valid_point = False
+    #         if d.label == "p_cig":
+    #             if p_cig < d.borders[0] or p_cig > d.borders[1]:
+    #                 valid_point = False
+    #         if d.label == "perc_g_for":
+    #             if perc_gfor < d.borders[0] or perc_gfor > d.borders[1]:
+    #                 valid_point = False
+    #     if not valid_point:
+    #         # Exit function
+    #         stability = -2
+    #         output_dataframes = postprocess_obj_func(
+    #             output_dataframes,case_id, cell_name, stability,
+    #             df_computing_times=computing_times)
+    #         return stability, output_dataframes
 
-    # %% READ PARAMETERS
+    # # %% READ PARAMETERS
 
-    # Get parameters of generator units from excel files & compute pu base
-    d_grid = parameters.get_params(d_grid, d_sg, d_vsc)
+    # # Get parameters of generator units from excel files & compute pu base
+    # d_grid = parameters.get_params(d_grid, d_sg, d_vsc)
 
-    d_grid = update_control(case, d_grid)
+    # d_grid = update_control(case, d_grid)
 
-    # Assign slack bus and slack element
-    d_grid = slack_bus.assign_slack(d_grid)
+    # # Assign slack bus and slack element
+    # d_grid = slack_bus.assign_slack(d_grid)
 
-    # Compute reference angle (delta_slk)
-    d_grid, REF_w, num_slk, delta_slk = slack_bus.delta_slk(d_grid)
+    # # Compute reference angle (delta_slk)
+    # d_grid, REF_w, num_slk, delta_slk = slack_bus.delta_slk(d_grid)
 
-    # %% GENERATE STATE-SPACE MODEL
+    # # %% GENERATE STATE-SPACE MODEL
 
-    # Generate AC & DC NET State-Space Model
-    start = time.perf_counter()
+    # # Generate AC & DC NET State-Space Model
+    # start = time.perf_counter()
 
-    """
-    connect_fun: 'append_and_connect' (default) or 'interconnect'. 
-        'append_and_connect': Uses a function that bypasses linearization; 
-        'interconnect': use original ct.interconnect function. 
-    save_ss_matrices: bool. Default is False. 
-        If True, write on csv file the A, B, C, D matrices of the state space.
-        False default option
-    """
-    connect_fun = 'append_and_connect'
-    save_ss_matrices = False
+    # """
+    # connect_fun: 'append_and_connect' (default) or 'interconnect'. 
+    #     'append_and_connect': Uses a function that bypasses linearization; 
+    #     'interconnect': use original ct.interconnect function. 
+    # save_ss_matrices: bool. Default is False. 
+    #     If True, write on csv file the A, B, C, D matrices of the state space.
+    #     False default option
+    # """
+    # connect_fun = 'append_and_connect'
+    # save_ss_matrices = False
 
-    l_blocks, l_states, d_grid = generate_NET.generate_SS_NET_blocks(
-        d_grid, delta_slk, connect_fun, save_ss_matrices)
+    # l_blocks, l_states, d_grid = generate_NET.generate_SS_NET_blocks(
+    #     d_grid, delta_slk, connect_fun, save_ss_matrices)
 
-    end = time.perf_counter()
-    computing_times['time_generate_SS_net'] = end - start
+    # end = time.perf_counter()
+    # computing_times['time_generate_SS_net'] = end - start
 
-    start = time.perf_counter()
+    # start = time.perf_counter()
 
-    # Generate generator units State-Space Model
-    l_blocks, l_states = generate_elements.generate_SS_elements(
-        d_grid, delta_slk, l_blocks, l_states, connect_fun, save_ss_matrices)
-    end = time.perf_counter()
-    computing_times['time_generate_SS_elem'] = end - start
+    # # Generate generator units State-Space Model
+    # l_blocks, l_states = generate_elements.generate_SS_elements(
+    #     d_grid, delta_slk, l_blocks, l_states, connect_fun, save_ss_matrices)
+    # end = time.perf_counter()
+    # computing_times['time_generate_SS_elem'] = end - start
 
-    # %% BUILD FULL SYSTEM STATE-SPACE MODEL
+    # # %% BUILD FULL SYSTEM STATE-SPACE MODEL
 
-    # Define full system inputs and ouputs
-    var_in = ['NET_Rld1']
-    var_out = ['all'] #['all']  # ['GFOR3_w'] #
+    # # Define full system inputs and ouputs
+    # var_in = ['NET_Rld1']
+    # var_out = ['all'] #['all']  # ['GFOR3_w'] #
 
-    # Build full system state-space model
-    start = time.perf_counter()
+    # # Build full system state-space model
+    # start = time.perf_counter()
 
-    inputs, outputs = build_ss.select_io(l_blocks, var_in, var_out)
-    ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs, connect_fun,
-                              save_ss_matrices)
+    # inputs, outputs = build_ss.select_io(l_blocks, var_in, var_out)
+    # ss_sys = build_ss.connect(l_blocks, l_states, inputs, outputs, connect_fun,
+    #                           save_ss_matrices)
 
-    end = time.perf_counter()
-    computing_times['time_connect'] = end - start
-
-
-    # %% SMALL-SIGNAL ANALYSIS
-
-    start = time.perf_counter()
+    # end = time.perf_counter()
+    # computing_times['time_connect'] = end - start
 
 
-    T_EIG = small_signal.FEIG(ss_sys, False)
-    T_EIG.head
+    # # %% SMALL-SIGNAL ANALYSIS
 
-    end = time.perf_counter()
-    computing_times['time_eig'] = end - start
+    # start = time.perf_counter()
 
 
-    # write to excel
-    # T_EIG.to_excel(path.join(path_results, "EIG_" + excel + ".xlsx"))
+    # T_EIG = small_signal.FEIG(ss_sys, False)
+    # T_EIG.head
 
-    if max(T_EIG['real'] >= 0):
-        stability = 0
-    else:
-        stability = 1
+    # end = time.perf_counter()
+    # computing_times['time_eig'] = end - start
 
-    # Obtain all participation factors
-    # df_PF = small_signal.FMODAL(ss_sys, plot=False)
-    # # Obtain the participation factors for the selected modes
-    # T_modal, df_PF = small_signal.FMODAL_REDUCED(ss_sys, plot=True, modeID = [1,3,11])
-    # # Obtain the participation factors >= tol, for the selected modes
-    start = time.perf_counter()
 
-    T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=False, modeID = np.arange(1,23), tol = 0.3)
+    # # write to excel
+    # # T_EIG.to_excel(path.join(path_results, "EIG_" + excel + ".xlsx"))
 
-    end = time.perf_counter()
-    computing_times['time_partfact'] = end - start
+    # if max(T_EIG['real'] >= 0):
+    #     stability = 0
+    # else:
+    #     stability = 1
 
-    # Collect output dataframes
-    df_op, df_real, df_imag, df_freq, df_damp = (
-        get_case_results(T_EIG=T_EIG, d_grid=d_grid))
-    output_dataframes['df_op'] = df_op
-    output_dataframes['df_real'] = df_real
-    output_dataframes['df_imag'] = df_imag
-    output_dataframes['df_freq'] = df_freq
-    output_dataframes['df_damp'] = df_damp
-    output_dataframes['df_computing_times'] = computing_times
-    # Do not include objects that are not dataframes and are not single-row
-    # output_dataframes['d_grid'] = d_grid
-    # output_dataframes['d_opf'] = d_opf
-    # output_dataframes['d_pf_original'] = d_pf_original
+    # # Obtain all participation factors
+    # # df_PF = small_signal.FMODAL(ss_sys, plot=False)
+    # # # Obtain the participation factors for the selected modes
+    # # T_modal, df_PF = small_signal.FMODAL_REDUCED(ss_sys, plot=True, modeID = [1,3,11])
+    # # # Obtain the participation factors >= tol, for the selected modes
+    # start = time.perf_counter()
+
+    # T_modal, df_PF = small_signal.FMODAL_REDUCED_tol(ss_sys, plot=False, modeID = np.arange(1,23), tol = 0.3)
+
+    # end = time.perf_counter()
+    # computing_times['time_partfact'] = end - start
+
+    # # Collect output dataframes
+    # df_op, df_real, df_imag, df_freq, df_damp = (
+    #     get_case_results(T_EIG=T_EIG, d_grid=d_grid))
+    # output_dataframes['df_op'] = df_op
+    # output_dataframes['df_real'] = df_real
+    # output_dataframes['df_imag'] = df_imag
+    # output_dataframes['df_freq'] = df_freq
+    # output_dataframes['df_damp'] = df_damp
+    # output_dataframes['df_computing_times'] = computing_times
+    # # Do not include objects that are not dataframes and are not single-row
+    # # output_dataframes['d_grid'] = d_grid
+    # # output_dataframes['d_opf'] = d_opf
+    # # output_dataframes['d_pf_original'] = d_pf_original
     
-    # Exit function
-    output_dataframes = postprocess_obj_func(output_dataframes, case_id, cell_name,
-                                             stability)
-    return stability, output_dataframes
+    # # Exit function
+    # output_dataframes = postprocess_obj_func(output_dataframes, case_id, cell_name,
+    #                                          stability)
+    # return stability, output_dataframes
 
 
 def postprocess_obj_func(output_dataframes, case_id, cell_name, stability,
