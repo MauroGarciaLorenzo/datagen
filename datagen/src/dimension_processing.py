@@ -124,8 +124,7 @@ def process_p_load_dimension(samples_df, dim, load_factor):
     total_cases = []
     total_dim = []
     for _, sample in samples_df.iterrows():
-        # TODO: poner el factor de escala de la carga en el setup file
-        new_sample = (sample["p_sg"] + sample["p_cig"]) * load_factor
+        new_sample = (sample.get("p_sg", 0) + sample.get("p_cig", 0)) * load_factor
         cases = [[new_sample * value for value in dim.values]
                  for _ in range(dim.n_cases)]
         for case in cases:
