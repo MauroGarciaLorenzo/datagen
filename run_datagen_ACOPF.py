@@ -45,6 +45,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
     load_factor = setup["load_factor"]
+    change_admittance = setup["change_admittance"]
     dst_dir = setup.get("dst_dir", None)
     use_sensitivity = setup.get("use_sensitivity", None)
     sensitivity_divs = setup.get("sensitivity_divs")
@@ -60,7 +61,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         raw = "ieee9_hypersim"
         excel_headers = "IEEE_9_headers"
         excel_data = "IEEE_9"
-        excel_op = "OperationData_IEEE_9"
+        excel_op = "OperationData_IEEE_9_hypersim"
     elif grid_name == 'IEEE118':
         # IEEE 118
         raw = "IEEE118busNREL"
@@ -123,7 +124,12 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
             trafo.rate = lines_ratings.loc[
                 lines_ratings.query('Bus_from == @bf and Bus_to == @bt').index[
                     0], 'Max Flow (MW)']
-
+    elif grid_name == 'IEEE9':
+        gridCal_grid.fBase = 60
+        for trafo in gridCal_grid.transformers2w:
+            #bf = int(trafo.bus_from.code)
+            #bt = int(trafo.bus_to.code)
+            trafo.rate = 500
     # %% READ EXCEL FILE
     # Read data of grid elements from Excel file
     d_grid, d_grid_0 = read_data.read_sys_data(excel_sys)
@@ -131,8 +137,11 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     d_grid = read_data.tempTables(d_grid)
 
     # %% READ EXEC FILES WITH SG AND VSC CONTROLLERS PARAMETERS
-    d_sg = read_data.read_data(excel_sg)
-    d_vsc = read_data.read_data(excel_vsc)
+    # d_sg = read_data.read_data(excel_sg)
+    # d_vsc = read_data.read_data(excel_vsc)
+    
+    d_sg = None
+    d_vsc = None
 
     # %% CONFIGURATION OF DIMENSIONS FOR THE DATA GENERATOR
     # Set up dimensions for generators, converters and loads
@@ -158,44 +167,44 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
                            d_op['Generators']['Pmax_CIG'].sum()),
                   independent_dimension=True,
                   cosphi=generators_power_factor),
-        Dimension(label="perc_g_for", variable_borders=[(0, 1)],
-                  n_cases=n_cases, divs=1, borders=(0, 1),
-                  independent_dimension=True, cosphi=None),
+        # Dimension(label="perc_g_for", variable_borders=[(0, 1)],
+        #           n_cases=n_cases, divs=1, borders=(0, 1),
+        #           independent_dimension=True, cosphi=None),
         Dimension(label="p_load", values=p_loads,
                   n_cases=n_cases, divs=1,
                   independent_dimension=False,
                   cosphi=loads_power_factor)
     ]
 
-    # Set up independent dimensions (controllers)
-    for d in list(d_op['Generators']['BusNum']):
-        dimensions.append(
-            Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
-                      independent_dimension=True,
-                      cosphi=None))
-        dimensions.append(
-            Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
-                      independent_dimension=True,
-                      cosphi=None))
-        dimensions.append(
-            Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
-                      independent_dimension=True,
-                      cosphi=None))
-        dimensions.append(
-            Dimension(label='tau_droop_u_gfol_' + str(d), n_cases=n_cases,
-                      divs=1, borders=(0.01, 0.2),
-                      independent_dimension=True,
-                      cosphi=None))
+    # # Set up independent dimensions (controllers)
+    # for d in list(d_op['Generators']['BusNum']):
+    #     dimensions.append(
+    #         Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
+    #                   divs=1, borders=(0.01, 0.2),
+    #                   independent_dimension=True,
+    #                   cosphi=None))
+    #     dimensions.append(
+    #         Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
+    #                   divs=1, borders=(0.01, 0.2),
+    #                   independent_dimension=True,
+    #                   cosphi=None))
+    #     dimensions.append(
+    #         Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
+    #                   divs=1, borders=(0.01, 0.2),
+    #                   independent_dimension=True,
+    #                   cosphi=None))
+    #     dimensions.append(
+    #         Dimension(label='tau_droop_u_gfol_' + str(d), n_cases=n_cases,
+    #                   divs=1, borders=(0.01, 0.2),
+    #                   independent_dimension=True,
+    #                   cosphi=None))
 
     # %% RUN OBJECTIVE FUNCTION
     func_params = {"n_pf": n_pf, "d_raw_data": d_raw_data, "d_op": d_op,
                    "gridCal_grid": gridCal_grid, "d_grid": d_grid,
                    "d_sg": d_sg,
                    "d_vsc": d_vsc, "voltage_profile": voltage_profile,
-                   "v_min_v_max_delta_v": v_min_v_max_delta_v}
+                   "v_min_v_max_delta_v": v_min_v_max_delta_v, "change_admittance":change_admittance}
 
     stability_array = []
     output_dataframes_array = []
@@ -218,7 +227,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
-        setup_path = "./setup/default_setup.yaml"
+        setup_path = "./setup/default_setup_9buses.yaml"
         main(setup_path=setup_path)
     elif len(args) == 2:
         setup_path = args[1]
