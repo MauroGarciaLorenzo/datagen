@@ -24,8 +24,12 @@ import traceback
 import numpy as np
 import pandas as pd
 import time
+# import sys
+# sys.stdout.reconfigure(line_buffering=True)
 import sys
-sys.stdout.reconfigure(line_buffering=True)
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(line_buffering=True)
 
 from .explorer import explore_cell
 from .viz import print_results, boxplot
