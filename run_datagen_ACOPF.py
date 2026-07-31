@@ -1,4 +1,6 @@
+# %%
 import os
+
 import sys
 
 from datagen.src.parsing import parse_setup_file, parse_args
@@ -61,7 +63,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         raw = "ieee9_hypersim"
         excel_headers = "IEEE_9_headers"
         excel_data = "IEEE_9"
-        excel_op = "OperationData_IEEE_9_hypersim"
+        excel_op = "OperationData_IEEE_9_hypersim_2VSC"
     elif grid_name == 'IEEE118':
         # IEEE 118
         raw = "IEEE118busNREL"
@@ -137,11 +139,11 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     d_grid = read_data.tempTables(d_grid)
 
     # %% READ EXEC FILES WITH SG AND VSC CONTROLLERS PARAMETERS
-    # d_sg = read_data.read_data(excel_sg)
-    # d_vsc = read_data.read_data(excel_vsc)
+    d_sg = read_data.read_data(excel_sg)
+    d_vsc = read_data.read_data(excel_vsc)
     
-    d_sg = None
-    d_vsc = None
+    #d_sg = None
+    #d_vsc = None
 
     # %% CONFIGURATION OF DIMENSIONS FOR THE DATA GENERATOR
     # Set up dimensions for generators, converters and loads
@@ -164,40 +166,40 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         Dimension(label="p_cig", variable_borders=p_cig,
                   n_cases=n_cases, divs=2,
                   borders=(d_op['Generators']['Pmin_CIG'].sum(),
-                           d_op['Generators']['Pmax_CIG'].sum()),
+                           d_op['Generators']['Pmax_CIG'].sum()), 
                   independent_dimension=True,
                   cosphi=generators_power_factor),
-        # Dimension(label="perc_g_for", variable_borders=[(0, 1)],
-        #           n_cases=n_cases, divs=1, borders=(0, 1),
-        #           independent_dimension=True, cosphi=None),
+        Dimension(label="perc_g_for", variable_borders=[(0, 1)],
+                  n_cases=n_cases, divs=1, borders=(0, 1), values=[1,-1,0],
+                  independent_dimension=True, cosphi=None),
         Dimension(label="p_load", values=p_loads,
                   n_cases=n_cases, divs=1,
                   independent_dimension=False,
                   cosphi=loads_power_factor)
     ]
 
-    # # Set up independent dimensions (controllers)
-    # for d in list(d_op['Generators']['BusNum']):
-    #     dimensions.append(
-    #         Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
-    #                   divs=1, borders=(0.01, 0.2),
-    #                   independent_dimension=True,
-    #                   cosphi=None))
-    #     dimensions.append(
-    #         Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
-    #                   divs=1, borders=(0.01, 0.2),
-    #                   independent_dimension=True,
-    #                   cosphi=None))
-    #     dimensions.append(
-    #         Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
-    #                   divs=1, borders=(0.01, 0.2),
-    #                   independent_dimension=True,
-    #                   cosphi=None))
-    #     dimensions.append(
-    #         Dimension(label='tau_droop_u_gfol_' + str(d), n_cases=n_cases,
-    #                   divs=1, borders=(0.01, 0.2),
-    #                   independent_dimension=True,
-    #                   cosphi=None))
+    # Set up independent dimensions (controllers)
+    for d in list(d_op['Generators']['BusNum']):
+        dimensions.append(
+            Dimension(label='tau_droop_f_gfor_' + str(d), n_cases=n_cases,
+                      divs=1, borders=(0.05, 0.05),
+                      independent_dimension=True,
+                      cosphi=None))
+        dimensions.append(
+            Dimension(label='tau_droop_u_gfor_' + str(d), n_cases=n_cases,
+                      divs=1, borders=(0.07, 0.07),
+                      independent_dimension=True,
+                      cosphi=None))
+        dimensions.append(
+            Dimension(label='tau_droop_f_gfol_' + str(d), n_cases=n_cases,
+                      divs=1, borders=(0.05, 0.05),
+                      independent_dimension=True,
+                      cosphi=None))
+        dimensions.append(
+            Dimension(label='tau_droop_u_gfol_' + str(d), n_cases=n_cases,
+                      divs=1, borders=(0.07, 0.07),
+                      independent_dimension=True,
+                      cosphi=None))
 
     # %% RUN OBJECTIVE FUNCTION
     func_params = {"n_pf": n_pf, "d_raw_data": d_raw_data, "d_op": d_op,
