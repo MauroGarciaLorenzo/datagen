@@ -51,6 +51,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     dst_dir = setup.get("dst_dir", None)
     use_sensitivity = setup.get("use_sensitivity", None)
     sensitivity_divs = setup.get("sensitivity_divs")
+    GFM_GFL_assigned = setup.get("GFM_GFL_assigned", None)
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -170,7 +171,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
                   independent_dimension=True,
                   cosphi=generators_power_factor),
         Dimension(label="perc_g_for", variable_borders=[(0, 1)],
-                  n_cases=n_cases, divs=1, borders=(0, 1), values=[1,-1,0],
+                  n_cases=n_cases, divs=1, borders=(0, 1), values=GFM_GFL_assigned,
                   independent_dimension=True, cosphi=None),
         Dimension(label="p_load", values=p_loads,
                   n_cases=n_cases, divs=1,
@@ -229,7 +230,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
-        setup_path = "./setup/default_setup_9buses.yaml"
+        setup_path = "./setup/setup_118_data4GNN.yaml"
         main(setup_path=setup_path)
     elif len(args) == 2:
         setup_path = args[1]
