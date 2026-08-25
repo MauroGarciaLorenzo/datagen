@@ -61,7 +61,7 @@ def calculate_entropy(freqs):
 #         delta_entropy = entropy - entropy_parent
 #     return entropy, delta_entropy
 
-def eval_entropy(stabilities, entropy_parent, only_stability = False):
+def eval_entropy(stabilities, entropy_parent, only_fasible = False):
     """Calculate entropy of the cell using its list of stabilities.
 
     :param stabilities: List of stabilities (result of the evaluation of every
@@ -71,8 +71,8 @@ def eval_entropy(stabilities, entropy_parent, only_stability = False):
     :return: Entropy and delta entropy
     """
     
-    # TODO: add option to evaluate entropy only for stable cases or for stable and feasible (parameter only_stability)
-    if only_stability:
+    # TODO: add option to evaluate entropy only for fasible cases or for all (parameter only_fasible)
+    if only_fasible:
         stabilities = [x for x in stabilities if x >= 0]
         
     if len(stabilities)==0:

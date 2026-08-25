@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 
 
-def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_vars=False):
+def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_vars=False, only_fasible = False):
     """This Sensitivity analysis is done by gathering cases and their
     evaluated outputs, then train a Random Forest, getting the importance of
     each variable in the decision. Each variable's division count is
@@ -40,9 +40,11 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_v
             dims_df_feas[label] = matching_columns
         dims_df_feas.columns = labels
     else:
-        # Run targeted procedure for specific case
-        df_op_feas = df_op.query('Stability >=0')
-        
+        # TODO: add option to evaluate sensitivity only for fasible cases or for all (parameter only_fasible)
+        if only_fasible:
+            # Run targeted procedure for specific case
+            df_op_feas = df_op.query('Stability >=0')
+            
         dims_df_feas = pd.DataFrame()
         
         dims_df_feas['p_sg'] = df_op_feas[[col for col in df_op_feas.columns if col.startswith('P_SG')]].sum(axis=1)
