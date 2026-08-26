@@ -134,8 +134,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
 
         # Evaluate stabilities
         for _, case in cases_df.iterrows():
-            if _ == 19:
-                print('pause')
+            #if _ == 19:
+            #    print('pause')
             stability, output_dfs = eval_stability(
                 case=case,
                 f=func,

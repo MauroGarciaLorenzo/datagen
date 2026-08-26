@@ -23,10 +23,13 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_v
     print("=== STARTING SENSITIVITY ANALYSIS ===", flush=True)
     # Extract labels for dimensions that are marked as independent
     labels = [dim.label for dim in dimensions if dim.independent_dimension]
-
-    # Discard unfeasible cases for the sensitivity calculations
-    cases_df_feas = cases_df.query('Stability >=0')
-
+    
+    # TODO: add option to evaluate sensitivity only for fasible cases or for all (parameter only_fasible)
+    if only_fasible:
+        # Discard unfeasible cases for the sensitivity calculations
+        cases_df_feas = cases_df.query('Stability >=0')
+    else:
+        cases_df_feas = cases_df.query('Stability >-2')
     if cases_df_feas.empty:
         return dimensions
 
@@ -44,6 +47,8 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_v
         if only_fasible:
             # Run targeted procedure for specific case
             df_op_feas = df_op.query('Stability >=0')
+        else:
+            df_op_feas = df_op.query('Stability >-2')
             
         dims_df_feas = pd.DataFrame()
         
