@@ -74,6 +74,8 @@ def eval_entropy(stabilities, entropy_parent, only_fasible = False):
     # TODO: add option to evaluate entropy only for fasible cases or for all (parameter only_fasible)
     if only_fasible:
         stabilities = [x for x in stabilities if x >= 0]
+    else:
+        stabilities = [x for x in stabilities if x > -2]        
         
     if len(stabilities)==0:
             entropy = 0
