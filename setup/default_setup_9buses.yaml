@@ -3,19 +3,21 @@ voltage_profile: true
 v_min_v_max_delta_v: [0.95, 1.05, 0.02]
 loads_power_factor: 0.98
 generators_power_factor: 0.98
-n_samples: 100
+n_samples: 5
 n_cases: 3
 rel_tolerance: 0.01
 cleanup_dir: true
-max_depth: 5
+max_depth: 3
 seed: 16
 grid_name: IEEE9
 feasible_rate: 0
 entropy_threshold: 0.05
 delta_entropy_threshold: 0
 chunk_length: 5000
-use_sensitivity: false
+use_sensitivity: true
 sensitivity_divs: 2
 load_factor: 0.9
+change_admittance: true
 environment:
   COMPUTING_UNITS: 10
+contingency: "N-1"
