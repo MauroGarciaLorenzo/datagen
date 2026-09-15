@@ -19,6 +19,8 @@ except ImportError:
 import time
 
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
+import random
+import networkx as nx
 
 
 def feasible_power_flow_ACOPF(case, **kwargs):
@@ -45,6 +47,9 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     v_min_v_max_delta_v = func_params.get("v_min_v_max_delta_v", None)
     v_set = func_params.get("v_set", None)
     change_admittance = func_params.get("change_admittance", None)
+    seed = func_params.get("seed", None)
+    #random.seed(seed)
+    contingency = func_params.get("contingency", None)
     # Remove the id and make sure case is fully numeric
     case_id = case["case_id"]
     cell_name = case["cell_name"]
@@ -96,10 +101,26 @@ def feasible_power_flow_ACOPF(case, **kwargs):
 
     if change_admittance == True:
         for line in gridCal_grid.lines:
-            line.R = line.R * (1 + np.random.uniform(-0.05, 0.05))
-            line.X = line.X * (1 + np.random.uniform(-0.05, 0.05))
-            line.B = line.B * (1 + np.random.uniform(-0.05, 0.05))
-        
+            line.R = line.R * (1 + random.uniform(-0.05, 0.05))
+            line.X = line.X * (1 + random.uniform(-0.05, 0.05))
+            line.B = line.B * (1 + random.uniform(-0.05, 0.05))
+    
+    if contingency == 'N-1':
+        contingency_probability = random.uniform(0, 1)
+        if contingency_probability >= 0.5:
+            idx_line2open = random.randrange(0, len(gridCal_grid.lines))
+            gridCal_grid.lines[idx_line2open].active=False
+            bf_line_open = gridCal_grid.lines[idx_line2open].bus_from.code
+            bt_line_open = gridCal_grid.lines[idx_line2open].bus_to.code
+            
+            #TO DO: decice what to do when there are islands
+            n_islands = detect_islands(gridCal_grid)
+            if n_islands==True:
+                gridCal_grid.lines[idx_line2open].active=True
+                bf_line_open = -1
+                bt_line_open = -1
+            
+            
     # %% Run 1st POWER-FLOW
 
     # Receive system status from OPAL
@@ -185,6 +206,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # # Compute reference angle (delta_slk)
     # d_grid, REF_w, num_slk, delta_slk = slack_bus.delta_slk(d_grid)
 
+    if len(d_grid['T_NET'].query('state == False'))>1:
+        print('stop')
     for idx, (bf, bt) in enumerate(zip(d_grid['T_NET']['bus_from'], d_grid['T_NET']['bus_to'])):
         #print(idx)
         for line in gridCal_grid.lines:       
@@ -192,6 +215,11 @@ def feasible_power_flow_ACOPF(case, **kwargs):
                 d_grid['T_NET'].loc[idx,'R']=line.R
                 d_grid['T_NET'].loc[idx,'X']=line.X
                 d_grid['T_NET'].loc[idx,'B']=line.B
+                
+                d_grid['T_NET'].loc[idx,'state']=line.active
+                
+    if len(d_grid['T_NET'].query('state == False'))>1:
+        print('stop')            
     
     if stability <0:            
         df_op = (
@@ -339,6 +367,10 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     # Exit function
     output_dataframes = postprocess_obj_func(output_dataframes, case_id, cell_name,
                                              stability)
+    
+    for line in gridCal_grid.lines:
+        line.active=True
+        
     return stability, output_dataframes
 
 
@@ -416,3 +448,23 @@ def update_control(case, d_grid):
             d_grid['T_VSC'].loc[i,control_p]=case[control_p_bus]
     
     return d_grid
+
+def detect_islands(grid):
+    """
+    Builds a graph with the buses as nodes and the active branches as edges,
+    and returns True if there is more than one connected component
+    (i.e. at least one island), False otherwise.
+    """
+    G = nx.Graph()
+    # Add buses
+    for bus in grid.buses:
+        G.add_node(bus)
+    # Add edges only for active lines
+    for line in grid.get_branches():
+        if line.active:
+            i = line.bus_from
+            j = line.bus_to
+            G.add_edge(i, j)
+    # Count components
+    components = list(nx.connected_components(G))
+    return len(components) > 1

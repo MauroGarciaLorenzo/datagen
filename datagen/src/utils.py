@@ -49,7 +49,7 @@ def check_dims(dimensions):
     return True
 
 
-def get_case_results(d_grid, T_EIG = None):
+def get_case_results(d_grid, T_EIG = None, contingency=False):
     df_op = pd.DataFrame()
 
     T_buses = d_grid['T_buses']
@@ -77,7 +77,14 @@ def get_case_results(d_grid, T_EIG = None):
         df_op.loc[0, 'R_' + str(bf)+'_'+ str(bt)] = T_NET.loc[i, 'R']
         df_op.loc[0, 'X_' + str(bf)+'_'+ str(bt)] = T_NET.loc[i, 'X']
         df_op.loc[0, 'B_' + str(bf)+'_'+ str(bt)] = T_NET.loc[i, 'B']
-
+    
+    if any(T_NET['state']==False):
+        df_op.loc[0,'bf_N_1'] = int(T_NET.loc[T_NET.query('state == False').index,'bus_from'])
+        df_op.loc[0,'bt_N_1'] = int(T_NET.loc[T_NET.query('state == False').index,'bus_to'])
+    else:
+        df_op.loc[0,'bf_N_1'] = -1
+        df_op.loc[0,'bt_N_1'] = -1
+        
     # add control parameters
 
     if T_EIG is not None:
