@@ -47,11 +47,12 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     delta_entropy_threshold = setup["delta_entropy_threshold"]
     chunk_length = setup["chunk_length"]
     load_factor = setup["load_factor"]
-    change_admittance = setup["change_admittance"]
+    contingency = setup["contingency"]
     dst_dir = setup.get("dst_dir", None)
     use_sensitivity = setup.get("use_sensitivity", None)
     sensitivity_divs = setup.get("sensitivity_divs")
     GFM_GFL_assigned = setup.get("GFM_GFL_assigned", None)
+    change_admittance = setup.get("change_admittance", None)
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -207,7 +208,8 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
                    "gridCal_grid": gridCal_grid, "d_grid": d_grid,
                    "d_sg": d_sg,
                    "d_vsc": d_vsc, "voltage_profile": voltage_profile,
-                   "v_min_v_max_delta_v": v_min_v_max_delta_v, "change_admittance":change_admittance}
+                   "v_min_v_max_delta_v": v_min_v_max_delta_v, "change_admittance":change_admittance,
+                   "contingency":contingency, "seed":seed}
 
     stability_array = []
     output_dataframes_array = []
@@ -230,7 +232,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
-        setup_path = "./setup/setup_118_data4GNN.yaml"
+        setup_path = "./setup/default_setup_9buses.yaml"
         main(setup_path=setup_path)
     elif len(args) == 2:
         setup_path = args[1]
