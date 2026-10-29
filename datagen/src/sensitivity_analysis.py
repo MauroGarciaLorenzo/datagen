@@ -96,7 +96,8 @@ def sensitivity(cases_df, df_op, dimensions, divs_per_cell, generator, use_all_v
 
         # Identify the most important dimension according to Random Forest
         index_max_importance = np.argmax(importances)
-        label_max_importance = list(labels)[index_max_importance]
+        #TODO: correct in the main brach
+        label_max_importance = dims_df_feas.columns[index_max_importance]#list(labels)[index_max_importance]
         dim_max_importance = get_dimension(label_max_importance, dimensions)
 
         # Check if further dividing this dimension exceeds tolerance threshold

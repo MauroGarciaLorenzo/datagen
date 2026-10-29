@@ -23,6 +23,21 @@ except ImportError:
 import warnings
 warnings.filterwarnings("ignore")
 
+class Tee:
+    def __init__(self, *streams):
+        self.streams = streams
+
+    def write(self, text):
+        for stream in self.streams:
+            stream.write(text)
+            stream.flush()
+
+    def flush(self):
+        for stream in self.streams:
+            stream.flush()
+
+
+
 @task(on_failure='FAIL')
 def main(working_dir='', path_data='', setup_path='', warmup=False):
     # %% Parse arguments (emulate sys.argv list as input)
@@ -53,6 +68,14 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     sensitivity_divs = setup.get("sensitivity_divs")
     GFM_GFL_assigned = setup.get("GFM_GFL_assigned", None)
     change_admittance = setup.get("change_admittance", None)
+    
+    log_file = open(dst_dir+"/execution_log_sensitivity_depth_"+str(max_depth)+".txt", "w", encoding="utf-8")
+
+    original_stdout = sys.stdout
+    original_stderr = sys.stderr
+
+    sys.stdout = Tee(original_stdout, log_file)
+    sys.stderr = Tee(original_stderr, log_file)
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
@@ -73,7 +96,7 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
         # excel_headers = "IEEE_118_01"  # SG
         excel_headers = "IEEE_118_FULL_headers"
         excel_data = "IEEE_118_FULL"
-        excel_op = "OperationData_IEEE_118_NREL"
+        excel_op = "OperationData_IEEE_118_NREL_3"
         excel_lines_ratings = "IEEE_118_Lines"
     else:
         raise ValueError(f"Grid {grid_name} not implemented")
@@ -232,7 +255,8 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
 if __name__ == "__main__":
     args = sys.argv
     if len(args) == 1:
-        setup_path = "./setup/default_setup_9buses.yaml"
+        setup_path = "./setup/setup_118_data4GNN.yaml"
+#        setup_path = "./setup/default_setup_9buses.yaml"
         main(setup_path=setup_path)
     elif len(args) == 2:
         setup_path = args[1]

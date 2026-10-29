@@ -21,6 +21,8 @@ import time
 from GridCalEngine.Simulations.PowerFlow.power_flow_worker import multi_island_pf_nc
 import random
 import networkx as nx
+import copy
+
 
 
 def feasible_power_flow_ACOPF(case, **kwargs):
@@ -39,7 +41,14 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     n_pf = func_params.get("n_pf", None)
     d_raw_data = func_params.get("d_raw_data", None)
     d_op = func_params.get("d_op", None)
-    gridCal_grid = func_params.get("gridCal_grid", None)
+    gridCal_grid_input = func_params.get("gridCal_grid", None)
+    
+    # # Copia di riferimento: non deve mai essere modificata
+    # gridCal_grid_original = copy.deepcopy(gridCal_grid_input)
+    
+    # Copia di lavoro: tutte le modifiche vengono fatte qui
+    gridCal_grid = copy.deepcopy(gridCal_grid_input)    
+    
     d_grid = func_params.get("d_grid", None)
     d_sg = func_params.get("d_sg", None)
     d_vsc = func_params.get("d_vsc", None)
@@ -100,6 +109,8 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     assign_PQ_Loads_to_grid.assign_PQ_load(gridCal_grid, d_raw_data)
 
     if change_admittance == True:
+        #gridCal_grid_original = copy.deepcopy(gridCal_grid)
+
         for line in gridCal_grid.lines:
             line.R = line.R * (1 + random.uniform(-0.05, 0.05))
             line.X = line.X * (1 + random.uniform(-0.05, 0.05))
@@ -222,11 +233,15 @@ def feasible_power_flow_ACOPF(case, **kwargs):
         print('stop')            
     
     if stability <0:            
-        df_op = (
-             get_case_results(d_grid=d_grid))
+        df_op, df_voltage = (
+        get_case_results(d_grid=d_grid, sampled_voltage_profile=voltage_profile_list))
         output_dataframes['df_op'] = df_op
+        output_dataframes['df_sampled_voltage'] = df_voltage
         output_dataframes = postprocess_obj_func(output_dataframes, case_id, cell_name,
                                                  stability)
+        # for line in gridCal_grid.lines:
+        #     line.active=True
+        #gridCal_grid = copy.deepcopy(gridCal_grid_original)
         return stability, output_dataframes
 
     #########################################################################
@@ -256,6 +271,9 @@ def feasible_power_flow_ACOPF(case, **kwargs):
             output_dataframes = postprocess_obj_func(
                 output_dataframes,case_id, cell_name, stability,
                 df_computing_times=computing_times)
+            # for line in gridCal_grid.lines:
+            #     line.active=True
+            #gridCal_grid = copy.deepcopy(gridCal_grid_original)
             return stability, output_dataframes
 
     # %% READ PARAMETERS
@@ -351,14 +369,15 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     computing_times['time_partfact'] = end - start
 
     # Collect output dataframes
-    df_op, df_real, df_imag, df_freq, df_damp = (
-        get_case_results(T_EIG=T_EIG, d_grid=d_grid))
+    df_op, df_real, df_imag, df_freq, df_damp, df_voltage = (
+        get_case_results(T_EIG=T_EIG, d_grid=d_grid, sampled_voltage_profile=voltage_profile_list))
     output_dataframes['df_op'] = df_op
     output_dataframes['df_real'] = df_real
     output_dataframes['df_imag'] = df_imag
     output_dataframes['df_freq'] = df_freq
     output_dataframes['df_damp'] = df_damp
     output_dataframes['df_computing_times'] = computing_times
+    output_dataframes['df_sampled_voltage'] = df_voltage
     # Do not include objects that are not dataframes and are not single-row
     # output_dataframes['d_grid'] = d_grid
     # output_dataframes['d_opf'] = d_opf
@@ -368,9 +387,10 @@ def feasible_power_flow_ACOPF(case, **kwargs):
     output_dataframes = postprocess_obj_func(output_dataframes, case_id, cell_name,
                                              stability)
     
-    for line in gridCal_grid.lines:
-        line.active=True
-        
+    # for line in gridCal_grid.lines:
+    #     line.active=True
+    
+    #gridCal_grid = copy.deepcopy(gridCal_grid_original)
     return stability, output_dataframes
 
 
