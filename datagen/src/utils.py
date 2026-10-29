@@ -49,7 +49,7 @@ def check_dims(dimensions):
     return True
 
 
-def get_case_results(d_grid, T_EIG = None, contingency=False):
+def get_case_results(d_grid, T_EIG = None, sampled_voltage_profile=None):
     df_op = pd.DataFrame()
 
     T_buses = d_grid['T_buses']
@@ -87,7 +87,12 @@ def get_case_results(d_grid, T_EIG = None, contingency=False):
         
     # add control parameters
 
-    if T_EIG is not None:
+    if sampled_voltage_profile is not None:
+        df_voltage = pd.DataFrame(
+            [sampled_voltage_profile],
+            columns=['V' + str(idx) for idx in range(len(sampled_voltage_profile))]
+            )
+    if T_EIG is not None and sampled_voltage_profile is not None:
         T_EIG = T_EIG.set_index('mode')
         T_EIG = T_EIG.T
         df_real = T_EIG.loc[['real']].reset_index(drop=True)
@@ -95,7 +100,10 @@ def get_case_results(d_grid, T_EIG = None, contingency=False):
         df_freq = T_EIG.loc[['freq']].reset_index(drop=True)
         df_damp = T_EIG.loc[['damp']].reset_index(drop=True)
     
-        return df_op, df_real, df_imag, df_freq, df_damp
+        return df_op, df_real, df_imag, df_freq, df_damp, df_voltage
+    
+    elif sampled_voltage_profile is not None:
+        return df_op, df_voltage
     else:
         return df_op
 
