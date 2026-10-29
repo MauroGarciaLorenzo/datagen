@@ -21,6 +21,7 @@ from datagen.src.grid import gen_grid
 from datagen.src.sensitivity_analysis import sensitivity
 from datagen.src.case_generation import gen_samples, gen_cases
 from datagen.src.evaluator import eval_entropy, eval_stability
+from tqdm import tqdm
 
 
 @constraint(is_local=True)
@@ -132,8 +133,11 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
         initial_index = 0
         index = 0
 
+
+        # Wrap iterrows() and provide total=len(cases_df)
+        for _, case in tqdm(cases_df.iterrows(), total=len(cases_df), desc="Processing cases"):        
         # Evaluate stabilities
-        for _, case in cases_df.iterrows():
+        #for _, case in cases_df.iterrows():
             #if _ == 19:
             #    print('pause')
             stability, output_dfs = eval_stability(
@@ -215,7 +219,8 @@ def explore_cell(func, n_samples, parent_entropy, depth, ax, dimensions,
     save_execution_logs(children_info, dst_dir)
 
     check_entropy = False
-    if delta_entropy > delta_entropy_threshold or parent_entropy > entropy_threshold:
+    #TODO: change in the main
+    if delta_entropy > delta_entropy_threshold and parent_entropy > entropy_threshold:
         check_entropy = True
 
     # Finish recursivity if entropy decreases or cell become too small
