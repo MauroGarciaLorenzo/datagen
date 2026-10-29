@@ -123,7 +123,7 @@ def start(dimensions, n_samples, rel_tolerance, func, max_depth, dst_dir=None,
         os.makedirs(dst_dir)
         print(f"Created results directory: {os.path.abspath(dst_dir)}")
     else:
-        clean_incomplete_cells(dst_dir)
+        #clean_incomplete_cells(dst_dir)
         print(f"Using existing results directory: {os.path.abspath(dst_dir)}")
 
     if not os.path.abspath(dst_dir):
