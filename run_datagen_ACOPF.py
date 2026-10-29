@@ -69,13 +69,13 @@ def main(working_dir='', path_data='', setup_path='', warmup=False):
     GFM_GFL_assigned = setup.get("GFM_GFL_assigned", None)
     change_admittance = setup.get("change_admittance", None)
     
-    log_file = open(dst_dir+"/execution_log_sensitivity_depth_"+str(max_depth)+".txt", "w", encoding="utf-8")
+    # log_file = open(dst_dir+"/execution_log_sensitivity_depth_"+str(max_depth)+".txt", "w", encoding="utf-8")
 
-    original_stdout = sys.stdout
-    original_stderr = sys.stderr
+    # original_stdout = sys.stdout
+    # original_stderr = sys.stderr
 
-    sys.stdout = Tee(original_stdout, log_file)
-    sys.stderr = Tee(original_stderr, log_file)
+    # sys.stdout = Tee(original_stdout, log_file)
+    # sys.stderr = Tee(original_stderr, log_file)
 
     # Slurm configuration
     print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", flush=True)
